@@ -23,7 +23,8 @@
             "group": "Get started",
             "pages": [
               "/get-started/quickstart",
-              "/get-started/installation"
+              "/get-started/installation",
+              "/get-started/contribute"
             ]
           },
           {
@@ -41,7 +42,10 @@
               {
                 "group": "Alpha",
                 "icon": "tag",
-                "pages": ["/acp/alpha/introduction", "/acp/alpha/architecture"]
+                "pages": [
+                  "/acp/alpha/introduction", 
+                  "/acp/alpha/architecture"
+                ]
               },
               {
                 "group": "Pre-alpha",
@@ -49,7 +53,8 @@
                 "pages": [
                   "/acp/pre-alpha/introduction",
                   "/acp/pre-alpha/architecture",
-                  "/acp/pre-alpha/specification",
+                  "/acp/pre-alpha/concepts-agents",
+                  "/acp/pre-alpha/concepts-tools",
                   "/acp/pre-alpha/sdk"
                 ]
               }
