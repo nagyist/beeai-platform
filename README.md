@@ -59,6 +59,20 @@ beeai list
 beeai run chat
 ```
 
+## Set up API keys
+
+After installation, it's time to configure your API keys. We will be using Groq for this quick example.
+
+```bash
+beeai env add LLM_MODEL=deepseek-r1-distill-llama-70b
+beeai env add LLM_API_BASE=https://api.groq.com/openai/v1
+beeai env add LLM_API_KEY=gsk_[...] # <- Your API key here
+beeai env check
+```
+
+>[!NOTE]
+> Other providers are available and listed under [installation](/installation)
+
 ## Documentation
 
 Visit [docs.beeai.dev](https://docs.beeai.dev) for full documentation.

@@ -1,115 +1,150 @@
 ---
 title: 'Installation'
-description: 'How to install BeeAI'
+description: 'BeeAI supports multiple installation methods and providers'
 ---
 
-## Install the BeeAI platform
+## Installation methods
 
-The BeeAI platform can be installed on Mac or Linux. We support multiple installation methods:
+BeeAI can be installed on Mac or Linux. We support multiple installation methods:
 
----
+### Homebrew (Recommended)
 
-Install using **[Homebrew](https://brew.sh/)** (recommended): A cross-platform package manager for Linux and Mac. This method will install all dependencies for you, as well as manage background services.
+A cross-platform package manager for Linux and Mac. This method will install all dependencies for you, as well as manage background services.
 
-1. If you don't already use Homebrew, install it using the instructions [provided on the homepage](https://brew.sh/).
-2. Install BeeAI with:
-    `brew install i-am-bee/beeai/beeai && brew services start beeai`
-3. _(optional)_ Install the [Arize Phoenix](https://phoenix.arize.com/) UI with:
-    `brew install i-am-bee/beeai/arize-phoenix && brew services start arize-phoenix`
-4. Installation complete! Move to the next section to set up agent providers.
-5. UPDATING: Run `brew update beeai` to update to the newest version of the platform. Note that agents are auto-updated.
+1. If you don't already use Homebrew, install it using the [official guide](https://brew.sh/).
 
----
+2. Install **BeeAI**:
+```bash
+brew install i-am-bee/beeai/beeai && brew services start beeai`
+```
 
-Install from **PyPI**: Python-native way of installing. This method is less preferred since it requires more manual steps to complete.
+3. _(Optional)_ Install [Arize Phoenix](https://phoenix.arize.com/):
+```bash
+brew install i-am-bee/beeai/arize-phoenix && brew services start arize-phoenix`
+```
 
-1. Install [`pipx`](https://github.com/pypa/pipx) from your OS's package manager (`sudo apt install pipx`, `sudo dnf install pipx`, `sudo pacman -S python-pipx`, ...)
-    - _Alternative_: You may create a virtual Python environment and use regular `pip` instead. In that case, be aware that BeeAI will be available only in the virtual environment you use.
-    - _Alternative_: If you are a user of `uv`, you may use `uv tool install ...` instead of `pipx install ...`.
-2. Install BeeAI with:
-    `pipx install beeai-cli`
-3. _(optional)_ Install the [Arize Phoenix](https://phoenix.arize.com/) UI with:
-    `pipx install arize-phoenix`
-4. Install agent runtimes. These are optional, but you won't be able to use agents, including built-in ones, if the corresponding runtime is not available.
-    - _Python_: BeeAI uses [`uv`](https://docs.astral.sh/uv/) to manage Python environments. Install `uv` using your OS's package manager, or follow the [official installation instructions](https://docs.astral.sh/uv/getting-started/installation/).
-    - _JavaScript / TypeScript_: BeeAI uses `npx`, part of [Node.js](https://nodejs.org/), to manage JS/TS environments. Install `node` using your OS's package manager, or follow the [official installation instructions](https://nodejs.org/en/download).
-    - _Docker_: (optional: no built-in agents use this runtime) BeeAI uses the `docker` CLI to manage agent containers. If you are unsure how to setup a container runtime on your machine, we recommend [Rancher Desktop](https://rancherdesktop.io/).
-5. Open a new terminal window and run `beeai serve`. This will start the BeeAI service, and show you the logs. Keep this terminal window running in order to use the platform.
-6. _(optional)_ Open a new terminal window and run `PHOENIX_GRPC_PORT=8336 phoenix serve` to run the Arize Phoenix UI. Also keep this terminal window open and running.
-7. Installation complete! Move to the next section to set up agent providers.
-8. UPDATING: Run `pipx upgrade beeai` to update to the newest version of the platform. Note that agents are auto-updated.
+<Tip>  
+    To update to the latest version, run `brew upgrade beeai`.<br/> 
+    Agents are auto-updated.  
+</Tip>  
+
+### PyPI
+
+A Python-native method, requiring more manual setup.
+
+1. Install [`pipx`](https://github.com/pypa/pipx):
+```bash
+`sudo apt install pipx`   # Debian/Ubuntu
+`sudo dnf install pipx`   # Fedora
+`sudo pacman -S python-pipx`  # Arch
+```
+
+<Tip>
+    Alternatively, you can use a virtual Python environment with `pip` or `uv`.
+</Tip>
+
+2. Install BeeAI:
+
+```bash
+pipx install beeai-cli
+```
+
+3. _(Optional)_ Install [Arize Phoenix](https://phoenix.arize.com/):
+
+```bash
+pipx install arize-phoenix
+```
+
+4. Install **agent runtimes** (optional but required for agent use):
+
+| **Runtime**               | **Description**                                                                                  | **Installation**                                                                                   |
+|---------------------------|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| **Python**                | BeeAI uses `uv` for environment management.                                                      | Install via your OS’s package manager or follow the [official guide](https://docs.astral.sh/uv/getting-started/installation/). |
+| **JavaScript / TypeScript** | BeeAI uses `npx` (part of Node.js).                                                              | Install Node via your OS’s package manager or follow the [official guide](https://nodejs.org/en/download). |
+| **Docker**                | Optional; no built-in agents require this. BeeAI supports the Docker CLI for agent containers.   | Install via [Rancher Desktop](https://rancherdesktop.io/) if needed.                             |
+
+5. **Start BeeAI service** by running:
+```bash
+beeai serve
+```
+
+6. _(Optional)_ **Start Arize Pheonix service** by running:
+```bash
+PHOENIX_GRPC_PORT=8336 phoenix serve
+```
+
+<Tip>  
+    To update to the latest version, run `pipx upgrade beeai`.<br/> 
+    Agents are auto-updated.  
+</Tip>  
 
 ---
 
 ## Set up API keys
 
-After installation, it's time to configure your API keys using the `beeai env add <name>=<value>` command. Pick one of the providers below, and supply your API key.
+1. Choose a provider: 
 
-If you don't have an API key and don't want to pay, Groq and OpenRouter have some limited free offerings. And if your computer is powerful, you can run models locally with Ollama.
+<AccordionGroup>
+    <Accordion title="OpenAI">
+    ```bash
+    beeai env add LLM_MODEL=gpt-4o
+    beeai env add LLM_API_BASE=https://api.openai.com/v1
+    beeai env add LLM_API_KEY=sk_\[...] \# <- your API key here
+    beeai env check 
+    ```
+    </Accordion>
 
----
+  <Accordion title="Anthropic">
+    ```bash
+    beeai env add LLM_MODEL=claude-3-7-sonnet-20250219
+    beeai env add LLM_API_BASE=https://api.anthropic.com/v1/
+    beeai env add LLM_API_KEY=[...] # <- your API key here
+    beeai env check
+    ```
+  </Accordion>
 
-### OpenAI
+  <Accordion title="Groq">
+    ```bash
+    beeai env add LLM_MODEL=deepseek-r1-distill-llama-70b
+    beeai env add LLM_API_BASE=https://api.groq.com/openai/v1
+    beeai env add LLM_API_KEY=gsk_[...] # <- your API key here
+    beeai env check
+    ```
+  </Accordion>
 
+  <Accordion title="Ollama">
+    ```bash
+    beeai env add LLM_MODEL=llama3.3
+    beeai env add LLM_API_BASE=http://localhost:11434/v1
+    beeai env add LLM_API_KEY=ollama
+    beeai env check
+    ```
+  </Accordion>
+
+  <Accordion title="OpenRouter">
+    ```bash
+    beeai env add LLM_MODEL=google/gemini-2.0-pro-exp-02-05:free
+    beeai env add LLM_API_BASE=https://openrouter.ai/api/v1
+    beeai env add LLM_API_KEY=sk-or-v1-[...] # <- your API key here
+    beeai env check
+    ```
+  </Accordion>
+</AccordionGroup>
+
+2. Configure API keys by running:
 ```bash
-beeai env add LLM_MODEL=gpt-4o
-beeai env add LLM_API_BASE=https://api.openai.com/v1
-beeai env add LLM_API_KEY=sk_[...] # <- put your actual API key here
-beeai env check
+beeai env add <name>=<value>
 ```
 
----
-
-### Anthropic
-
+3. Verify providers are in the `ready` state by running:
 ```bash
-beeai env add LLM_MODEL=claude-3-7-sonnet-20250219
-beeai env add LLM_API_BASE=https://api.anthropic.com/v1/
-beeai env add LLM_API_KEY=[...] # <- put your actual API key here
-beeai env check
+beeai provider list
 ```
 
----
+<Note>
+    Allow some time for the agent list to populate.
+</Note>
 
-### Groq (has some free usage)
-
-```bash
-beeai env add LLM_MODEL=deepseek-r1-distill-llama-70b
-beeai env add LLM_API_BASE=https://api.groq.com/openai/v1
-beeai env add LLM_API_KEY=gsk_[...] # <- put your actual API key here
-beeai env check
-```
-
----
-
-### Ollama (running locally, for powerful computers)
-
-```bash
-beeai env add LLM_MODEL=llama3.3
-beeai env add LLM_API_BASE=http://localhost:11434/v1
-beeai env add LLM_API_KEY=ollama
-beeai env check
-```
-
----
-
-### OpenRouter (has some free models)
-
-```bash
-beeai env add LLM_MODEL=google/gemini-2.0-pro-exp-02-05:free
-beeai env add LLM_API_BASE=https://openrouter.ai/api/v1
-beeai env add LLM_API_KEY=sk-or-v1-[...] # <- put your actual API key here
-beeai env check
-```
-
----
-
-After setting environment variables, run `beeai provider list` and check that all of the providers are in the `ready` state. It might take a while the first time. Repeat `beeai provider list` to see the current staus.
-
-If there's something wrong, run `beeai env check` to troubleshoot your issue.
-
-## Visit the UI
-
-* BeeAI: `http://localhost:8333`
-
-* Arize Phoenix: `http://localhost:6006`
+<Tip>
+If there's something wrong, run `beeai env check` to troubleshoot.
+</Tip>

@@ -1,42 +1,55 @@
 ---
 title: "Quickstart"
-description: "Start using the BeeAI"
+description: "Get up and running with BeeAI in minutes"
 ---
-
-<Warning>
-  This project is in **Pre-Alpha** and under rapid development. Breaking changes should be expected.
-</Warning>
-
-## What is BeeAI?
-
-BeeAI is an open platform designed to help you discover, run, and compose AI agents from any framework. Whether you're building your own agents or looking for powerful existing solutions, BeeAI makes it easy to find, connect, and orchestrate AI agents seamlessly.
 
 ## Installation
 
+1. **Install** BeeAI using [Homebrew](https://brew.sh/) (or see the [installation guide](https://docs.beeai.dev/get-started/installation) for other methods):
+
 ```sh
-brew install i-am-bee/beeai/beeai && brew services start beeai
+brew install i-am-bee/beeai/beeai
+brew services start beeai
 ```
 
-<Note>Additional installation methods are available [here](/get-started/installation).</Note>
-
-## Web Interface
-
-Visit `http://localhost:8333` in your browser to open the UI.
-
-## CLI Usage
-
-To list all available agents:
+2. **Launch** the web interface:
 
 ```sh
+beeai ui
+```
+
+3. **Use** from the terminal:
+
+```sh
+# List commands
+beeai --help
+
+# List all available agents
 beeai list
+
+# Run the chat agent
+beeai run chat
 ```
 
-To run a `chat` agent with a given input:
+## Configure API keys
 
-```sh
-beeai run chat "Hello"
+After installation, configure your API keys to enable BeeAI to interact with your preferred service provider. For this example, we'll use Groq.
+
+1. **Add environment variables** by running:
+
+```bash
+beeai env add LLM_MODEL=deepseek-r1-distill-llama-70b
+beeai env add LLM_API_BASE=https://api.groq.com/openai/v1
+beeai env add LLM_API_KEY=gsk_[...] <- your API key here
+beeai env check
 ```
 
-## Agent library
+2. **Verify configuration** by running:
 
-A complete list of reference agent implementations is available at [GitHub](https://github.com/i-am-bee/beeai/tree/main/agents).
+```bash
+beeai env check
+```
+
+<Tip>
+  Other providers are detailed in the next section.
+</Tip>

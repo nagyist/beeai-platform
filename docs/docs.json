@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "willow",
+  "theme": "maple",
   "name": "BeeAI",
   "colors": {
-    "primary": "#0f62fe",
-    "light": "#0f62fe",
-    "dark": "#0f62fe"
+    "primary": "#000000",
+    "light": "#ffffff",
+    "dark": "#000000"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -14,23 +14,22 @@
         "anchor": "Documentation",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Introduction",
             "pages": [
-              "/get-started/quickstart"
+              "/welcome"
             ]
           },
           {
-            "group": "Agents",
+            "group": "Get started",
             "pages": [
-              "/agents/official-list",
-              "/agents/community-list",
-              "/agents/contribute"
+              "/get-started/quickstart",
+              "/get-started/installation"
             ]
           },
           {
-            "group": "Concepts",
+            "group": "Core concepts",
             "pages": [
-              "/concepts/components",
+              "/concepts/overview",
               "/concepts/providers",
               "/concepts/agents",
               "/concepts/tools"
@@ -42,10 +41,7 @@
               {
                 "group": "Alpha",
                 "icon": "tag",
-                "pages": [
-                  "/acp/alpha/introduction",
-                  "/acp/alpha/architecture"
-                ]
+                "pages": ["/acp/alpha/introduction", "/acp/alpha/architecture"]
               },
               {
                 "group": "Pre-alpha",
@@ -53,36 +49,41 @@
                 "pages": [
                   "/acp/pre-alpha/introduction",
                   "/acp/pre-alpha/architecture",
+                  "/acp/pre-alpha/specification",
                   "/acp/pre-alpha/sdk"
                 ]
               }
             ]
           },
           {
-            "group": "Observability & Telemetry",
-            "pages": ["/observability/agents", "/observability/sharing"]
+            "group": "Observability & telemetry",
+            "pages": [
+              "/observability/agents",
+              "/observability/sharing"
+            ]
           }
         ]
+      },
+      {
+        "anchor": "Agent catalog",
+        "href": "https://beeai.dev/agents",
+        "icon": "robot"
+      },
+      {
+        "anchor": "GitHub",
+        "href": "https://github.com/i-am-bee/beeai",
+        "icon": "github"
+      },
+      {
+        "anchor": "Discord",
+        "href": "https://discord.gg/AZFrp3UF5k",
+        "icon": "discord"
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/i-am-bee/beeai",
-          "icon": "github"
-        },
-        {
-          "anchor": "Discord",
-          "href": "https://discord.gg/AZFrp3UF5k",
-          "icon": "discord"
-        }
-      ]
-    }
+    ]
   },
   "logo": {
-    "light": "/logo/beeai_logo_black.svg",
-    "dark": "/logo/beeai_logo_white.svg"
+    "light": "/logo/beeai-lockup.svg",
+    "dark": "/logo/beeai-lockup-white.svg"
   },
   "navbar": {
     "primary": {
@@ -92,7 +93,8 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/i-am-bee/beeai"
+      "github": "https://github.com/i-am-bee/beeai",
+      "discord": "https://discord.gg/AZFrp3UF5k"
     }
   }
 }
