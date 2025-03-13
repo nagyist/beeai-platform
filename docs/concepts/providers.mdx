@@ -1,46 +1,91 @@
 ---
 title: 'Providers'
-description: 'How to add agents to the beeai platform'
+description: 'Learn how to add, configure, and manage agent providers in BeeAI'
 ---
+
 <Warning>
     Fundamental breaking changes are happening now, affecting protocol, transport,
     and APIs. Consider this version experimental. Join [Alpha
     discussions](/acp/alpha/architecture#discussions) to help shape it.
 </Warning>
 
-# Adding providers
-Agent provider is a process that exposes one or more agents over a standardized interface -
-the [ACP protocol](/acp/alpha/introduction). This guide will show how to register different types of providers to the
-platform.
+## Overview 
 
-You can add providers by using the CLI, few basic commands:
-- `beeai provider list` - list providers
-- `beeai provider info <ID>` - show provider info (ID can be either `SHORT ID` from `beeai provider list`
-or unique short name such as `official/beeai-framework`)
-- `beeai provider remove <ID>` - remove provider
-- `beeai provider add <location>`, where `location` is a filesystem path to the [provider manifest](#provider-manifest),
-for example:
-  ```sh
-  # Github repository
-  beeai provider add 'https://github.com/org/repo'
-  # Specific version-tag and path inside github repository
-  beeai provider add 'https://github.com/org/repo@version-tag#path=/sub/directory/custom-provider.yaml'
+A **provider** is a service that exposes one or more agents using a standardized interface - the [Agent Communication Protocol](https://chatgpt.com/acp/alpha/introduction). This guide explains how to register different types of providers with BeeAI.
 
-  # Local providers
-  # if you have `beeai-provider.yaml` in the current directory:
-  beeai provider add 'file://.'
-  # Absolute path
-  beeai provider add 'file:///absolute/path/to/beeai-provider.yaml'
-    ```
+## Adding providers
 
+You can add, list, and remove providers by running:
+
+### **List** providers
+```sh
+beeai provider list
+```
+
+### **Show** provider details
+```sh
+beeai provider info <ID>
+```
+
+<Note>
+  ID can be either `SHORT ID` or unique short name such as `official/beeai-framework`.
+</Note>
+
+### **Remove** a provider
+```sh
+beeai provider remove <ID>
+```
+
+### **Add** a provider
+```sh
+beeai provider add <location>
+```
+
+<Note>
+`location` is a filesystem path to the provider manifest, detailed below.
+</Note>
+
+---
+
+## Examples
+
+### Add a provider from GitHub
+
+```sh
+beeai provider add 'https://github.com/org/repo'
+```
+
+### Add a specific version and path from GitHub
+  
+```sh
+beeai provider add 'https://github.com/org/repo@version-tag#path=/sub/directory/custom-provider.yaml'
+```
+
+### Add a local provider
+If `beeai-provider.yaml` is in the current directory:
+```sh
+beeai provider add 'file://.'
+```
+Using an absolute path
+```sh
+beeai provider add 'file:///absolute/path/to/beeai-provider.yaml'
+```
+
+---
 
 ## Provider manifest
-The manifest file (typically named `beeai-provider.yaml`) determines how to instantiate the provider connection.
-The beeai-platform server typically uses it to spawn a new provider process. The supported kinds of providers are:
 
-### Python provider
-Requires [uv](https://docs.astral.sh/uv/) installed globally (requirement is satisfied when installing beeai through brew)
+The **provider manifest** (`beeai-provider.yaml`) defines how a provider connects to BeeAI. The platform uses it to start a new provider process.
 
+### Supported providers types
+
+1. **Python** provider (runs with [uv](https://docs.astral.sh/uv/)) 
+
+<Note>
+  This requirement is satisfied when installing BeeAI through brew.
+</Note>
+
+<Expandable title="example">
 ```yaml
 manifestVersion: 1
 driver: python
@@ -68,10 +113,15 @@ env: # Environment variables consumed by this provider
     description: "Secret key for accessing model"
     required: True
 ```
+</Expandable>
 
-### NodeJs provider
-Requires [nodejs](https://nodejs.org) installed globally (requirement is satisfied when installing beeai through brew)
+2. **NodeJs** provider (runs with [nodejs](https://nodejs.org)) 
 
+<Note>
+  This requirement is satisfied when installing BeeAI through brew.
+</Note>
+
+<Expandable title="example">
 ```yaml
 manifestVersion: 1
 driver: nodejs
@@ -94,13 +144,16 @@ mcpEndpoint: /sse
 
 env: [] # Environment variables (see above in python provider above)
 ```
+</Expandable>
 
-### Container provider
-Requires [docker](https://www.docker.com/), [podman](https://podman.io/) or similar runtime installed, we recommend
-[Rancher Desktop](https://rancherdesktop.io/).
+3. **Container** provider (runs with [docker](https://www.docker.com/), [podman](https://podman.io/) or a similar runtime)
 
+<Tip>
+  We recommend [Rancher Desktop](https://rancherdesktop.io/).
+</Tip>
+
+<Expandable title="example">
 ```yaml
-
 manifestVersion: 1
 driver: container
 
@@ -115,15 +168,18 @@ mcpEndpoint: /sse
 
 env: [] # Environment variables (see above in python provider above)
 ```
+</Expandable>
 
-### Unmanaged provider
-This is a special kind of provider where the platform does not manage the lifecycle of the provider process. Instead,
-you may have a provider server running on a certain address:port already, and you simply want to connect it to the
-platform. This is especially useful when developing agents locally or for quick implementation.
+4. **Unmanaged** provider (external, already running process)
 
-For example, if you have an agent server running locally when you clone the provider template
-and run `uv run beeai-agents`, you can register it using the following manifest:
+An unmanaged provider is a special case where the BeeAI platform does not manage the provider’s lifecycle. Instead, you register an already running provider service.
 
+This is useful for:
+- Local development
+- Running agents on a separate infrastructure
+
+<Expandable title="example">
+You may have an agent server running locally when you clone the provider template and run `uv run beeai-agents`. This can be registered using the following manifest:
 
 ```yaml
 manifestVersion: 1
@@ -137,3 +193,4 @@ mcpEndpoint: /sse
 # running, instead inject env directly when starting the provider server,
 # for example: env MY_VARIABLE=MY_VALUE uv run beeai-agents
 ```
+</Expandable>
