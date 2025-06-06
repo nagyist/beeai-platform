@@ -14,14 +14,47 @@
  * limitations under the License.
  */
 
-import { useAgent } from '#modules/agents/api/queries/useAgent.ts';
-import { useAgentStatus } from '#modules/agents/hooks/useAgentStatus.ts';
+.nav,
+.ul,
+.link {
+  block-size: 100%;
+}
 
-import { SEQUENTIAL_WORKFLOW_AGENT_NAME } from '../sequential/constants';
+.nav {
+  @include type-style(body-compact-01);
 
-export function useSequentialAgent() {
-  const { data: agent } = useAgent({ name: SEQUENTIAL_WORKFLOW_AGENT_NAME });
-  const { isReady } = useAgentStatus({ providerId: agent?.metadata.provider_id });
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-  return isReady ? agent : undefined;
+.ul {
+  display: flex;
+  column-gap: rem(40px);
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  column-gap: rem(8px);
+  text-decoration: none;
+
+  &:not(:hover) {
+    --cds-link-primary: #{$text-dark};
+  }
+
+  &.active::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    inset-block-end: -1px;
+    block-size: 2px;
+    background: $text-dark;
+  }
+}
+
+.icon {
+  color: $text-dark;
 }
