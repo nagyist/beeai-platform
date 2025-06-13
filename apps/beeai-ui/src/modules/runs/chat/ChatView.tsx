@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { useAgent } from '#modules/agents/api/queries/useAgent.ts';
-import { useAgentStatus } from '#modules/agents/hooks/useAgentStatus.ts';
+import type { PropsWithChildren } from 'react';
 
-import { SEQUENTIAL_WORKFLOW_AGENT_NAME } from '../sequential/constants';
+import { MainContent } from '#components/layouts/MainContent.tsx';
 
-export function useSequentialAgent() {
-  const { data: agent } = useAgent({ name: SEQUENTIAL_WORKFLOW_AGENT_NAME });
-  const { isReady } = useAgentStatus({ providerId: agent?.metadata.provider_id });
-
-  return isReady ? agent : undefined;
+export function ChatView({ children }: PropsWithChildren) {
+  return (
+    <>
+      <MainContent limitHeight>{children}</MainContent>
+    </>
+  );
 }
