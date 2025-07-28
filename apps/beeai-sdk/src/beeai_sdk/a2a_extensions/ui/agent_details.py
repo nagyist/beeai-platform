@@ -27,6 +27,7 @@ class AgentDetailsContributor(pydantic.BaseModel):
 class AgentDetails(pydantic.BaseModel):
     ui_type: str | None = pydantic.Field(examples=["chat", "hands-off"])
     user_greeting: str | None = None
+    starter_prompts: list[str] | None = None
     tools: list[AgentDetailsTool] | None = None
     framework: str | None = None
     license: str | None = None
