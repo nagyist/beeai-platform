@@ -25,8 +25,8 @@ import uvicorn
 
 import beeai_sdk.a2a_extensions
 
-agent_details_extension = beeai_sdk.a2a_extensions.AgentDetailsExtension(
-    params=beeai_sdk.a2a_extensions.AgentDetails(
+agent_detail_extension = beeai_sdk.a2a_extensions.AgentDetailExtension(
+    params=beeai_sdk.a2a_extensions.AgentDetail(
         ui_type="chat",
     )
 )

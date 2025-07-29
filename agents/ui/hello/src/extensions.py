@@ -8,15 +8,15 @@ class BeeAIUITool(BaseModel):
     name: str
     description: str
 
-class AgentDetailsContributor(BaseModel):
+class AgentDetailContributor(BaseModel):
     name: str
     email: str | None = None
     url: str | None = None
 
 class BeeAIUI(AgentExtension):
     def __init__(self, ui_type: str, user_greeting: str, tools: list[BeeAIUITool], framework: str, license: str, programming_language: str, 
-                 source_code_url: str, container_image_url: str | None = None, author: AgentDetailsContributor | None = None, 
-                 contributors: list[AgentDetailsContributor] | None = None, starter_prompts: list[str] |None = None ):
+                 source_code_url: str, container_image_url: str | None = None, author: AgentDetailContributor | None = None, 
+                 contributors: list[AgentDetailContributor] | None = None, starter_prompts: list[str] |None = None ):
         super().__init__(
             uri="beeai_ui",
             params={

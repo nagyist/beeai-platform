@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from sdk import Server
-from extensions import BeeAIUITool, AgentDetailsContributor, BeeAIUI
+from extensions import BeeAIUITool, AgentDetailContributor, BeeAIUI
 from models import CitationMetadata, TextPart, TrajectoryMetadata
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -34,10 +34,10 @@ server = Server()
         programming_language="Python",
         source_code_url="https://github.com/i-am-bee/beeai-platform",
         container_image_url='',
-        author=AgentDetailsContributor(name= 'Tomas Weiss', email="Tomas.Weiss@ibm.com", url= "https://research.ibm.com/"),
+        author=AgentDetailContributor(name= 'Tomas Weiss', email="Tomas.Weiss@ibm.com", url= "https://research.ibm.com/"),
         contributors=[
-            AgentDetailsContributor(name= 'Petr Kadlec', email="petr.kadlec@ibm.com"),
-            AgentDetailsContributor(name= 'Petr Bulánek', email="petr.bulanek@ibm.com"),
+            AgentDetailContributor(name= 'Petr Kadlec', email="petr.kadlec@ibm.com"),
+            AgentDetailContributor(name= 'Petr Bulánek', email="petr.bulanek@ibm.com"),
         ],
         starter_prompts=['Write a research report about Generative AI','Should I buy Apple stock now?','Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolor. This is what a long query would look like, 2 lines maximum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolor. This is what a long query would look like, 2 lines maximum...','What is the meaning of life?','Tell me a joke','What is the capital of France?','How do I make a cake?']
     ),
