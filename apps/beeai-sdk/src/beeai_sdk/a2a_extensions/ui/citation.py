@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import types
+
 import pydantic
 
 from beeai_sdk.a2a_extensions.base_extension import BaseExtension
@@ -41,9 +43,9 @@ class Citation(pydantic.BaseModel):
     description: str | None = None
 
 
-class CitationExtension(BaseExtension[pydantic.BaseModel, Citation]):
+class CitationExtension(BaseExtension[types.NoneType, Citation]):
     URI: str = "https://a2a-extensions.beeai.dev/ui/citation/v1"
-    Params: type[pydantic.BaseModel] = pydantic.BaseModel
+    Params: type[types.NoneType] = types.NoneType
     Metadata: type[Citation] = Citation
 
     def citation_metadata(

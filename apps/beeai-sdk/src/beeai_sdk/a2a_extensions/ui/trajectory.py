@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import types
+
 import pydantic
 
 from beeai_sdk.a2a_extensions.base_extension import BaseExtension
@@ -32,9 +34,9 @@ class Trajectory(pydantic.BaseModel):
     content: str | None = None
 
 
-class TrajectoryExtension(BaseExtension[pydantic.BaseModel, Trajectory]):
+class TrajectoryExtension(BaseExtension[types.NoneType, Trajectory]):
     URI: str = "https://a2a-extensions.beeai.dev/ui/trajectory/v1"
-    Params: type[pydantic.BaseModel] = pydantic.BaseModel
+    Params: type[types.NoneType] = types.NoneType
     Metadata: type[Trajectory] = Trajectory
 
     def trajectory_metadata(

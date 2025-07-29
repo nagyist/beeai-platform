@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import abc
+import types
 import typing
 
 import a2a.types
@@ -47,11 +48,13 @@ class BaseExtension(abc.ABC, typing.Generic[ParamsT, MetadataT]):
     Params from the agent card.
     """
 
-    def __init__(self, params: ParamsT) -> None:
+    def __init__(self, params: ParamsT | None = None) -> None:
         """
         Agent should construct an extension instance using the constructor.
         """
-        self.params = params
+        if params is None and self.Params is not types.NoneType:
+            raise ValueError("None is not allowed by params type")
+        self.params = typing.cast(ParamsT, params)
 
     @classmethod
     def from_agent_card(cls, agent: a2a.types.AgentCard) -> typing.Self | None:
@@ -62,7 +65,9 @@ class BaseExtension(abc.ABC, typing.Generic[ParamsT, MetadataT]):
             return cls(
                 params=pydantic.TypeAdapter(cls.Params).validate_python(
                     next(x for x in agent.capabilities.extensions or [] if x.uri == cls.URI).params
-                ),
+                )
+                if cls.Params is not types.NoneType
+                else None,
             )
         except StopIteration:
             return None
@@ -78,7 +83,10 @@ class BaseExtension(abc.ABC, typing.Generic[ParamsT, MetadataT]):
                 uri=self.URI,
                 description=self.DESCRIPTION,
                 params=typing.cast(
-                    dict[str, typing.Any], pydantic.TypeAdapter(self.Params).dump_python(self.params, mode="json")
+                    dict[str, typing.Any],
+                    pydantic.TypeAdapter(self.Params).dump_python(self.params, mode="json")
+                    if self.Params is not types.NoneType
+                    else {},
                 ),
                 required=required,
             )
