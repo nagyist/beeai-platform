@@ -33,9 +33,9 @@ body {
 
 a {
   &:focus-visible {
-    @include focus-outline('outline');
     outline-offset: 0;
     border-radius: $spacing-02;
+    @include focus-outline('outline');
   }
 }
 
