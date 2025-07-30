@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { OverflowMenuHorizontal } from '@carbon/icons-react';
+import { IconButton } from '@carbon/react';
 import clsx from 'clsx';
 import type { CSSProperties, PropsWithChildren } from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
@@ -14,15 +16,32 @@ import classes from './LineClampText.module.scss';
 
 interface Props {
   lines: number;
+  iconButton?: boolean;
   className?: string;
   buttonClassName?: string;
+  useBlockElement?: boolean;
 }
 
-export function LineClampText({ lines, className, buttonClassName, children }: PropsWithChildren<Props>) {
+export function LineClampText({
+  lines,
+  iconButton,
+  className,
+  buttonClassName,
+  useBlockElement,
+  children,
+}: PropsWithChildren<Props>) {
   const id = useId();
-  const textRef = useRef<HTMLElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showButton, setShowButton] = useState(false);
+
+  const Component = useBlockElement ? 'div' : 'span';
+  const buttonProps = {
+    onClick: () => setIsExpanded((state) => !state),
+    'aria-controls': id,
+    'aria-expanded': isExpanded,
+  };
+  const buttonLabel = isExpanded ? 'View less' : 'View more';
 
   const checkOverflow = useCallback(() => {
     const element = textRef.current;
@@ -74,23 +93,27 @@ export function LineClampText({ lines, className, buttonClassName, children }: P
   }, [checkOverflow]);
 
   return (
-    <span className={clsx(classes.root, className)}>
-      <span
+    <Component className={clsx(classes.root, className)}>
+      <Component
         ref={textRef}
         id={id}
         className={clsx({ [classes.clamped]: !isExpanded })}
         style={{ '--line-clamp-lines': lines } as CSSProperties}
       >
         {children}
-      </span>
+      </Component>
 
       {showButton && (
-        <span className={clsx(classes.button, buttonClassName)}>
-          <ExpandButton onClick={() => setIsExpanded((state) => !state)} aria-controls={id} aria-expanded={isExpanded}>
-            {isExpanded ? 'View less' : 'View more'}
-          </ExpandButton>
-        </span>
+        <Component className={clsx(classes.button, buttonClassName)}>
+          {iconButton ? (
+            <IconButton {...buttonProps} kind="tertiary" label={buttonLabel}>
+              <OverflowMenuHorizontal />
+            </IconButton>
+          ) : (
+            <ExpandButton {...buttonProps}>{buttonLabel}</ExpandButton>
+          )}
+        </Component>
       )}
-    </span>
+    </Component>
   );
 }

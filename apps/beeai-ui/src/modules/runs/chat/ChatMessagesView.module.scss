@@ -3,30 +3,57 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+$content-block-padding: $spacing-07;
+$new-session-button-height: rem(32px);
+$user-message-height: rem(46px);
+$messages-row-gap: $spacing-07;
+$holder-row-gap: $spacing-06;
+$input-height: rem(88px);
+
 .holder {
   inline-size: 100%;
   display: grid;
-  grid-template-rows: max-content 1fr max-content;
-  row-gap: $spacing-06;
-}
-
-.header {
-  display: flex;
-  justify-content: flex-end;
+  grid-template-rows: 1fr max-content;
+  row-gap: $holder-row-gap;
 }
 
 .scrollable {
   @include scrollbar();
   display: flex;
-  flex-direction: column-reverse;
-  padding-block: $spacing-06;
+  flex-direction: column;
   position: relative;
+}
+
+.header {
+  position: sticky;
+  inset-block-start: 0;
+  text-align: end;
+  background-color: $layer;
+  padding-block-end: $spacing-06;
+  z-index: 1;
+}
+
+.container {
+  position: relative;
+  flex-grow: 1;
 }
 
 .messages {
   display: flex;
   flex-direction: column;
-  row-gap: $spacing-09;
+  row-gap: $messages-row-gap;
+  block-size: 100%;
+}
+
+.message:last-child {
+  min-block-size: calc(
+    100vh -
+      (
+        var(--header-height) + var(--header-border-height) + #{(2 * $content-block-padding) +
+          $new-session-button-height + $user-message-height + (2 * $messages-row-gap) + $holder-row-gap +
+          $input-height + rem(48px)}
+      )
+  );
 }
 
 .scrollRef {
@@ -45,11 +72,31 @@
 }
 
 .toBottomButton {
+  filter: drop-shadow($drop-shadow);
   &:global(.cds--tooltip) {
     position: absolute;
-    inset-block-start: 0;
+    inset-block-end: 100%;
     inset-inline-start: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -$spacing-05);
     z-index: 1;
+  }
+}
+
+@include breakpoint-up(lg) {
+  .header {
+    margin: 0 #{-$spacing-09} #{-$spacing-07} auto;
+    max-inline-size: max-content;
+    transform: translateX(100%);
+    padding-block-end: 0;
+  }
+
+  .message:last-child {
+    min-block-size: calc(
+      100vh -
+        (
+          var(--header-height) + var(--header-border-height) + #{2 * $content-block-padding + $user-message-height +
+            $messages-row-gap + $holder-row-gap + $input-height}
+        )
+    );
   }
 }
