@@ -231,7 +231,7 @@ yq -i ".providers[].location |= sub(\":(.*)\$\"; \":\" + \"$new_version\")" agen
 if gum confirm "Release version $new_version now?"; then
   (
     set -eux -o pipefail
-    git add agent-registry.yaml helm/Chart.yaml apps/beeai-{cli,server}/{uv.lock,pyproject.toml} apps/beeai-{ui,web,sdk}/package.json
+    git add agent-registry.yaml helm/Chart.yaml apps/beeai-{cli,server,sdk}/{uv.lock,pyproject.toml} apps/beeai-{ui,web}/package.json
     git commit -m "release: v$new_version"
     git tag "v$new_version"
     git push --atomic origin main "v$new_version"

@@ -54,7 +54,7 @@ wheels = [
 
 [[package]]
 name = "beeai-cli"
-version = "0.3.0rc2"
+version = "0.3.0rc3"
 source = { editable = "." }
 dependencies = [
     { name = "a2a-sdk" },
