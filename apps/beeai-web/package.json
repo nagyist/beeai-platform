@@ -1,6 +1,6 @@
 {
   "name": "@i-am-bee/beeai-web",
-  "version": "0.3.0-rc1",
+  "version": "0.3.0-rc2",
   "private": true,
   "peerDependencies": {
     "@bprogress/next": "*",
