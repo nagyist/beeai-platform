@@ -13,6 +13,7 @@ permissions:
 jobs:
   agents:
     runs-on: ubuntu-latest
+    environment: release
     strategy:
       matrix:
         agent:
@@ -77,6 +78,7 @@ jobs:
   beeai-platform:
     needs: agents
     runs-on: ubuntu-latest
+    environment: release
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       HELM_EXPERIMENTAL_OCI: '1'
