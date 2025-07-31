@@ -51,13 +51,13 @@ export function convertFileToFilePart(file: FileEntity): FilePart {
 export function createUserMessage({
   text,
   files,
-  contextId,
   taskId,
+  contextId,
 }: {
   text: string;
   files: FileEntity[];
   contextId: ContextId;
-  taskId: TaskId;
+  taskId?: TaskId;
 }): Message {
   return {
     kind: 'message',
