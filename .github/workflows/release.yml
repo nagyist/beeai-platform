@@ -46,7 +46,7 @@ jobs:
       - id: agent-manifest
         run: |
           set -e
-          docker run -d --rm --name=tmp-agent -p 8000:8000 -e HOST=0.0.0.0 tmp-agent-image
+          docker run -d --rm --name=tmp-agent -p 8000:8000 -e HOST=0.0.0.0 -e PORT=8000 tmp-agent-image
           success=0
           for i in {1..30}; do
             echo "Extracting manifest: attempt $i"
