@@ -17,9 +17,9 @@ jobs:
       matrix:
         agent:
           - official/beeai-framework/chat
+          - official/sequential-workflow
           - community/aider
           - community/gpt-researcher
-          - official/sequential-workflow
     steps:
       - uses: actions/checkout@v4
       - id: version
@@ -50,7 +50,7 @@ jobs:
           success=0
           for i in {1..30}; do
             echo "Extracting manifest: attempt $i"
-            response=$(curl http://localhost:8000/agents 2>/dev/null) && success=1 && break
+            response=$(curl http://localhost:8000/.well-known/agent.json 2>/dev/null) && success=1 && break
             sleep 0.5
           done
           [[ "$success" == 1 ]] || (echo "Failed to discover agents" && exit 1)
@@ -59,7 +59,8 @@ jobs:
           echo "content=$AGENT_MANIFEST" >> $GITHUB_OUTPUT
       - uses: docker/build-push-action@v5
         with:
-          context: ./agents/${{ matrix.agent }}
+          context: .
+          file: ./agents/${{ matrix.agent }}/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           build-args: |
@@ -132,3 +133,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: apps/beeai-cli/dist
+      - run: mise run beeai-sdk:build
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: apps/beeai-sdk/dist
