@@ -320,7 +320,11 @@ async def _run_agent(
                                     if handle_input is None:
                                         raise ValueError("Agent requires input but no input handler provided")
 
-                                    console.print("\n[bold]Agent requires your input[/bold]\n")
+                                    text = ""
+                                    for part in task_status.message.parts if task_status.message else []:
+                                        if isinstance(part.root, TextPart):
+                                            text = part.root.text
+                                    console.print(f"\n[bold]Agent requires your input[/bold]: {text}\n")
                                     user_input = handle_input()
 
                                     # Send the user input back to the agent

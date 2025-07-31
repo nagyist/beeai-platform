@@ -3,10 +3,35 @@
 import uuid
 from typing import Literal, TypeAlias
 
-from a2a.types import Artifact, Message, Part, Role, TaskStatus, TextPart
+from a2a.types import (
+    Artifact,
+    DataPart,
+    FilePart,
+    Message,
+    Part,
+    Role,
+    TaskArtifactUpdateEvent,
+    TaskStatus,
+    TaskStatusUpdateEvent,
+    TextPart,
+)
 from pydantic import Field, model_validator
 
-RunYield: TypeAlias = Message | Part | TaskStatus | Artifact | str | None | dict | Exception
+RunYield: TypeAlias = (
+    Message
+    | Part
+    | TaskStatus
+    | Artifact
+    | TextPart
+    | FilePart
+    | DataPart
+    | TaskStatusUpdateEvent
+    | TaskArtifactUpdateEvent
+    | str
+    | None
+    | dict
+    | Exception
+)
 RunYieldResume: TypeAlias = Message | None
 
 
