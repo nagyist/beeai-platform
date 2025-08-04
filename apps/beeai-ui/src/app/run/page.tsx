@@ -11,11 +11,11 @@ import { listProviders } from '#modules/providers/api/index.ts';
 import { RunView } from '#modules/runs/components/RunView.tsx';
 
 interface Props {
-  params: Promise<{ agentName: string }>;
+  searchParams: Promise<{ agent: string }>;
 }
 
-export default async function AgentRunPage({ params }: Props) {
-  const { agentName } = await params;
+export default async function AgentRunPage({ searchParams }: Props) {
+  const { agent: agentName } = await searchParams;
 
   let agent: Agent | undefined;
   try {
