@@ -113,6 +113,7 @@ export function createSourcePart(citation: Citation, messageId: string | undefin
     id: uuid(),
     url,
     messageId,
+    number: null,
     startIndex: start_index ?? undefined,
     endIndex: end_index ?? undefined,
     title: title ?? undefined,
