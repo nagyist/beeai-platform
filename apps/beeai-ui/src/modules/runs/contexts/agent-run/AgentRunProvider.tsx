@@ -42,7 +42,7 @@ export function AgentRunProviders({ agent, children }: PropsWithChildren<Props>)
 }
 
 function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
-  const [conversationId, setConversationId] = useState<string>(uuid());
+  const [contextId, setContextId] = useState<string>(uuid());
   const [messages, getMessages, setMessages] = useImmerWithGetter<UIMessage[]>([]);
   const [input, setInput] = useState<string>();
   const [isPending, setIsPending] = useState(false);
@@ -106,11 +106,11 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
     setMessages([]);
     setStats(undefined);
     clearFiles();
-    setConversationId(uuid());
+    setContextId(uuid());
     setIsPending(false);
     setInput(undefined);
     pendingRun.current = undefined;
-  }, [setMessages, clearFiles, setConversationId]);
+  }, [setMessages, clearFiles, setContextId]);
 
   const run = useCallback(
     async (input: string) => {
@@ -141,10 +141,7 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
       clearFiles();
 
       try {
-        const run = a2aAgentClient.chat({
-          message: userMessage,
-          contextId: conversationId,
-        });
+        const run = a2aAgentClient.chat({ message: userMessage, contextId });
         pendingRun.current = run;
 
         pendingSubscription.current = run.subscribe(({ parts, taskId }) => {
@@ -174,7 +171,7 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
         pendingSubscription.current = undefined;
       }
     },
-    [a2aAgentClient, files, conversationId, handleError, updateLastAgentMessage, setMessages, clearFiles],
+    [a2aAgentClient, files, contextId, handleError, updateLastAgentMessage, setMessages, clearFiles],
   );
 
   const sources = useMemo(() => getMessageSourcesMap(messages), [messages]);
@@ -185,11 +182,12 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
       isPending,
       input,
       stats,
+      contextId,
       run,
       cancel,
       clear,
     }),
-    [agent, isPending, input, stats, run, cancel, clear],
+    [agent, isPending, input, stats, contextId, run, cancel, clear],
   );
 
   return (
