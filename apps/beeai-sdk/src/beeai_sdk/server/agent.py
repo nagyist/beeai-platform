@@ -104,7 +104,7 @@ def agent(
     def decorator(fn: Callable) -> Agent:
         signature = inspect.signature(fn)
         dependencies = extract_dependencies(signature)
-        sdk_extensions = [dep.extension for dep in dependencies.values() if dep.extension]
+        sdk_extensions = [dep.extension for dep in dependencies.values() if dep.extension is not None]
 
         resolved_name = name or fn.__name__
         resolved_description = description or fn.__doc__ or ""
