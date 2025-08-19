@@ -14,6 +14,7 @@ import type { TaskId } from '#modules/tasks/api/types.ts';
 import { getBaseUrl } from '#utils/api/getBaseUrl.ts';
 
 import { AGENT_ERROR_MESSAGE } from './constants';
+import { llmExtension } from './extensions/services/llm';
 import { mcpExtension } from './extensions/services/mcp';
 import { extractServiceExtensionDemands, fulfillServiceExtensionDemand } from './extensions/utils';
 import { processMessageMetadata, processParts } from './part-processors';
@@ -21,7 +22,9 @@ import type { ChatParams, ChatRun } from './types';
 import { createUserMessage, extractTextFromMessage } from './utils';
 
 const mcpExtensionExtractor = extractServiceExtensionDemands(mcpExtension);
-const fulFillMcpDemand = fulfillServiceExtensionDemand(mcpExtension);
+const fulfillMcpDemand = fulfillServiceExtensionDemand(mcpExtension);
+const llmExtensionExtractor = extractServiceExtensionDemands(llmExtension);
+const fulfillLlmDemand = fulfillServiceExtensionDemand(llmExtension);
 
 function handleStatusUpdate<UIGenericPart = never>(
   event: TaskStatusUpdateEvent,
@@ -67,6 +70,7 @@ export const buildA2AClient = <UIGenericPart = never>({
   onStatusUpdate,
 }: CreateA2AClientParams<UIGenericPart>) => {
   const mcpDemands = mcpExtensionExtractor(extensions);
+  const llmDemands = llmExtensionExtractor(extensions);
 
   const agentUrl = `${getBaseUrl()}/api/v1/a2a/${providerId}`;
   const client = new A2AClient(agentUrl);
@@ -80,7 +84,11 @@ export const buildA2AClient = <UIGenericPart = never>({
       let metadata = {};
 
       if (mcpDemands) {
-        metadata = fulFillMcpDemand(metadata, await fulfillments.mcp(mcpDemands));
+        metadata = fulfillMcpDemand(metadata, await fulfillments.mcp(mcpDemands));
+      }
+
+      if (llmDemands) {
+        metadata = fulfillLlmDemand(metadata, await fulfillments.llm(llmDemands));
       }
 
       const stream = client.sendMessageStream({ message: createUserMessage({ message, contextId, metadata }) });
