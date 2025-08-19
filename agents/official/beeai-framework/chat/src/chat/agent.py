@@ -77,7 +77,7 @@ server = Server()
 
 
 @server.agent(
-    name="Chat NEW",
+    name="Chat",
     documentation_url=(
         f"https://github.com/i-am-bee/beeai-platform/blob/{os.getenv('RELEASE_VERSION', 'main')}"
         "/agents/official/beeai-framework/chat"
@@ -272,8 +272,10 @@ async def chat_new(
         files_context = "\n\n## Currently Available Files:"
         files_context += "\nThe user has uploaded the following files that you can access using the File Reader tool:"
         for file in extracted_files:
-            files_context += f"\n- **{file.filename}** (ID: {file.id}) - Available at: {file.url}"
-        files_context += "\n\nWhen referencing these files, use their ID with the File Reader tool to access their content."
+            files_context += f"\n- **{file.file.filename}** (ID: {file.file.id}) - Available at: {file.file.url}"
+        files_context += (
+            "\n\nWhen referencing these files, use their ID with the File Reader tool to access their content."
+        )
         instructions = base_instructions.format(file_context=files_context)
     else:
         instructions = base_instructions.format(file_context="")
