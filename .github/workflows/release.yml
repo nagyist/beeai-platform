@@ -18,6 +18,7 @@ jobs:
       matrix:
         agent:
           - official/beeai-framework/chat
+          - official/beeai-framework/rag
           - official/sequential-workflow
           - community/aider
           - community/gpt-researcher
