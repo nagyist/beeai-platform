@@ -209,19 +209,18 @@ def agent(
                 call_context=request_context.call_context,
             )
 
-            # call dependencies with the first message
-            kwargs = {pname: dependency(message, context) for pname, dependency in dependencies.items()}
-
             # initialize dependencies
             async with AsyncExitStack() as stack:
-                for d in dependencies.values():
-                    await stack.enter_async_context(d.lifespan())
+                dependency_args = {}
+                for pname, depends in dependencies.items():
+                    # call dependencies with the first message and initialize their lifespan
+                    dependency_args[pname] = await stack.enter_async_context(depends(message, context))
 
                 async def agent_generator():
                     yield_queue = context._yield_queue
                     yield_resume_queue = context._yield_resume_queue
 
-                    task = asyncio.create_task(execute_fn(context, **kwargs))
+                    task = asyncio.create_task(execute_fn(context, **dependency_args))
                     try:
                         while not task.done() or yield_queue.async_q.qsize() > 0:
                             value = yield await yield_queue.async_q.get()
