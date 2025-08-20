@@ -27,7 +27,7 @@ server = Server()
 
 
 @server.agent(
-    name="GPT Researcher 2",
+    name="GPT Researcher",
     documentation_url=(
         f"https://github.com/i-am-bee/beeai-platform/blob/{os.getenv('RELEASE_VERSION', 'main')}"
         "/agents/community/gpt-researcher"
