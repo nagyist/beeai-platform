@@ -5,6 +5,7 @@
 
 export const routes = {
   home: () => '/' as const,
+  login: () => '/signin' as const,
   notFound: () => '/not-found' as const,
   agentRun: ({ providerId }: { providerId: string }) => `/run?p=${providerId}`,
   playground: () => '/playground' as const,
