@@ -131,7 +131,7 @@ dev = [
 
 [[package]]
 name = "beeai-sdk"
-version = "0.3.2"
+version = "0.3.3rc1"
 source = { editable = "../beeai-sdk" }
 dependencies = [
     { name = "a2a-sdk" },
