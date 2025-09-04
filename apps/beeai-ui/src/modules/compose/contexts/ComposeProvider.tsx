@@ -10,7 +10,7 @@ import { useFieldArray, useFormContext } from 'react-hook-form';
 import { match } from 'ts-pattern';
 import { v4 as uuid } from 'uuid';
 
-import type { ChatRun } from '#api/a2a/types.ts';
+import type { AgentA2AClient, ChatRun } from '#api/a2a/types.ts';
 import { getErrorCode } from '#api/utils.ts';
 import { useHandleError } from '#hooks/useHandleError.ts';
 import { usePrevious } from '#hooks/usePrevious.ts';
@@ -32,14 +32,26 @@ import type { ComposeStep, SequentialFormValues } from './compose-context';
 import { ComposeContext, ComposeStatus } from './compose-context';
 
 export function ComposeProvider({ children }: PropsWithChildren) {
+  const { data: sequentialAgent } = useAgentByName({ name: SEQUENTIAL_WORKFLOW_AGENT_NAME });
+
+  const { agentClient } = useBuildA2AClient({
+    providerId: sequentialAgent?.provider.id,
+    extensions: sequentialAgent?.capabilities.extensions ?? [],
+    onStatusUpdate: handleTaskStatusUpdate,
+  });
+
   return (
-    <PlatformContextProvider>
-      <ComposeProviderWithContext>{children}</ComposeProviderWithContext>
+    <PlatformContextProvider agentClient={agentClient}>
+      <ComposeProviderWithContext agentClient={agentClient}>{children}</ComposeProviderWithContext>
     </PlatformContextProvider>
   );
 }
 
-function ComposeProviderWithContext({ children }: PropsWithChildren) {
+interface Props {
+  agentClient?: AgentA2AClient<UIComposePart>;
+}
+
+function ComposeProviderWithContext({ agentClient, children }: PropsWithChildren<Props>) {
   const { getContextId, getFullfilments } = usePlatformContext();
   const { data: agents } = useListAgents({ onlyUiSupported: true, sort: true });
 
@@ -55,14 +67,6 @@ function ComposeProviderWithContext({ children }: PropsWithChildren) {
   const stepsFields = useFieldArray<SequentialFormValues>({ name: 'steps' });
   const { replace: replaceSteps } = stepsFields;
   const steps = watch('steps');
-
-  const { data: sequentialAgent } = useAgentByName({ name: SEQUENTIAL_WORKFLOW_AGENT_NAME });
-
-  const { agentClient } = useBuildA2AClient({
-    providerId: sequentialAgent?.provider.id,
-    extensions: sequentialAgent?.capabilities.extensions ?? [],
-    onStatusUpdate: handleTaskStatusUpdate,
-  });
 
   const lastStep = steps.at(-1);
   const result = useMemo(() => (lastStep?.result ? getMessageRawContent(lastStep.result) : undefined), [lastStep]);

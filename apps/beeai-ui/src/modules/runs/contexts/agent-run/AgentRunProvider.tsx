@@ -7,7 +7,7 @@
 import { type PropsWithChildren, useCallback, useMemo, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
-import { type ChatRun, RunResultType } from '#api/a2a/types.ts';
+import { type AgentA2AClient, type ChatRun, RunResultType } from '#api/a2a/types.ts';
 import { createTextPart } from '#api/a2a/utils.ts';
 import { getErrorCode } from '#api/utils.ts';
 import { useHandleError } from '#hooks/useHandleError.ts';
@@ -38,16 +38,27 @@ interface Props {
 }
 
 export function AgentRunProviders({ agent, children }: PropsWithChildren<Props>) {
+  const { agentClient } = useBuildA2AClient({
+    providerId: agent.provider.id,
+    extensions: agent.capabilities.extensions ?? [],
+  });
+
   return (
-    <PlatformContextProvider>
+    <PlatformContextProvider agentClient={agentClient}>
       <FileUploadProvider allowedContentTypes={agent.defaultInputModes}>
-        <AgentRunProvider agent={agent}>{children}</AgentRunProvider>
+        <AgentRunProvider agent={agent} agentClient={agentClient}>
+          {children}
+        </AgentRunProvider>
       </FileUploadProvider>
     </PlatformContextProvider>
   );
 }
 
-function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
+interface AgentRunProviderProps extends Props {
+  agentClient?: AgentA2AClient;
+}
+
+function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<AgentRunProviderProps>) {
   const { contextId, getContextId, resetContext, getFullfilments } = usePlatformContext();
   const [messages, getMessages, setMessages] = useImmerWithGetter<UIMessage[]>([]);
   const [input, setInput] = useState<string>();
@@ -58,11 +69,6 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
   const pendingRun = useRef<ChatRun>(undefined);
 
   const errorHandler = useHandleError();
-
-  const { agentClient } = useBuildA2AClient({
-    providerId: agent.provider.id,
-    extensions: agent.capabilities.extensions ?? [],
-  });
 
   const { files, clearFiles } = useFileUpload();
 

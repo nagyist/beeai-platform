@@ -23,8 +23,9 @@ logger = logging.getLogger(__name__)
 
 
 ROLE_PERMISSIONS: dict[UserRole, Permissions] = {
-    UserRole.admin: Permissions.all(),
-    UserRole.user: Permissions(
+    UserRole.ADMIN: Permissions.all(),
+    UserRole.USER: Permissions(
+        system_configuration={"read"},
         files={"*"},
         vector_stores={"*"},
         llm={"*"},
@@ -32,14 +33,16 @@ ROLE_PERMISSIONS: dict[UserRole, Permissions] = {
         a2a_proxy={"*"},
         feedback={"write"},
         providers={"read"},
+        model_providers={"read"},
         contexts={"*"},
         mcp_providers={"read"},
         mcp_tools={"read"},
         mcp_proxy={"*"},
     ),
 }
-ROLE_PERMISSIONS[UserRole.developer] = ROLE_PERMISSIONS[UserRole.user] | Permissions(
+ROLE_PERMISSIONS[UserRole.DEVELOPER] = ROLE_PERMISSIONS[UserRole.USER] | Permissions(
     providers={"read", "write"},  # TODO provider ownership
+    provider_variables={"read", "write"},
     mcp_providers={"read", "write"},
 )
 
@@ -161,8 +164,8 @@ async def introspect_token(token: str, configuration: Configuration) -> tuple[di
 
 
 async def decode_oauth_jwt_or_introspect(
-    token: str, jwks_dict: JwksDict | None = None, aud: str | None = None, configuration=Configuration
-) -> tuple[dict, str] | None:
+    configuration: Configuration, token: str, jwks_dict: JwksDict | None = None, aud: str | None = None
+) -> tuple[dict | None, str | None]:
     if jwks_dict:
         for issuer, jwks in jwks_dict.data.items():
             # Decode JWT using keys from JWKS
@@ -183,7 +186,7 @@ async def decode_oauth_jwt_or_introspect(
                     return claims, issuer
                 except jwt.ExpiredSignatureError as err:
                     logger.error("Expired token: %s", err)
-                    return None
+                    return None, None
                 except jwt.InvalidTokenError as err:
                     logger.debug("Token verification failed: %s", err)
                     continue

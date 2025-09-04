@@ -122,6 +122,17 @@ class BaseDriver(abc.ABC):
         if any("auth.oidc.enabled=true" in value.lower() for value in set_values_list):
             await beeai_cli.commands.platform.istio.install(driver=self)
 
+        kubeconfig_path = anyio.Path(Configuration().lima_home) / self.vm_name / "copied-from-guest" / "kubeconfig.yaml"
+        await kubeconfig_path.parent.mkdir(parents=True, exist_ok=True)
+        await kubeconfig_path.write_text(
+            (
+                await self.run_in_vm(
+                    ["/bin/cat", "/etc/rancher/k3s/k3s.yaml"],
+                    "Copying kubeconfig from BeeAI platform",
+                )
+            ).stdout.decode()
+        )
+
         await self.run_in_vm(
             [
                 "helm",
@@ -145,17 +156,6 @@ class BaseDriver(abc.ABC):
                 ["k3s", "kubectl", "rollout", "restart", "deployment"],
                 "Restarting deployments to load imported images",
             )
-
-        kubeconfig_path = anyio.Path(Configuration().lima_home) / self.vm_name / "copied-from-guest" / "kubeconfig.yaml"
-        await kubeconfig_path.parent.mkdir(parents=True, exist_ok=True)
-        await kubeconfig_path.write_text(
-            (
-                await self.run_in_vm(
-                    ["/bin/cat", "/etc/rancher/k3s/k3s.yaml"],
-                    "Copying kubeconfig from BeeAI platform",
-                )
-            ).stdout.decode()
-        )
 
     async def version(self) -> str | None:
         if (await self.status()) != "running":
