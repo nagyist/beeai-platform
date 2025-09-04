@@ -71,7 +71,7 @@ async def show_version(verbose: typing.Annotated[bool, typer.Option("-v", help="
 
         if latest_cli_version and packaging.version.parse(latest_cli_version) > packaging.version.parse(cli_version):
             console.print(
-                f"💡 [yellow]HINT[/yellow]: A newer version ([bold]{latest_cli_version}[/bold]) is available. Update using: [green]uv tool upgrade beeai-cli[/green], then update the platform using [green]beeai platform start[/green]"
+                f"💡 [yellow]HINT[/yellow]: A newer version ([bold]{latest_cli_version}[/bold]) is available. Update using: [green]uv tool install --force beeai-cli[/green], then update the platform using [green]beeai platform start[/green]"
             )
         elif platform_version is None:
             console.print(

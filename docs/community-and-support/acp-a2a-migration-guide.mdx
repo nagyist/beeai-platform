@@ -1,14 +1,20 @@
-# BeeAI Platform: ACP to A2A Migration Guide
-
-Migrate from ACP (Agent Communication Protocol) to A2A (Agent2Agent) Protocol for BeeAI platform v0.3.x+.
+---
+title: ACP to A2A Migration Guide
+description: "Migrate from ACP (Agent Communication Protocol) to A2A (Agent2Agent) Protocol for BeeAI platform v0.3.x+."
+---
 
 ## Quick Migration Checklist
 
-✅ Update dependencies: `acp_sdk` → `beeai_sdk`<br>
-✅ Update imports and function signature<br>
-✅ Replace `Metadata` with `AgentDetail`<br>
-✅ Update message processing<br>
-✅ Update trajectory and citation handling<br>
+✅ Update dependencies: `acp_sdk` → `beeai_sdk`
+
+✅ Update imports and function signature
+
+✅ Replace `Metadata` with `AgentDetail`
+
+✅ Update message processing
+
+✅ Update trajectory and citation handling
+
 ✅ Use LLM service extension
 
 ## Step-by-Step Migration
@@ -21,7 +27,7 @@ Migrate from ACP (Agent Communication Protocol) to A2A (Agent2Agent) Protocol fo
 dependencies = ["acp-sdk>=1.0.0"]
 ```
 
-```
+```py
 from acp_sdk import Message, Metadata, Link, LinkType, Annotations
 from acp_sdk.models import MessagePart
 from acp_sdk.server import Context, Server
@@ -34,7 +40,7 @@ from acp_sdk.models.platform import PlatformUIAnnotation, PlatformUIType, AgentT
 dependencies = ["beeai-sdk>=0.3.0"]
 ```
 
-```
+```py
 from a2a.types import AgentSkill, Message
 from beeai_sdk.server import Server
 from beeai_sdk.server.context import RunContext
@@ -53,10 +59,7 @@ from beeai_sdk.util.file import load_file
 
 **Old (ACP)**
 
-<details>
-  <summary>Expand ACP Example</summary>
-
-```
+```py
 @server.agent(
     name="jennas_granite_chat",
     description="This is a general-purpose chat assistant prototype built with the BeeAI Framework and powered by Granite.",
@@ -80,14 +83,9 @@ from beeai_sdk.util.file import load_file
 async def agent_function(input: list[Message], context: Context) -> AsyncGenerator:
 ```
 
-</details>
-
 **New (A2A)**
 
-<details>
-  <summary>Expand A2A Example</summary>
-
-```
+```py
 @server.agent(
     name="Jenna's Granite Chat",
     default_input_modes=["text", "text/plain", "application/pdf", "text/csv", "application/json"],
@@ -146,8 +144,6 @@ async def agent_function(
     llm_ext: Annotated[LLMServiceExtensionServer, LLMServiceExtensionSpec.single_demand()],
 ):
 ```
-
-</details>
 
 ### 3. Update Message & File Processing
 
