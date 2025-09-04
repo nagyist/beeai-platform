@@ -12,6 +12,8 @@ import typing
 import anyio
 import pydantic
 import yaml
+from InquirerPy import inquirer
+from InquirerPy.base.control import Choice
 
 from beeai_cli.commands.platform.base_driver import BaseDriver
 from beeai_cli.configuration import Configuration
@@ -27,12 +29,14 @@ class WSLDriver(BaseDriver):
         message: str,
         env: dict[str, str] | None = None,
         input: bytes | None = None,
+        check: bool = True,
     ):
         return await run_command(
             ["wsl.exe", "--user", "root", "--distribution", self.vm_name, "--", *command],
             message,
             env={**(env or {}), "WSL_UTF8": "1", "WSLENV": os.getenv("WSLENV", "") + ":WSL_UTF8"},
             input=input,
+            check=check,
         )
 
     @typing.override
@@ -78,7 +82,28 @@ class WSLDriver(BaseDriver):
             if not config.has_section("wsl2"):
                 config.add_section("wsl2")
 
-            if config.get("wsl2", "networkingMode", fallback=None) != "mirrored":
+            if (
+                config.get("wsl2", "networkingMode", fallback=None) != "mirrored"
+                and await inquirer.select(  # type: ignore
+                    textwrap.dedent("""\
+                    The BeeAI platform needs to switch WSL to `mirrored` networking mode in order to support connecting to Windows applications -- like Ollama or self-registered agents. If you skip this step, these features won't be available.
+
+                    However, the default `nat` mode is required by some software, like Docker Desktop or Rancher Desktop, to function properly. If you use such software, you may want to keep the default `nat` mode.
+
+                    (It can be changed anytime later in C:/Users/<your name>/.wslconfig, followed by `wsl --shutdown` and `beeai platform start` to apply changes.)
+                    """),
+                    choices=[
+                        Choice(
+                            value=True,
+                            name="Change WSL2 networking mode to `mirrored`",
+                        ),
+                        Choice(
+                            value=False,
+                            name="Leave WSL2 networking mode as `nat`",
+                        ),
+                    ],
+                ).execute_async()
+            ):
                 config.set("wsl2", "networkingMode", "mirrored")
                 f.seek(0)
                 f.truncate(0)
@@ -90,6 +115,7 @@ class WSLDriver(BaseDriver):
                     )
                     sys.exit(1)
                 await run_command(["wsl.exe", "--shutdown"], "Updating WSL2 networking")
+
         Configuration().home.mkdir(exist_ok=True)
         if not await self.status():
             await run_command(
@@ -107,6 +133,7 @@ class WSLDriver(BaseDriver):
                 "echo '[network]\ngenerateResolvConf = false\n[boot]\nsystemd=true\n' >/etc/wsl.conf && rm /etc/resolv.conf && echo 'nameserver 1.1.1.1\n' >/etc/resolv.conf && chattr +i /etc/resolv.conf",
             ],
             "Setting up DNS configuration",
+            check=False,
         )
 
         await run_command(["wsl.exe", "--terminate", self.vm_name], "Restarting BeeAI VM")
