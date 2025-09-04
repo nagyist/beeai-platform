@@ -63,7 +63,7 @@ If you don't already have an API key for a provider, you can register for a free
 Run this command and follow the interactive prompts:
 
 ```bash
-beeai env setup
+beeai model setup
 ```
 
 <Tip>
@@ -122,11 +122,55 @@ After this, close the terminal and re-open it.
 </Step>
 <Step title="Install QEMU">
 
-Install QEMU according to the [official instructions](https://www.qemu.org/download/#linux).
+<Tabs>
+<Tab title="Debian/Ubuntu">
 
-<Note>
-Alternatively, BeeAI platform can run using `docker`. In that case, QEMU is not needed. Runtime will be automatically detected.
-</Note>
+```bash
+sudo apt-get install qemu-system
+```
+
+</Tab>
+<Tab title="Fedora">
+
+```bash
+sudo dnf install @virtualization
+```
+
+</Tab>
+<Tab title="Arch">
+
+```bash
+sudo pacman -S qemu
+```
+
+</Tab>
+<Tab title="openSUSE">
+
+```bash
+sudo zypper install qemu
+```
+
+</Tab>
+<Tab title="RHEL/CentOS">
+
+```bash
+sudo yum install qemu-kvm
+```
+
+</Tab>
+<Tab title="Gentoo">
+
+```bash
+sudo emerge --ask app-emulation/qemu
+```
+
+</Tab>
+<Tab title="Other">
+
+Please refer to your distribution's package manager or the [official QEMU download page](https://www.qemu.org/download/) for installation instructions.
+
+</Tab>
+</Tabs>
 
 </Step>
 <Step title="Install BeeAI">
@@ -152,7 +196,7 @@ If you don't already have an API key for a provider, you can register for a free
 Run this command and follow the interactive prompts:
 
 ```bash
-beeai env setup
+beeai model setup
 ```
 
 <Tip>
@@ -176,7 +220,7 @@ Starting up an agent for a first time may take a few minutes. If everything is s
 <Tab title="Windows">
 <Warning>
 
-BeeAI requires Windows 11 22H2 or later.
+Windows support is currently experimental. We recommend running BeeAI on Linux or macOS instead.
 
 </Warning>
 <Info>
@@ -185,6 +229,11 @@ These steps guide you through installing BeeAI in PowerShell. If you wish, you m
 
 </Info>
 <Steps>
+<Step title="Update Windows">
+
+Ensure that you are using **Windows 11 22H2** or newer.
+
+</Step>
 <Step title="Install uv">
 
 If you don't have `uv` installed, install it using one of the supported ways.
@@ -252,7 +301,7 @@ If you don't already have an API key for a provider, you can register for a free
 Run this command and follow the interactive prompts:
 
 ```bash
-beeai env setup
+beeai model setup
 ```
 
 <Tip>
@@ -281,8 +330,12 @@ Starting up an agent for a first time may take a few minutes. If everything is s
 <Step title="Upgrade BeeAI">
 
 ```bash
-uv tool upgrade beeai-cli
+uv tool install --force beeai-cli
 ```
+
+<Tip>
+We recommend this command over `uv tool upgrade beeai-cli` to ensure that you always get the latest version. `uv tool upgrade` respects the original version constraint -- e.g. if you installed with `uv tool install beeai-cli==0.3.2`, `uv tool upgrade beeai-cli` will never upgrade to `0.3.3` or later.
+</Tip>
 
 </Step>
 <Step title="Restart the BeeAI platform">
