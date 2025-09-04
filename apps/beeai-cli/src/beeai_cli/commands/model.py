@@ -269,13 +269,7 @@ async def _add_provider(capability: ModelCapability, use_true_localhost: bool = 
                     ).execute_async()
                 ):
                     await run_command(
-                        [
-                            _ollama_exe(),
-                            "pull",
-                            recommended_embedding_model.removeprefix(f"{ModelProviderType.OLLAMA}:"),
-                        ],
-                        "Pulling the selected model",
-                        check=True,
+                        [_ollama_exe(), "pull", recommended_embedding_model], "Pulling the selected model", check=True
                     )
 
         if not use_true_localhost:
