@@ -149,7 +149,7 @@ async def authorized_user(
             )
 
     if configuration.auth.disable_auth:
-        user = await user_service.get_user_by_email("user@beeai.dev")
+        user = await user_service.get_user_by_email("admin@beeai.dev")
         return AuthorizedUser(
             user=user,
             global_permissions=ROLE_PERMISSIONS[user.role],
