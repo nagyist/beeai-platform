@@ -24,7 +24,7 @@ elif command -v qemu-system-$(uname -m) >/dev/null 2>&1; then
     echo "QEMU is already installed."
 else
     echo "Installing QEMU..."
-    test $UID = 0 || echo "‼️ You may be prompted for your password to install QEMU using your package manager."
+    test ${UID:-} = 0 || echo "‼️ You may be prompted for your password to install QEMU using your package manager."
     QEMU_INSTALL_RV=""
     for cmd in \
         "apt-get install -y -qq qemu-system" \
@@ -40,7 +40,7 @@ else
             break
         fi
     done
-    if test -z "$QEMU_INSTALL_RV" || test $QEMU_INSTALL_RV -ne 0; then
+    if test -z "$QEMU_INSTALL_RV" || test "$QEMU_INSTALL_RV" -ne 0; then
         echo "⚠️ Failed to install QEMU automatically. Please install QEMU manually before using BeeAI. Refer to https://www.qemu.org/download/ for instructions."
     fi
 fi
