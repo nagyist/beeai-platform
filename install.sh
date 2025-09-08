@@ -43,7 +43,7 @@ else
 fi
 
 echo "🚀 Installation complete!"
-if command -v beeai; then
+if command -v beeai >/dev/null 2>&1; then
     echo "💡 You can now use the \`beeai\` command."
 else
     echo "💡 Open a new terminal window in order to use the \`beeai\` command."
