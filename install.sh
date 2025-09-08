@@ -24,46 +24,30 @@ elif command -v qemu-system-$(uname -m) >/dev/null 2>&1; then
     echo "QEMU is already installed."
 else
     echo "Installing QEMU..."
-    echo "‼️ You will be prompted for your password to install QEMU using your package manager."
-    INSTALL_QEMU_CMD=""
-
-    for pm in "apt-get" "dnf" "pacman" "zypper" "yum" "emerge"; do
-        if command -v "$pm" >/dev/null 2>&1; then
-            case "$pm" in
-                "apt-get")
-                    INSTALL_QEMU_CMD="sudo apt-get install -y -qq qemu-system"
-                    ;;
-                "dnf")
-                    INSTALL_QEMU_CMD="sudo dnf install -y -q @virtualization"
-                    ;;
-                "pacman")
-                    INSTALL_QEMU_CMD="sudo pacman -S --noconfirm --noprogressbar qemu"
-                    ;;
-                "zypper")
-                    INSTALL_QEMU_CMD="sudo zypper install -y -qq qemu"
-                    ;;
-                "yum")
-                    INSTALL_QEMU_CMD="sudo yum install -y -q qemu-kvm"
-                    ;;
-                "emerge")
-                    INSTALL_QEMU_CMD="sudo emerge --quiet app-emulation/qemu"
-                    ;;
-            esac
+    test $UID = 0 || echo "‼️ You may be prompted for your password to install QEMU using your package manager."
+    QEMU_INSTALL_RV=""
+    for cmd in \
+        "apt-get install -y -qq qemu-system" \
+        "dnf install -y -q @virtualization" \
+        "pacman -S --noconfirm --noprogressbar qemu" \
+        "zypper install -y -qq qemu" \
+        "yum install -y -q qemu-kvm" \
+        "emerge --quiet app-emulation/qemu"
+    do
+        if command -v "${cmd%% *}" >/dev/null 2>&1; then
+            sudo $cmd
+            QEMU_INSTALL_RV=$?
             break
         fi
     done
-
-    if [ -n "$INSTALL_QEMU_CMD" ]; then
-        eval "$INSTALL_QEMU_CMD"
-        if [ $? -ne 0 ]; then
-            echo "Error: Failed to install QEMU using $pm."
-            exit 1
-        fi
-    else
-        echo "Error: No supported package manager found (apt-get, dnf, pacman, zypper, yum, emerge)."
-        echo "Please install QEMU manually or refer to https://www.qemu.org/download/ for instructions."
+    if test -z "$QEMU_INSTALL_RV" || test $QEMU_INSTALL_RV -ne 0; then
+        echo "⚠️ Failed to install QEMU automatically. Please install QEMU manually before using BeeAI. Refer to https://www.qemu.org/download/ for instructions."
     fi
 fi
 
 echo "🚀 Installation complete!"
-echo "💡 Open a new terminal window in order to use the 'beeai' command."
+if command -v beeai; then
+    echo "💡 You can now use the \`beeai\` command."
+else
+    echo "💡 Open a new terminal window in order to use the \`beeai\` command."
+fi
