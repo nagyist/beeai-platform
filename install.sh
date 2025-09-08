@@ -24,7 +24,7 @@ elif command -v qemu-system-$(uname -m) >/dev/null 2>&1; then
     echo "QEMU is already installed."
 else
     echo "Installing QEMU..."
-    test ${UID:-} = 0 || echo "‼️ You may be prompted for your password to install QEMU using your package manager."
+    echo "‼️ You may be prompted for your password to install QEMU using your package manager."
     QEMU_INSTALL_RV=""
     for cmd in \
         "apt-get install -y -qq qemu-system" \
