@@ -29,7 +29,8 @@
               "build-agents/agent-details",
               "build-agents/messages",
               "build-agents/files",
-              "build-agents/gui-components"
+              "build-agents/gui-components",
+              "build-agents/forms"
             ]
           }
         ]
