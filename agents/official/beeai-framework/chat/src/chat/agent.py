@@ -29,6 +29,7 @@ from beeai_framework.tools.search.wikipedia import WikipediaTool
 from beeai_framework.tools.weather import OpenMeteoTool
 from beeai_sdk.a2a.extensions import (
     AgentDetail,
+    AgentDetailContributor,
     AgentDetailTool,
     CitationExtensionServer,
     CitationExtensionSpec,
@@ -122,6 +123,10 @@ server = Server()
             ),
         ],
         framework="BeeAI",
+        programming_language="Python",
+        author=AgentDetailContributor(name="BeeAI contributors"),
+        contributors=[],
+        license="Apache 2.0",
     ),
     skills=[
         AgentSkill(
@@ -168,7 +173,7 @@ async def chat(
     context: RunContext,
     trajectory: Annotated[TrajectoryExtensionServer, TrajectoryExtensionSpec()],
     citation: Annotated[CitationExtensionServer, CitationExtensionSpec()],
-    llm_ext: Annotated[LLMServiceExtensionServer, LLMServiceExtensionSpec.single_demand()],
+    llm_ext: Annotated[LLMServiceExtensionServer, LLMServiceExtensionSpec.single_demand(suggested=("openai/gpt-5", "ollama/granite3.3:8b"))],
     _: Annotated[PlatformApiExtensionServer, PlatformApiExtensionSpec()],
 ):
     """
