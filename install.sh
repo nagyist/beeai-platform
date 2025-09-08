@@ -10,12 +10,9 @@ else
     curl -LsSf https://astral.sh/uv/install.sh | UV_PRINT_QUIET=1 sh
 fi
 
-# Add uv installation paths to PATH
-export PATH="${XDG_BIN_HOME:+${XDG_BIN_HOME}:}${XDG_DATA_HOME:+$(realpath -m ${XDG_DATA_HOME}/../bin):}${HOME:+${HOME}/.local/bin:}$PATH"
-
 # Install beeai-cli
 echo "Installing beeai-cli..."
-uv tool install --quiet --force beeai-cli
+PATH="${XDG_BIN_HOME:+${XDG_BIN_HOME}:}${XDG_DATA_HOME:+$(realpath -m ${XDG_DATA_HOME}/../bin):}${HOME:+${HOME}/.local/bin:}$PATH" uv tool install --quiet --force beeai-cli
 
 # Install QEMU (Linux only)
 if test "$(uname)" = "Darwin"; then
@@ -27,7 +24,7 @@ else
     echo "‼️ You may be prompted for your password to install QEMU using your package manager."
     QEMU_INSTALL_RV=""
     for cmd in \
-        "apt-get install -y -qq qemu-system" \
+        "apt install -y -qq qemu-system" \
         "dnf install -y -q @virtualization" \
         "pacman -S --noconfirm --noprogressbar qemu" \
         "zypper install -y -qq qemu" \
