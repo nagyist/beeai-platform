@@ -91,12 +91,12 @@
       "discord": "https://discord.gg/AZFrp3UF5k",
       "bluesky": "https://bsky.app/profile/beeaiagents.bsky.social",
       "youtube": "https://www.youtube.com/@BeeAIAgents"
-    },
-    "redirects": [
-      {
-        "source": "/introduction/installation",
-        "destination": "/introduction/quickstart"
-      }
-    ]
-  }
+    }
+  },
+  "redirects": [
+    {
+      "source": "/introduction/installation",
+      "destination": "/introduction/quickstart"
+    }
+  ]
 }
