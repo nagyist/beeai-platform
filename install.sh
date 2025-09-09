@@ -23,7 +23,7 @@ elif command -v qemu-system-$(uname -m) >/dev/null 2>&1; then
     echo "QEMU is already installed."
 else
     echo "Installing QEMU..."
-    echo "‼️ You may be prompted for your password to install QEMU using your package manager."
+    echo "‼️  You may be prompted for your password to install QEMU using your package manager."
     QEMU_INSTALL_RV=""
     for cmd in \
         "apt install -y -qq qemu-system" \
@@ -35,7 +35,7 @@ else
     do
         if command -v "${cmd%% *}" >/dev/null 2>&1; then
             if ! sudo $cmd; then
-                echo "⚠️ Failed to install QEMU automatically. Please install QEMU manually before using BeeAI. Refer to https://www.qemu.org/download/ for instructions."
+                echo "⚠️  Failed to install QEMU automatically. Please install QEMU manually before using BeeAI. Refer to https://www.qemu.org/download/ for instructions."
             fi
             break
         fi
@@ -44,14 +44,17 @@ fi
 
 echo ""
 printf "Do you want to start the BeeAI platform now? Will run: \033[0;32mbeeai platform start\033[0m (Y/n) "
-read -r answer </dev/tty
+read -r answer
 if [ "$answer" != "${answer#[Yy]}" ] || [ -z "$answer" ]; then
-    PATH="$new_path" beeai platform start
-    echo ""
-    printf "Do you want to configure your LLM provider now? Will run: \033[0;32mbeeai model setup\033[0m (Y/n) "
-    read -r answer </dev/tty
-    if [ "$answer" != "${answer#[Yy]}" ] || [ -z "$answer" ]; then
-        PATH="$new_path" beeai model setup
+    if PATH="$new_path" beeai platform start; then
+        echo ""
+        printf "Do you want to configure your LLM provider now? Will run: \033[0;32mbeeai model setup\033[0m (Y/n) "
+        read -r answer
+        if [ "$answer" != "${answer#[Yy]}" ] || [ -z "$answer" ]; then
+            if ! PATH="$new_path" beeai model setup; then printf "⚠️ Model setup failed. You can retry with \033[0;32mbeeai model setup\033[0m.\n"; fi
+        fi
+    else
+        printf "⚠️  Platform start failed. You can retry with \033[0;32mbeeai platform start\033[0m."
     fi
 fi
 
