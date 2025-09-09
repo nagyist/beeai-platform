@@ -47,7 +47,10 @@ def get_driver(vm_name: str = "beeai-platform") -> BaseDriver:
         elif platform.system() == "Linux":
             if not has_lima:
                 console.print(
-                    "💡 [yellow]HINT[/yellow]: This Linux distribution is not suppored by Lima VM binary releases. Manually install Lima VM through your distribution's package manager, or build it yourself, and ensure that limactl is in PATH."
+                    "💡 [yellow]HINT[/yellow]: This Linux distribution is not suppored by Lima VM binary releases (required: glibc>=2.34). Manually install Lima VM >=1.2.1 through either:\n"
+                    + "  - Your distribution's package manager, if available (https://repology.org/project/lima/versions)\n"
+                    + "  - Homebrew, which uses its own separate glibc on Linux (https://brew.sh)\n"
+                    + "  - Building it yourself, and ensuring that limactl is in PATH (https://lima-vm.io/docs/installation/source/)"
                 )
             if not has_qemu:
                 console.print(
