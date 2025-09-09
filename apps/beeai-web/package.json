@@ -2,6 +2,7 @@
   "name": "@i-am-bee/beeai-web",
   "version": "0.3.3",
   "private": true,
+  "type": "module",
   "peerDependencies": {
     "@bprogress/next": "*",
     "@carbon/icons-react": "*",
