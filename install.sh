@@ -44,12 +44,12 @@ fi
 
 echo ""
 printf "Do you want to start the BeeAI platform now? Will run: \033[0;32mbeeai platform start\033[0m (Y/n) "
-read -r answer
+read -r answer </dev/tty
 if [ "$answer" != "${answer#[Yy]}" ] || [ -z "$answer" ]; then
     PATH="$new_path" beeai platform start
     echo ""
     printf "Do you want to configure your LLM provider now? Will run: \033[0;32mbeeai model setup\033[0m (Y/n) "
-    read -r answer
+    read -r answer </dev/tty
     if [ "$answer" != "${answer#[Yy]}" ] || [ -z "$answer" ]; then
         PATH="$new_path" beeai model setup
     fi
