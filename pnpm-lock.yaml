@@ -15,6 +15,9 @@ catalogs:
     '@svgr/webpack':
       specifier: ^8.1.0
       version: 8.1.0
+    '@types/lodash':
+      specifier: ^4.17.20
+      version: 4.17.20
     eslint:
       specifier: ^9.23.0
       version: 9.35.0
@@ -30,9 +33,9 @@ catalogs:
     eslint-plugin-simple-import-sort:
       specifier: ^12.1.1
       version: 12.1.1
-    globals:
-      specifier: ^16.0.0
-      version: 16.3.0
+    lodash:
+      specifier: ^4.17.21
+      version: 4.17.21
     prettier:
       specifier: ^3.5.3
       version: 3.6.2
@@ -138,7 +141,7 @@ importers:
         specifier: ^1.7.5
         version: 1.10.0
       lodash:
-        specifier: ^4.17.21
+        specifier: 'catalog:'
         version: 4.17.21
       lottie-react:
         specifier: ^2.4.1
@@ -244,7 +247,7 @@ importers:
         specifier: ^3.27.4
         version: 3.27.4
       '@types/lodash':
-        specifier: ^4.17.16
+        specifier: 'catalog:'
         version: 4.17.20
       '@types/mdast':
         specifier: ^4.0.4
@@ -336,9 +339,15 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      estree-util-value-to-estree:
+        specifier: ^3.4.0
+        version: 3.4.0
       framer-motion:
         specifier: '*'
         version: 12.23.12(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      lodash:
+        specifier: 'catalog:'
+        version: 4.17.21
       lottie-react:
         specifier: '*'
         version: 2.4.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -360,12 +369,21 @@ importers:
       reading-time:
         specifier: ^1.5.0
         version: 1.5.0
+      rehype-slug:
+        specifier: ^6.0.0
+        version: 6.0.0
+      remark-flexible-toc:
+        specifier: ^1.2.0
+        version: 1.2.0(unified@11.0.5)
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
       usehooks-ts:
         specifier: ^3.1.0
         version: 3.1.1(react@19.1.1)
+      vfile:
+        specifier: ^6.0.3
+        version: 6.0.3
       yaml:
         specifier: ^2.7.1
         version: 2.8.1
@@ -388,6 +406,12 @@ importers:
       '@svgr/webpack':
         specifier: 'catalog:'
         version: 8.1.0(typescript@5.8.2)
+      '@types/estree':
+        specifier: ^1.0.8
+        version: 1.0.8
+      '@types/lodash':
+        specifier: 'catalog:'
+        version: 4.17.20
       '@types/mdx':
         specifier: ^2.0.13
         version: 2.0.13
@@ -4286,6 +4310,9 @@ packages:
     resolution: {integrity: sha512-b1O07XYq8eRuVzBNgJLstU6FYc1tS6wnMtF1I1D9lE8LxZSOGZ7LhxN54yPP6mGw5f2CkXY2BQUL9Fx41qvcIg==}
     engines: {node: '>= 14'}
 
+  github-slugger@2.0.0:
+    resolution: {integrity: sha512-IaOQ9puYtjrkq7Y0Ygl9KDZnrf/aiUJYUpVf89y8kyaxbRG7Y1SrX/jaumrv81vc61+kiMempujsM3Yw7w5qcw==}
+
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
     engines: {node: '>= 6'}
@@ -4391,6 +4418,9 @@ packages:
 
   hast-util-has-property@3.0.0:
     resolution: {integrity: sha512-MNilsvEKLFpV604hwfhVStK0usFY/QmM5zX16bo7EjnAEGofr5YyI37kzopBlZJkHD4t887i+q/C8/tr5Q94cA==}
+
+  hast-util-heading-rank@3.0.0:
+    resolution: {integrity: sha512-EJKb8oMUXVHcWZTDepnr+WNbfnXKFNf9duMesmr4S8SXTJBJ9M4Yok08pu9vxdJwdlGRhVumk9mEhkEvKGifwA==}
 
   hast-util-is-body-ok-link@3.0.1:
     resolution: {integrity: sha512-0qpnzOBLztXHbHQenVB8uNuxTnm/QBFUOmdOSsEn7GnBtyY07+ENTWVFBAnXd/zEgd9/SUG3lRY7hSIBWRgGpQ==}
@@ -5917,6 +5947,14 @@ packages:
   rehype-recma@1.0.0:
     resolution: {integrity: sha512-lqA4rGUf1JmacCNWWZx0Wv1dHqMwxzsDWYMTowuplHF3xH0N/MmrZ/G3BDZnzAkRmxDadujCjaKM2hqYdCBOGw==}
 
+  rehype-slug@6.0.0:
+    resolution: {integrity: sha512-lWyvf/jwu+oS5+hL5eClVd3hNdmwM1kAC0BUvEGD19pajQMIzcNUd/k9GsfQ+FfECvX+JE+e9/btsKH0EjJT6A==}
+
+  remark-flexible-toc@1.2.0:
+    resolution: {integrity: sha512-EqUIcYL5GRLzzrdXnwaGdvFqSxbQ9l08d+QQE6Jw4vCuKwADMzM0t9qXb32p0G28X57lZryBAgSPDBnEDePcOg==}
+    peerDependencies:
+      unified: ^11
+
   remark-frontmatter@5.0.0:
     resolution: {integrity: sha512-XTFYvNASMe5iPN0719nPrdItC9aU0ssC4v14mH1BCi1u0n1gAocqcujWUrByftZTbLhRtiKRyjYTSIOcr69UVQ==}
 
@@ -7019,7 +7057,7 @@ snapshots:
       '@babel/types': 7.28.4
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -7071,7 +7109,7 @@ snapshots:
       '@babel/core': 7.28.4
       '@babel/helper-compilation-targets': 7.27.2
       '@babel/helper-plugin-utils': 7.27.1
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       lodash.debounce: 4.0.8
       resolve: 1.22.10
     transitivePeerDependencies:
@@ -7721,7 +7759,7 @@ snapshots:
       '@babel/parser': 7.28.4
       '@babel/template': 7.27.2
       '@babel/types': 7.28.4
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -7889,7 +7927,7 @@ snapshots:
   '@eslint/config-array@0.21.0':
     dependencies:
       '@eslint/object-schema': 2.1.6
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -7903,7 +7941,7 @@ snapshots:
   '@eslint/eslintrc@3.3.1':
     dependencies:
       ajv: 6.12.6
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       espree: 10.4.0
       globals: 14.0.0
       ignore: 5.3.2
@@ -10269,7 +10307,7 @@ snapshots:
       '@typescript-eslint/types': 8.42.0
       '@typescript-eslint/typescript-estree': 8.42.0(typescript@5.8.2)
       '@typescript-eslint/visitor-keys': 8.42.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       eslint: 9.35.0(jiti@1.21.7)
       typescript: 5.8.2
     transitivePeerDependencies:
@@ -10279,7 +10317,7 @@ snapshots:
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.42.0(typescript@5.8.2)
       '@typescript-eslint/types': 8.42.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       typescript: 5.8.2
     transitivePeerDependencies:
       - supports-color
@@ -10298,7 +10336,7 @@ snapshots:
       '@typescript-eslint/types': 8.42.0
       '@typescript-eslint/typescript-estree': 8.42.0(typescript@5.8.2)
       '@typescript-eslint/utils': 8.42.0(eslint@9.35.0(jiti@1.21.7))(typescript@5.8.2)
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       eslint: 9.35.0(jiti@1.21.7)
       ts-api-utils: 2.1.0(typescript@5.8.2)
       typescript: 5.8.2
@@ -10313,7 +10351,7 @@ snapshots:
       '@typescript-eslint/tsconfig-utils': 8.42.0(typescript@5.8.2)
       '@typescript-eslint/types': 8.42.0
       '@typescript-eslint/visitor-keys': 8.42.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       fast-glob: 3.3.3
       is-glob: 4.0.3
       minimatch: 9.0.5
@@ -11023,6 +11061,10 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
+  debug@4.4.1:
+    dependencies:
+      ms: 2.1.3
+
   debug@4.4.1(supports-color@10.2.0):
     dependencies:
       ms: 2.1.3
@@ -11382,7 +11424,7 @@ snapshots:
   eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.35.0(jiti@1.21.7)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       eslint: 9.35.0(jiti@1.21.7)
       get-tsconfig: 4.10.1
       is-bun-module: 2.0.0
@@ -11510,7 +11552,7 @@ snapshots:
       ajv: 6.12.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       escape-string-regexp: 4.0.0
       eslint-scope: 8.4.0
       eslint-visitor-keys: 4.2.1
@@ -11869,6 +11911,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  github-slugger@2.0.0: {}
+
   glob-parent@5.1.2:
     dependencies:
       is-glob: 4.0.3
@@ -12018,6 +12062,10 @@ snapshots:
       web-namespaces: 2.0.1
 
   hast-util-has-property@3.0.0:
+    dependencies:
+      '@types/hast': 3.0.4
+
+  hast-util-heading-rank@3.0.0:
     dependencies:
       '@types/hast': 3.0.4
 
@@ -13139,7 +13187,7 @@ snapshots:
   micromark@4.0.2:
     dependencies:
       '@types/debug': 4.1.12
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       decode-named-character-reference: 1.2.0
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.3
@@ -14012,6 +14060,22 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  rehype-slug@6.0.0:
+    dependencies:
+      '@types/hast': 3.0.4
+      github-slugger: 2.0.0
+      hast-util-heading-rank: 3.0.0
+      hast-util-to-string: 3.0.1
+      unist-util-visit: 5.0.0
+
+  remark-flexible-toc@1.2.0(unified@11.0.5):
+    dependencies:
+      '@types/mdast': 4.0.4
+      github-slugger: 2.0.0
+      mdast-util-to-string: 4.0.0
+      unified: 11.0.5
+      unist-util-visit: 5.0.0
+
   remark-frontmatter@5.0.0:
     dependencies:
       '@types/mdast': 4.0.4
@@ -14733,7 +14797,7 @@ snapshots:
       cosmiconfig: 9.0.0(typescript@5.8.2)
       css-functions-list: 3.2.3
       css-tree: 3.1.0
-      debug: 4.4.1(supports-color@10.2.0)
+      debug: 4.4.1
       fast-glob: 3.3.3
       fastest-levenshtein: 1.0.16
       file-entry-cache: 10.1.4
