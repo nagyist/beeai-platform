@@ -718,9 +718,9 @@ async def run_agent(
             interaction_mode not in {InteractionMode.MULTI_TURN, InteractionMode.SINGLE_TURN}
             and not is_sequential_workflow
         ):
-            err_console.print(
-                f"💥 [red][b]Error[/red][/b]: Agent {agent.name} does not use any supported UIs.\n"
-                f"Please use the agent according to the following examples and schema:"
+            err_console.error(
+                f"Agent {agent.name} does not use any supported UIs.\n"
+                + "Please use the agent according to the following examples and schema:"
             )
             err_console.print(_render_examples(agent))
             exit(1)

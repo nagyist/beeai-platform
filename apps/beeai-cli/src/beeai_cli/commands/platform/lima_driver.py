@@ -30,7 +30,7 @@ class LimaDriver(BaseDriver):
             self.limactl_exe = str(bundled_limactl_exe)
         else:
             self.limactl_exe = str(shutil.which("limactl"))
-            console.print(f"[yellow]Warning: Using external Lima from {self.limactl_exe}[/yellow]")
+            console.warning(f"Using external Lima from {self.limactl_exe}")
 
     @typing.override
     async def run_in_vm(
@@ -127,7 +127,7 @@ class LimaDriver(BaseDriver):
                 cwd="/",
             )
         else:
-            console.print("Updating an existing instance.")
+            console.info("Updating an existing instance.")
 
     @typing.override
     async def stop(self):
