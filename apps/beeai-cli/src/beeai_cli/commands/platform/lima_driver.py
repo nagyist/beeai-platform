@@ -110,6 +110,15 @@ class LimaDriver(BaseDriver):
                                     "arch": "aarch64",
                                 },
                             ],
+                            "portForwards": [
+                                {
+                                    "guestIP": "127.0.0.1",
+                                    "guestPortRange": [1024, 65535],
+                                    "hostPortRange": [1024, 65535],
+                                    "hostIP": "127.0.0.1",
+                                },
+                                {"guestIP": "0.0.0.0", "proto": "any", "ignore": True},
+                            ],
                             "mounts": [{"location": "/tmp/beeai", "mountPoint": "/tmp/beeai", "writable": True}],
                             "containerd": {"system": False, "user": False},
                             "hostResolver": {"hosts": {"host.docker.internal": "host.lima.internal"}},
