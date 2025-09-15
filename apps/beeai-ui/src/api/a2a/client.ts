@@ -21,6 +21,7 @@ import { oauthProviderExtension } from './extensions/services/oauth-provider';
 import { activePlatformExtension } from './extensions/services/platform';
 import { formExtension, formMessageExtension } from './extensions/ui/form';
 import { oauthRequestExtension } from './extensions/ui/oauth';
+import { settingsExtension } from './extensions/ui/settings';
 import {
   extractServiceExtensionDemands,
   extractUiExtensionData,
@@ -42,6 +43,7 @@ const embeddingExtensionExtractor = extractServiceExtensionDemands(embeddingExte
 const fulfillLlmDemand = fulfillServiceExtensionDemand(llmExtension);
 const fulfillEmbeddingDemand = fulfillServiceExtensionDemand(embeddingExtension);
 const extractForm = extractUiExtensionData(formMessageExtension);
+const settingsExtensionExtractor = extractServiceExtensionDemands(settingsExtension);
 
 const oauthRequestExtensionExtractor = extractUiExtensionData(oauthRequestExtension);
 
@@ -91,12 +93,13 @@ export const buildA2AClient = async <UIGenericPart = never>({
   const mcpDemands = mcpExtensionExtractor(extensions);
   const llmDemands = llmExtensionExtractor(extensions);
   const oauthDemands = oauthExtensionExtractor(extensions);
+  const settingsDemands = settingsExtensionExtractor(extensions);
   const embeddingDemands = embeddingExtensionExtractor(extensions);
 
   const agentCardUrl = `${getBaseUrl()}/api/v1/a2a/${providerId}/.well-known/agent-card.json`;
   const client = await A2AClient.fromCardUrl(agentCardUrl);
 
-  const chat = ({ message, contextId, fulfillments, taskId: initialTaskId }: ChatParams) => {
+  const chat = ({ message, contextId, fulfillments, taskId: initialTaskId, settings }: ChatParams) => {
     const messageSubject = new Subject<ChatResult<UIGenericPart>>();
 
     let taskId: undefined | TaskId = initialTaskId;
@@ -124,6 +127,15 @@ export const buildA2AClient = async <UIGenericPart = never>({
         if (mcpOAuthFullfilment !== null) {
           metadata = fulfillOauthDemand(metadata, mcpOAuthFullfilment);
         }
+      }
+
+      if (settingsDemands) {
+        metadata = {
+          ...metadata,
+          [settingsExtension.getUri()]: {
+            values: settings,
+          },
+        };
       }
 
       if (embeddingDemands) {
@@ -248,5 +260,6 @@ export const buildA2AClient = async <UIGenericPart = never>({
     llmDemands: llmDemands?.llm_demands,
     embeddingDemands: embeddingDemands?.embedding_demands,
     mcpDemands: mcpDemands?.mcp_demands,
+    settingsDemands,
   };
 };
