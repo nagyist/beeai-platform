@@ -59,7 +59,6 @@ class SqlAlchemyContextRepository(IContextRepository):
     async def list(
         self, user_id: UUID | None = None, last_active_before: datetime | None = None
     ) -> AsyncIterator[Context]:
-        yield ...  # type: ignore
         query = select(contexts_table)
         if user_id is not None:
             query = query.where(contexts_table.c.created_by == user_id)
