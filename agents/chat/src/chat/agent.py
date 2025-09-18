@@ -181,8 +181,7 @@ async def chat(
     _: Annotated[PlatformApiExtensionServer, PlatformApiExtensionSpec()],
 ):
     """
-    The agent is an AI-powered conversational system with memory, supporting real-time search, Wikipedia lookups,
-    and weather updates through integrated tools.
+    Agent with memory and access to web search, Wikipedia, and weather.
     """
     history = [
         message

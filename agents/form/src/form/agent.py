@@ -103,7 +103,7 @@ async def agent(
         form_extension_spec,
     ],
 ):
-    """Request form data"""
+    """Example demonstrating a single-turn agent using a form to collect user input."""
 
     form_data = form.parse_form_response(message=input)
 

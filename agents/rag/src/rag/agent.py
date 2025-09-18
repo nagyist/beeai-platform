@@ -123,6 +123,7 @@ async def rag(
     llm_ext: Annotated[LLMServiceExtensionServer, LLMServiceExtensionSpec.single_demand()],
     _: Annotated[PlatformApiExtensionServer, PlatformApiExtensionSpec()],
 ):
+    """RAG agent that retrieves and generates text based on user queries."""
     llm, embedding = _get_clients(llm_ext, embedding_ext)
 
     history = [m async for m in context.store.load_history()]
