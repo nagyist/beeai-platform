@@ -14,6 +14,7 @@ from beeai_sdk.platform import PlatformClient, use_platform_client
 from pydantic import HttpUrl, SecretStr
 
 from beeai_cli.auth_config_manager import AuthConfigManager
+from beeai_cli.utils import get_verify_option, make_safe_name, normalize_url
 
 
 @functools.cache
@@ -27,7 +28,8 @@ class Configuration(pydantic_settings.BaseSettings):
     model_config = pydantic_settings.SettingsConfigDict(
         env_file=None, env_prefix="BEEAI__", env_nested_delimiter="__", extra="allow"
     )
-    host: pydantic.AnyUrl = HttpUrl("http://localhost:8333")
+    default_host: pydantic.AnyUrl = HttpUrl("http://localhost:8333")
+    default_external_host: pydantic.AnyUrl = HttpUrl("https://agents.res.ibm.com")
     ui_url: pydantic.AnyUrl = HttpUrl("http://localhost:8334")
     debug: bool = False
     home: pathlib.Path = pathlib.Path.home() / ".beeai"
@@ -57,6 +59,13 @@ class Configuration(pydantic_settings.BaseSettings):
         return path
 
     @property
+    def ca_cert_dir(self) -> pathlib.Path:
+        """Return ca certs directory path"""
+        path = self.home / "cacerts"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
     def auth_manager(self) -> AuthConfigManager:
         return AuthConfigManager(self.auth_config_file)
 
@@ -65,5 +74,13 @@ class Configuration(pydantic_settings.BaseSettings):
         auth = ("admin", self.admin_password.get_secret_value()) if self.admin_password else None
         token = self.auth_manager.load_auth_token()
         auth_token = token.get_secret_value() if token else None
-        async with use_platform_client(auth=auth, auth_token=auth_token, base_url=str(self.host)) as client:
+        active_resource = self.auth_manager.get_active_resource()
+        base_url = normalize_url(active_resource) if active_resource else str(self.default_host)
+
+        verify_option = await get_verify_option(base_url, self.ca_cert_dir / f"{make_safe_name(base_url)}_ca.crt")
+        verify_args = {}
+        if verify_option:
+            verify_args["verify"] = verify_option
+
+        async with use_platform_client(auth=auth, auth_token=auth_token, base_url=base_url, **verify_args) as client:
             yield client
