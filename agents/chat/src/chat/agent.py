@@ -180,9 +180,7 @@ async def chat(
     ],
     _: Annotated[PlatformApiExtensionServer, PlatformApiExtensionSpec()],
 ):
-    """
-    Agent with memory and access to web search, Wikipedia, and weather.
-    """
+    """Agent with memory and access to web search, Wikipedia, and weather."""
     history = [
         message
         async for message in context.store.load_history()
