@@ -29,7 +29,6 @@ class Configuration(pydantic_settings.BaseSettings):
     )
     host: pydantic.AnyUrl = HttpUrl("http://localhost:8333")
     ui_url: pydantic.AnyUrl = HttpUrl("http://localhost:8334")
-    playground: str = "playground"
     debug: bool = False
     home: pathlib.Path = pathlib.Path.home() / ".beeai"
     agent_registry: pydantic.AnyUrl = HttpUrl(

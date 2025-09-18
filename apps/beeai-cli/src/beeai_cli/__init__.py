@@ -46,25 +46,15 @@ async def version(verbose: typing.Annotated[bool, typer.Option("-v", help="Show 
     await beeai_cli.commands.self.version(verbose=verbose)
 
 
-async def _launch_graphical_interface(host_url: str):
+@app.command("ui")
+async def ui():
+    """Launch the graphical interface."""
     import webbrowser
 
     import beeai_cli.commands.model
 
     await beeai_cli.commands.model.ensure_llm_provider()
-    webbrowser.open(host_url)
-
-
-@app.command("ui")
-async def ui():
-    """Launch the graphical interface."""
-    await _launch_graphical_interface(str(Configuration().ui_url))
-
-
-@app.command("playground")
-async def playground() -> None:
-    """Launch the graphical interface for the compose playground."""
-    await _launch_graphical_interface(str(Configuration().ui_url) + Configuration().playground)
+    webbrowser.open(str(Configuration().ui_url))
 
 
 if __name__ == "__main__":
