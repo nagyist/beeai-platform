@@ -8,6 +8,7 @@ import { A2AClient } from '@a2a-js/sdk/client';
 import { defaultIfEmpty, filter, lastValueFrom, Subject } from 'rxjs';
 import { match } from 'ts-pattern';
 
+import { UnauthenticatedError } from '#api/errors.ts';
 import type { AgentExtension } from '#modules/agents/api/types.ts';
 import type { UIMessagePart } from '#modules/messages/types.ts';
 import type { TaskId } from '#modules/tasks/api/types.ts';
@@ -97,7 +98,8 @@ export const buildA2AClient = async <UIGenericPart = never>({
   const embeddingDemands = embeddingExtensionExtractor(extensions);
 
   const agentCardUrl = `${getBaseUrl()}/api/v1/a2a/${providerId}/.well-known/agent-card.json`;
-  const client = await A2AClient.fromCardUrl(agentCardUrl);
+
+  const client = await A2AClient.fromCardUrl(agentCardUrl, { fetchImpl: clientFetch });
 
   const chat = ({ message, contextId, fulfillments, taskId: initialTaskId, settings }: ChatParams) => {
     const messageSubject = new Subject<ChatResult<UIGenericPart>>();
@@ -268,3 +270,12 @@ export const buildA2AClient = async <UIGenericPart = never>({
     settingsDemands,
   };
 };
+
+async function clientFetch(input: RequestInfo, init?: RequestInit) {
+  const response = await fetch(input, init);
+  if (!response.ok && response.status === 401) {
+    throw new UnauthenticatedError({ message: 'You are not authenticated.', response });
+  }
+
+  return response;
+}
