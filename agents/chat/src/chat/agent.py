@@ -227,16 +227,8 @@ async def chat(
         ActAlwaysFirstRequirement(),  #  Enforces the ActTool to be used before any other tool execution.
     ]
 
-    llm_conf = None
-    if llm_ext and llm_ext.data:
-        [llm_conf] = llm_ext.data.llm_fulfillments.values()
-
     llm = BeeAIPlatformChatModel()
-    llm.configure(
-        model_id=llm_conf.api_model if llm_conf else "llama3.1",
-        api_key=llm_conf.api_key if llm_conf else "dummy",
-        base_url=llm_conf.api_base if llm_conf else "http://localhost:11434/v1",
-    )
+    llm.set_context(llm_ext)
 
     # Build dynamic instructions based on available files
     base_instructions = dedent(
