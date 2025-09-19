@@ -53,8 +53,8 @@ data:
               livenessProbe:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
-              {{- with .Values.agent.readinessProbe }}
-              readinessProbe:
+              {{- with .Values.agent.startupProbe }}
+              startupProbe:
                 {{- toYaml . | nindent 16 }}
               {{- end }}
   service.yaml: |

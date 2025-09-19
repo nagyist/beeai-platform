@@ -255,20 +255,21 @@ agent:
   service:
     type: ClusterIP
     port: 8000
+  startupProbe:
+    httpGet:
+      path: /.well-known/agent-card.json
+      port: 8000
+    initialDelaySeconds: 1
+    periodSeconds: 3
+    timeoutSeconds: 2
+    failureThreshold: 20
   livenessProbe:
     httpGet:
       path: /.well-known/agent-card.json
       port: 8000
-    initialDelaySeconds: 1
-    periodSeconds: 3
+    periodSeconds: 10
     timeoutSeconds: 2
-  readinessProbe:
-    httpGet:
-      path: /.well-known/agent-card.json
-      port: 8000
-    initialDelaySeconds: 1
-    periodSeconds: 3
-    timeoutSeconds: 2
+    failureThreshold: 2
   volumes: [ ]
   volumeMounts: [ ]
   nodeSelector: { }
