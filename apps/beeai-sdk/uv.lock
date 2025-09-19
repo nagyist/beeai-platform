@@ -205,7 +205,7 @@ wikipedia = [
 
 [[package]]
 name = "beeai-sdk"
-version = "0.3.4rc10"
+version = "0.3.4rc11"
 source = { editable = "." }
 dependencies = [
     { name = "a2a-sdk" },
