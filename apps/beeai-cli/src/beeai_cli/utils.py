@@ -5,6 +5,8 @@ import contextlib
 import functools
 import json
 import os
+import socket
+import ssl
 import subprocess
 import sys
 from collections.abc import AsyncIterator
@@ -12,7 +14,6 @@ from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from copy import deepcopy
 from io import BytesIO
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlparse
 
@@ -258,40 +259,24 @@ def verbosity(verbose: bool, show_success_status: bool = True):
         SHOW_SUCCESS_STATUS.reset(token_command_status)
 
 
-def make_safe_name(resource_url: str) -> str:
-    parsed = urlparse(resource_url)
-    return parsed.netloc or parsed.path
+async def get_verify_option(server_url: str):
+    """
+    Get value for httpx `verify` argument, with certificate pinning.
+    """
+    from beeai_cli.configuration import Configuration
 
+    parsed = urlparse(server_url)
+    if parsed.scheme == "http":
+        return True
 
-def normalize_url(url: str) -> str:
-    if not url.startswith(("http://", "https://")):
-        url = "https://" + url
-    parsed = urlparse(url)
-    # ensure no trailing slash
-    return f"{parsed.scheme}://{parsed.netloc}"
-
-
-async def get_verify_option(resource_url: str, ca_cert_file: Path):
-    parsed = urlparse(resource_url)
-    if parsed.scheme == "https":
-        ca_cert_file = await get_resource_ca_cert(resource_url, ca_cert_file)
-        return str(ca_cert_file)
-    return True
-
-
-async def get_resource_ca_cert(resource_url: str, ca_cert_file: Path) -> Path:
+    ca_cert_file = Configuration().ca_cert_dir / f"{parsed.netloc}_ca.crt"
     if not ca_cert_file.exists():
-        import socket
-        import ssl
-
-        host, port = resource_url.replace("https://", "").split(":")
-        port = int(port)
-        ctx = ssl._create_unverified_context()
-        with socket.create_connection((host, port)) as sock, ctx.wrap_socket(sock, server_hostname=host) as ssock:
+        with (
+            socket.create_connection((parsed.hostname, parsed.port or 443)) as sock,
+            ssl._create_unverified_context().wrap_socket(sock, server_hostname=parsed.hostname) as ssock,
+        ):
             der_cert = ssock.getpeercert(binary_form=True)
-            if der_cert is None:
-                raise RuntimeError(f"No certificate received from {resource_url}")
-            pem_cert = ssl.DER_cert_to_PEM_cert(der_cert)
-            ca_cert_file.write_text(pem_cert)
-        console.print(f"Saved CA cert to {ca_cert_file}")
-    return ca_cert_file
+            if not der_cert:
+                raise RuntimeError(f"No certificate received from {server_url}")
+            ca_cert_file.write_text(ssl.DER_cert_to_PEM_cert(der_cert))
+    return str(ca_cert_file)

@@ -5,6 +5,7 @@ import functools
 import importlib.metadata
 import pathlib
 import re
+import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -13,8 +14,9 @@ import pydantic_settings
 from beeai_sdk.platform import PlatformClient, use_platform_client
 from pydantic import HttpUrl, SecretStr
 
-from beeai_cli.auth_config_manager import AuthConfigManager
-from beeai_cli.utils import get_verify_option, make_safe_name, normalize_url
+from beeai_cli.auth_manager import AuthManager
+from beeai_cli.console import console
+from beeai_cli.utils import get_verify_option
 
 
 @functools.cache
@@ -28,9 +30,6 @@ class Configuration(pydantic_settings.BaseSettings):
     model_config = pydantic_settings.SettingsConfigDict(
         env_file=None, env_prefix="BEEAI__", env_nested_delimiter="__", extra="allow"
     )
-    default_host: pydantic.AnyUrl = HttpUrl("http://localhost:8333")
-    default_external_host: pydantic.AnyUrl = HttpUrl("https://agents.res.ibm.com")
-    ui_url: pydantic.AnyUrl = HttpUrl("http://localhost:8334")
     debug: bool = False
     home: pathlib.Path = pathlib.Path.home() / ".beeai"
     agent_registry: pydantic.AnyUrl = HttpUrl(
@@ -38,25 +37,17 @@ class Configuration(pydantic_settings.BaseSettings):
     )
     admin_password: SecretStr | None = None
     oidc_enabled: bool = False
-    resource_metadata_ttl: int = 86400
+    server_metadata_ttl: int = 86400
     client_id: str = "df82a687-d647-4247-838b-7080d7d83f6c"  # pre-registered with AS
-    redirect_uri: pydantic.AnyUrl = HttpUrl("http://localhost:9001/callback")
 
     @property
     def lima_home(self) -> pathlib.Path:
         return self.home / "lima"
 
     @property
-    def auth_config_file(self) -> pathlib.Path:
+    def auth_file(self) -> pathlib.Path:
         """Return auth config file path"""
-        return self.home / "auth_config.json"
-
-    @property
-    def resource_metadata_dir(self) -> pathlib.Path:
-        """Return resource metadata directory path"""
-        path = self.home / "resource_metadata"
-        path.mkdir(parents=True, exist_ok=True)
-        return path
+        return self.home / "auth.json"
 
     @property
     def ca_cert_dir(self) -> pathlib.Path:
@@ -66,21 +57,21 @@ class Configuration(pydantic_settings.BaseSettings):
         return path
 
     @property
-    def auth_manager(self) -> AuthConfigManager:
-        return AuthConfigManager(self.auth_config_file)
+    def auth_manager(self) -> AuthManager:
+        return AuthManager(self.auth_file)
 
     @asynccontextmanager
     async def use_platform_client(self) -> AsyncIterator[PlatformClient]:
-        auth = ("admin", self.admin_password.get_secret_value()) if self.admin_password else None
-        token = self.auth_manager.load_auth_token()
-        auth_token = token.get_secret_value() if token else None
-        active_resource = self.auth_manager.get_active_resource()
-        base_url = normalize_url(active_resource) if active_resource else str(self.default_host)
-
-        verify_option = await get_verify_option(base_url, self.ca_cert_dir / f"{make_safe_name(base_url)}_ca.crt")
-        verify_args = {}
-        if verify_option:
-            verify_args["verify"] = verify_option
-
-        async with use_platform_client(auth=auth, auth_token=auth_token, base_url=base_url, **verify_args) as client:
+        if self.auth_manager.active_server is None:
+            console.error("No server selected.")
+            console.hint(
+                "Run [green]beeai platform start[/green] to start a local server, or [green]beeai server login[/green] to connect to a remote one."
+            )
+            sys.exit(1)
+        async with use_platform_client(
+            auth=("admin", self.admin_password.get_secret_value()) if self.admin_password else None,
+            auth_token=self.auth_manager.load_auth_token(),
+            base_url=self.auth_manager.active_server + "/",
+            verify=await get_verify_option(self.auth_manager.active_server),
+        ) as client:
             yield client
