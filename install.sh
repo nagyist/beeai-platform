@@ -13,6 +13,8 @@ if ! command -v uv >/dev/null 2>&1; then
     curl -LsSf https://astral.sh/uv/install.sh | UV_PRINT_QUIET=1 sh
 fi
 
+uv tool uninstall --quiet beeai-cli >/dev/null 2>&1 || true
+
 echo "Installing beeai-cli..."
 case "${BEEAI_VERSION:-latest}" in
 "latest") PATH="$new_path" uv tool install --refresh --quiet --force beeai-cli ;;
