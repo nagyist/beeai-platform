@@ -8,12 +8,10 @@ echo "Starting the BeeAI installer..."
 
 new_path="${XDG_BIN_HOME:+${XDG_BIN_HOME}:}${XDG_DATA_HOME:+$(realpath -m ${XDG_DATA_HOME}/../bin):}${HOME:+${HOME}/.local/bin:}$PATH"
 
-if ! command -v uv >/dev/null 2>&1; then
-    echo "Installing uv..."
-    curl -LsSf https://astral.sh/uv/install.sh | UV_PRINT_QUIET=1 sh
-fi
+echo "Installing uv..."
+curl -LsSf https://astral.sh/uv/install.sh | UV_PRINT_QUIET=1 sh
 
-uv tool uninstall --quiet beeai-cli >/dev/null 2>&1 || true
+PATH="$new_path" uv tool uninstall --quiet beeai-cli >/dev/null 2>&1 || true
 
 echo "Installing beeai-cli..."
 case "${BEEAI_VERSION:-latest}" in
