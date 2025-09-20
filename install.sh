@@ -15,8 +15,8 @@ PATH="$new_path" uv tool uninstall --quiet beeai-cli >/dev/null 2>&1 || true
 
 echo "Installing beeai-cli..."
 case "${BEEAI_VERSION:-latest}" in
-"latest") PATH="$new_path" uv tool install --refresh --quiet --force beeai-cli ;;
-"pre")    PATH="$new_path" uv tool install --refresh --quiet --force --pre beeai-cli ;;
-*)        PATH="$new_path" uv tool install --refresh --quiet --force "beeai-cli==$BEEAI_VERSION" ;;
+"latest") PATH="$new_path" uv tool install --managed-python --refresh --quiet --force beeai-cli ;;
+"pre")    PATH="$new_path" uv tool install --managed-python --refresh --quiet --force --pre beeai-cli ;;
+*)        PATH="$new_path" uv tool install --managed-python --refresh --quiet --force "beeai-cli==$BEEAI_VERSION" ;;
 esac
 PATH="$new_path" beeai self install
