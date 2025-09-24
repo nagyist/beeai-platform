@@ -41,8 +41,9 @@ jobs:
           cat > Dockerfile << 'EOF'
           FROM moby/buildkit:${{ github.event.inputs.tag }}
           USER root
-          
-          RUN add_user -D -u ${{ github.event.inputs.uid }} oc_user \
+          # Using useradd because adduser does not support UID beyond 256k
+          RUN apk add --no-cache shadow
+          RUN useradd -u ${{ github.event.inputs.uid }} -m -s /bin/bash oc_user \
             && mkdir -p /run/user/${{ github.event.inputs.uid }} /home/oc_user/.local/tmp /home/oc_user/.local/share/buildkit \
             && chown -R oc_user /run/user/${{ github.event.inputs.uid }} /home/oc_user \
             && echo oc_user:100000:65536 | tee /etc/subuid | tee /etc/subgid
