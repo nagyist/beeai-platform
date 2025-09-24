@@ -2,16 +2,16 @@
  * Copyright 2025 © BeeAI a Series of LF Projects, LLC
  * SPDX-License-Identifier: Apache-2.0
  */
-import * as jose from 'jose';
+
 import NextAuth from 'next-auth';
 import type { Provider } from 'next-auth/providers';
 
-import { ProviderList } from '#app/api/auth/providers/providers.ts';
+import { getProviderConstructor } from '#app/(auth)/providers/providers.ts';
 import { OIDC_ENABLED } from '#utils/constants.ts';
 import { routes } from '#utils/router.ts';
 
 import type { ProviderConfig } from './types';
-import { jwtWithRefresh } from './utils';
+import { jwtWithRefresh, RefreshTokenError } from './utils';
 
 let providersConfig: ProviderConfig[] = [];
 
@@ -25,49 +25,29 @@ if (OIDC_ENABLED) {
     }
 
     providersConfig = JSON.parse(providersJson);
-    for (const provider of providersConfig) {
-      const JWKS = jose.createRemoteJWKSet(new URL(provider.jwks_url));
-      provider.JWKS = JWKS;
-    }
   } catch (err) {
     console.error('Unable to parse providers from OIDC_PROVIDERS environment variable.', err);
   }
 
-  const providerList = new ProviderList();
   for (const provider of providersConfig) {
-    const { id, name, type, issuer, client_id, client_secret, nextauth_redirect_proxy_url } = provider;
-    const providerClass = providerList.getProviderByName(name.toLocaleLowerCase());
-    if (providerClass) {
+    const { id, name, issuer, client_id, client_secret } = provider;
+    const providerConstructor = getProviderConstructor(name.toLocaleLowerCase());
+    if (providerConstructor) {
       providers.push(
-        providerClass({
+        providerConstructor({
           id,
           name,
-          type,
+          type: 'oidc',
           issuer,
           clientId: client_id,
           clientSecret: client_secret,
-          redirectProxyUrl: nextauth_redirect_proxy_url,
-          account(account: {
-            refresh_token_expires_in: string;
-            access_token: string;
-            expires_at: string;
-            refresh_token: string;
-          }) {
-            const refresh_token_expires_at = Math.floor(Date.now() / 1000) + Number(account.refresh_token_expires_in);
-            return {
-              access_token: account.access_token,
-              expires_at: account.expires_at,
-              refresh_token: account.refresh_token,
-              refresh_token_expires_at,
-            };
-          },
         }),
       );
     }
   }
 }
 
-export const providerMap = providers
+export const authProviders = providers
   .map((provider) => {
     if (typeof provider === 'function') {
       const providerData = provider();
@@ -98,14 +78,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   callbacks: {
-    // middleware callback
-    authorized({ auth }) {
-      if (!OIDC_ENABLED) {
-        return true;
-      }
-      return Boolean(auth);
+    authorized: ({ auth }) => {
+      return OIDC_ENABLED ? Boolean(auth) : true;
     },
-    async jwt({ token, account, trigger, session }) {
+    jwt: async ({ token, account, trigger, session }) => {
       if (trigger === 'update') {
         token.name = session.user.name;
       }
@@ -113,14 +89,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account) {
         token['access_token'] = account.access_token;
         token['provider'] = account.provider;
+        token['refresh_token'] = account.refresh_token;
       }
-      return await jwtWithRefresh(token, account, providers);
-    },
-    async session({ session, token }) {
-      if (token?.access_token) {
-        session.access_token = token.access_token;
+
+      try {
+        return await jwtWithRefresh(token, account, providers);
+      } catch (error) {
+        console.error('Error while refreshing jwt token:', error);
+
+        if (error instanceof RefreshTokenError) {
+          return null;
+        }
+
+        return token;
       }
-      return session;
     },
   },
 });
@@ -131,6 +113,7 @@ declare module 'next-auth' {
    */
   interface Session {
     access_token?: string;
+    refresh_token?: string;
   }
 }
 

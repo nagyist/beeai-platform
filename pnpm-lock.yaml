@@ -104,9 +104,6 @@ importers:
       immer:
         specifier: ^10.1.3
         version: 10.1.3
-      jose:
-        specifier: 6.1.0
-        version: 6.1.0
       json5:
         specifier: ^2.2.3
         version: 2.2.3
@@ -131,6 +128,9 @@ importers:
       openapi-fetch:
         specifier: ^0.13.8
         version: 0.13.8
+      openid-client:
+        specifier: ^6.8.0
+        version: 6.8.0
       pluralize:
         specifier: ^8.0.0
         version: 8.0.0
@@ -5730,6 +5730,9 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: ^5.x
+
+  openid-client@6.8.0:
+    resolution: {integrity: sha512-oG1d1nAVhIIE+JSjLS+7E9wY1QOJpZltkzlJdbZ7kEn7Hp3hqur2TEeQ8gLOHoHkhbRAGZJKoOnEQcLOQJuIyg==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -14091,6 +14094,11 @@ snapshots:
       supports-color: 10.2.2
       typescript: 5.9.2
       yargs-parser: 21.1.1
+
+  openid-client@6.8.0:
+    dependencies:
+      jose: 6.1.0
+      oauth4webapi: 3.8.1
 
   optionator@0.9.4:
     dependencies:
