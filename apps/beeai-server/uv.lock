@@ -279,7 +279,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "a2a-sdk", specifier = "~=0.3.5" },
+    { name = "a2a-sdk", specifier = "==0.3.5" },
     { name = "anyio", specifier = ">=4.9.0" },
     { name = "asyncclick", specifier = ">=8.1.8" },
     { name = "fastapi", specifier = ">=0.116.1" },
