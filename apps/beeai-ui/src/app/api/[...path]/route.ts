@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { redirect } from 'next/navigation';
 import type { NextRequest } from 'next/server';
 
-import { ensureSession } from '#app/(auth)/rsc.tsx';
+import { ensureToken } from '#app/(auth)/rsc.tsx';
 import { API_URL, OIDC_ENABLED } from '#utils/constants.ts';
+import { routes } from '#utils/router.ts';
 
 import { transformAgentManifestBody } from './body-transformers';
 import { isApiAgentManifestUrl, isUrlTrailingSlashNeeded } from './utils';
@@ -30,9 +32,14 @@ async function handler(request: NextRequest, context: RouteContext) {
   targetUrl += search;
 
   if (OIDC_ENABLED) {
-    const session = await ensureSession();
-    if (session?.access_token) {
-      headers.set('Authorization', `Bearer ${session.access_token}`);
+    const token = await ensureToken(request);
+
+    if (!token) {
+      redirect(routes.signIn());
+    }
+
+    if (token?.access_token) {
+      headers.set('Authorization', `Bearer ${token.access_token}`);
     }
   }
 
