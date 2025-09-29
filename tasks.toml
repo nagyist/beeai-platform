@@ -239,10 +239,11 @@ if gum confirm "Release version $new_version now?"; then
     git tag "v$new_version"
     git push --atomic origin main "v$new_version"
   )
-  if gum confirm "Follow GitHub Action? (Requires gh CLI.)"; then
+  if command -v gh >/dev/null; then
     gum spin --title="Waiting for GitHub Action to start..." sleep 10
     gh run watch $(gh run list --workflow=Release --branch=v$new_version --limit=1 --json databaseId,status -q '.[0].databaseId') || true
   fi
+  echo "GitHub action started. Check the progress and result on: https://github.com/i-am-bee/beeai-platform/actions/workflows/release.yml"
 fi
 '''
 
