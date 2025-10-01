@@ -22,7 +22,8 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     # this needs to be commited first to avoid: unsafe use of new value "user" of enum type envstoreentity
-    op.execute("ALTER TYPE envstoreentity ADD VALUE 'user'")
+    with op.get_context().autocommit_block():
+        op.execute("ALTER TYPE envstoreentity ADD VALUE 'user'")
 
 
 def downgrade() -> None:
