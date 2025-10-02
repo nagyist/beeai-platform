@@ -209,7 +209,9 @@ class Context(pydantic.BaseModel):
         target_context_id = self if isinstance(self, str) else self.id
         async with client or get_platform_client() as platform_client:
             _ = (
-                await platform_client.post(url=f"/api/v1/contexts/{target_context_id}/history", json=data.model_dump())
+                await platform_client.post(
+                    url=f"/api/v1/contexts/{target_context_id}/history", json=data.model_dump(mode="json")
+                )
             ).raise_for_status()
 
     async def list_history(
