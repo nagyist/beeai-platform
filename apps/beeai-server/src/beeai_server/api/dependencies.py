@@ -17,6 +17,7 @@ from beeai_server.api.auth.auth import (
     validate_oauth_access_token,
     verify_internal_jwt,
 )
+from beeai_server.api.auth.utils import create_resource_uri
 from beeai_server.configuration import Configuration
 from beeai_server.domain.models.permissions import AuthorizedUser, Permissions
 from beeai_server.domain.models.user import UserRole
@@ -69,7 +70,10 @@ async def authenticate_oauth_user(
             detail=f"Invalid Authorization header: {e}",
         ) from e
 
-    expected_audience = str(request.url.replace(path="/"))
+    expected_audience = (
+        create_resource_uri(request.url.replace(path="/")) if configuration.auth.oidc.validate_audience else None
+    )
+
     try:
         claims, provider = await validate_oauth_access_token(
             token=token, aud=expected_audience, configuration=configuration
