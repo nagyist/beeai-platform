@@ -5,17 +5,24 @@
 
 import { useMutation } from '@tanstack/react-query';
 
-import { createContext } from '..';
+import { deleteContext } from '..';
 import { contextKeys } from '../keys';
-import type { CreateContextResponse } from '../types';
 
-export function useCreateContext({ onSuccess }: { onSuccess?: (data: CreateContextResponse) => void } = {}) {
+interface Props {
+  onMutate?: () => void;
+}
+
+export function useDeleteContext({ onMutate }: Props = {}) {
   const mutation = useMutation({
-    mutationFn: createContext,
-    onSuccess,
+    mutationFn: deleteContext,
     meta: {
       invalidates: [contextKeys.lists()],
+      errorToast: {
+        title: 'Failed to delete session.',
+        includeErrorMessage: true,
+      },
     },
+    onMutate,
   });
 
   return mutation;

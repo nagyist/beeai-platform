@@ -38,7 +38,7 @@ export function useMatchEmbeddingProviders(
         demandKeys.map(async (demandKey) => {
           const result = await matchProviders({
             suggested_models: demands[demandKey].suggested ?? [],
-            capability: ModelCapability.EMBEDDING,
+            capability: ModelCapability.Embedding,
           });
           return {
             key: demandKey,
@@ -86,7 +86,7 @@ export function useMatchLLMProviders(
         demandKeys.map(async (demandKey) => {
           const result = await matchProviders({
             suggested_models: demands[demandKey].suggested ?? [],
-            capability: ModelCapability.LLM,
+            capability: ModelCapability.Llm,
           });
           return {
             key: demandKey,
