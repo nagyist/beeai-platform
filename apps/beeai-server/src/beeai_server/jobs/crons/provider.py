@@ -114,7 +114,12 @@ if get_configuration().provider.auto_remove_enabled:
     @blueprint.periodic(cron="* * * * * */5")
     @blueprint.task(queueing_lock="auto_remove_providers", queue=str(Queues.CRON_PROVIDER))
     @inject
-    async def auto_remove_providers(timestamp: int, uow_f: IUnitOfWorkFactory, provider_service: ProviderService):
+    async def auto_remove_providers(
+        timestamp: int,
+        uow_f: IUnitOfWorkFactory,
+        provider_service: ProviderService,
+        user_service: UserService,
+    ):
         async with uow_f() as uow:
             auto_remove_providers = [provider async for provider in uow.providers.list(auto_remove_filter=True)]
 
@@ -129,5 +134,6 @@ if get_configuration().provider.auto_remove_enabled:
                 logger.error(f"Provider {provider.id} failed to respond to ping in 30 seconds: {extract_messages(ex)}")
                 with suppress(EntityNotFoundError):
                     # Provider might be already deleted by another instance of this job
-                    await provider_service.delete_provider(provider_id=provider.id)
+                    user = await user_service.get_user_by_email("admin@beeai.dev")
+                    await provider_service.delete_provider(provider_id=provider.id, user=user)
                     logger.info(f"Provider {provider.id} was automatically removed")
