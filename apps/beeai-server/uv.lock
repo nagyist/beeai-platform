@@ -256,7 +256,7 @@ wheels = [
 
 [[package]]
 name = "beeai-sdk"
-version = "0.3.6rc3"
+version = "0.3.6"
 source = { editable = "../beeai-sdk-py" }
 dependencies = [
     { name = "a2a-sdk" },
@@ -309,7 +309,7 @@ dev = [
 
 [[package]]
 name = "beeai-server"
-version = "0.3.6rc3"
+version = "0.3.6"
 source = { editable = "." }
 dependencies = [
     { name = "a2a-sdk" },
