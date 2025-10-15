@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type { AgentExtension as A2AAgentExtension } from '@a2a-js/sdk';
 import type { ServerSentEventMessage } from 'fetch-event-stream';
 import type { FetchResponse } from 'openapi-fetch';
 import type { MediaType } from 'openapi-typescript-helpers';
 
+import type { AgentExtension } from '#modules/agents/api/types.ts';
 import { NEXTAUTH_URL, TRUST_PROXY_HEADERS } from '#utils/constants.ts';
 import { isNotNull } from '#utils/helpers.ts';
 
@@ -81,6 +83,10 @@ export async function fetchEntity<T>(fetchFn: () => Promise<T>): Promise<T | und
 
     return undefined;
   }
+}
+
+export function agentExtensionGuard(agentExtension: AgentExtension): agentExtension is A2AAgentExtension {
+  return agentExtension.description !== null && agentExtension.params !== null && agentExtension.required !== null;
 }
 
 export async function getProxyHeaders(headers: Headers, url?: URL) {

@@ -4,18 +4,11 @@
  */
 
 import { Button } from '@carbon/react';
+import type { CheckboxField, DateField, FileField, FormField, MultiSelectField, TextField } from 'beeai-sdk';
 import { useMemo } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { match } from 'ts-pattern';
 
-import type {
-  CheckboxField,
-  DateField,
-  FileField,
-  FormField,
-  MultiSelectField,
-  TextField,
-} from '#api/a2a/extensions/ui/form.ts';
 import { FormFields } from '#modules/form/components/FormFields.tsx';
 import { useMessageForm } from '#modules/form/contexts/index.ts';
 import type { RunFormValues, ValueOfField } from '#modules/form/types.ts';

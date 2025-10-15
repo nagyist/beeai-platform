@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type { FormRender, FormResponse } from 'beeai-sdk';
 import type { CSSProperties } from 'react';
-
-import type { FormRender, FormResponse } from '#api/a2a/extensions/ui/form.ts';
 
 import { FormField } from './FormField';
 import classes from './FormFields.module.scss';

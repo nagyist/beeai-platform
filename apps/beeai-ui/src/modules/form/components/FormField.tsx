@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type { FormField, FormResponseValue } from 'beeai-sdk';
 import type { CSSProperties } from 'react';
 import { match, P } from 'ts-pattern';
-
-import type { FormField, FormResponseValue } from '#api/a2a/extensions/ui/form.ts';
 
 import { CheckboxField } from './fields/CheckboxField';
 import { DateField } from './fields/DateField';
