@@ -5,7 +5,7 @@ COPY ./apps/beeai-sdk-py/ /app/apps/beeai-sdk-py/
 WORKDIR /app/agents/form
 RUN --mount=type=cache,target=/tmp/.cache/uv \
     --mount=type=bind,from=ghcr.io/astral-sh/uv:0.9.5,source=/uv,target=/bin/uv \
-    uv sync
+    UV_COMPILE_BYTECODE=1 HOME=/tmp uv sync
 
 FROM python:3.13-slim-bookworm
 ARG RELEASE_VERSION="main"
