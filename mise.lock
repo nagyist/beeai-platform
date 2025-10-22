@@ -60,10 +60,6 @@ checksum = "blake3:502db5ea7eeeccf6307a8af184d2a63acdf88cdb3346d7fb0d55617e807d1
 size = 62649648
 url = "https://github.com/pnpm/pnpm/releases/download/v10.15.1/pnpm-macos-arm64"
 
-[[tools.python]]
-version = "3.13.7"
-backend = "core:python"
-
 [[tools."ubi:google/addlicense"]]
 version = "1.2.0"
 backend = "ubi:google/addlicense"
