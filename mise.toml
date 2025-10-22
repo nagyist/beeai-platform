@@ -4,7 +4,7 @@
 
 # Python
 python = "3.13"
-uv = "0.8.17"
+uv = "0.9.5"
 
 # Node.js
 nodejs = "22"

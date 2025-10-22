@@ -4,10 +4,10 @@ ENV UV_COMPILE_BYTECODE=1 \
     AGENT_REGISTRY__LOCATIONS__FILE="file:///app/registry.yaml"
 RUN --mount=type=cache,target=/tmp/.cache/uv \
     --mount=type=bind,source=dist/requirements.txt,target=/requirements.txt \
-    --mount=type=bind,from=ghcr.io/astral-sh/uv:0.8.9,source=/uv,target=/bin/uv \
+    --mount=type=bind,from=ghcr.io/astral-sh/uv:0.9.5,source=/uv,target=/bin/uv \
     uv pip install --system -r /requirements.txt
 RUN --mount=type=cache,target=/tmp/.cache/uv \
     --mount=type=bind,source=dist,target=/dist \
-    --mount=type=bind,from=ghcr.io/astral-sh/uv:0.8.9,source=/uv,target=/bin/uv \
+    --mount=type=bind,from=ghcr.io/astral-sh/uv:0.9.5,source=/uv,target=/bin/uv \
     uv pip install --system /dist/*.tar.gz
 CMD ["beeai-server"]
