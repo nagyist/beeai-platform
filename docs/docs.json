@@ -15,7 +15,7 @@
         "pages": [
           "introduction/welcome",
           "introduction/quickstart",
-          "introduction/add-your-a2a-agent",
+          "introduction/connect-a2a-agents",
           "introduction/start-building-agents"
         ]
       },
@@ -43,21 +43,11 @@
         ]
       },
       {
-        "group": "Working with Agents",
-        "pages": [
-          "how-to/discover-agents",
-          "how-to/run-agents",
-          "how-to/observe-agents",
-          "how-to/add-agents"
-        ]
-      },
-      {
         "group": "Guides",
         "pages": [
-          "how-to/environment-configuration",
-          "how-to/mcp",
+          "how-to/cli-reference",
           "how-to/web-interface",
-          "how-to/cli-reference"
+          "how-to/environment-configuration"
         ]
       },
       {
@@ -84,10 +74,6 @@
       "href": "https://github.com/i-am-bee/beeai-platform"
     },
     "links": [
-      {
-        "label": "Agent Catalog",
-        "href": "https://beeai.dev/agents"
-      },
       { "label": "Discord", "href": "https://discord.gg/NradeA6ZNF" }
     ]
   },
@@ -95,8 +81,7 @@
     "socials": {
       "github": "https://github.com/i-am-bee/beeai-platform",
       "discord": "https://discord.gg/AZFrp3UF5k",
-      "bluesky": "https://bsky.app/profile/beeaiagents.bsky.social",
-      "youtube": "https://www.youtube.com/@BeeAIAgents"
+      "bluesky": "https://bsky.app/profile/beeaiagents.bsky.social"
     }
   },
   "redirects": [
