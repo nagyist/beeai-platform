@@ -11,7 +11,7 @@ export const FRAMEWORK_DOCS_LINK = 'https://framework.beeai.dev';
 
 export const FRAMEWORK_INTRO_LINK = 'https://framework.beeai.dev/introduction/welcome';
 
-export const PLATFORM_INTRO_LINK = 'https://docs.beeai.dev/introduction/welcome';
+export const PLATFORM_INTRO_LINK = 'https://agentstack.beeai.dev/introduction/welcome';
 
 export const DISCORD_LINK = 'https://discord.gg/NradeA6ZNF';
 
