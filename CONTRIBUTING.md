@@ -202,7 +202,7 @@ After the command succeeds, you can:
 
 - send requests as if your machine was running inside the cluster. For example:
   `curl http://<service-name>:<service-port>`.
-- connect to postgresql using the default credentials `postgresql://beeai-user:password@postgresql:5432/beeai`
+- connect to postgresql using the default credentials `postgresql://agentstack-user:password@postgresql:5432/agentstack`
 - now you can start your server from your IDE or using `mise run agentstack-server:run` on port **18333**
 - run agentstack-cli using `mise agentstack-cli:run -- <command>` or HTTP requests to localhost:8333 or localhost:18333
     - localhost:8333 is port-forwarded from the cluster, so any requests will pass through the cluster networking to the
