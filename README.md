@@ -34,7 +34,7 @@
 
 ---
 
-Agent Stack is open infrastructure for deploying AI agents to production, regardless of how you built them. It gives you everything needed to go from "works on my laptop" to "other people can use it" - hosting, web UI, runtime services, and multi-tenancy - without vendor lock-in.
+Agent Stack is open infrastructure for taking AI agents from prototype to production—no matter how you built them. It includes everything you need to make your agents usable by others: hosting, web UI, runtime services, and multi-tenancy—all without vendor lock-in.
 
 Built on the [Agent2Agent (A2A) Protocol](https://a2a-protocol.org/) and hosted by the **Linux Foundation**, Agent Stack bridges the gap between different agent ecosystems.
 
