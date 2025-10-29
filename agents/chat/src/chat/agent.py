@@ -9,10 +9,10 @@ from a2a.types import (
     AgentSkill,
     Message,
 )
-from beeai_framework.adapters.beeai_platform.backend.chat import BeeAIPlatformChatModel
 from beeai_framework.agents.requirement import RequirementAgent
 from beeai_framework.agents.requirement.events import (
     RequirementAgentSuccessEvent,
+    RequirementAgentFinalAnswerEvent,
 )
 from beeai_framework.agents.requirement.utils._tool import FinalAnswerTool
 from beeai_framework.emitter import EventMeta
@@ -45,6 +45,7 @@ from openinference.instrumentation.beeai import BeeAIInstrumentor
 
 from chat.helpers.citations import extract_citations
 from chat.helpers.trajectory import TrajectoryContent
+from chat.tmp_chat_model import BeeAIPlatformChatModel
 from chat.tools.files.file_creator import FileCreatorTool, FileCreatorToolOutput
 from chat.tools.files.file_reader import create_file_reader_tool_class
 from chat.tools.files.utils import extract_files, to_framework_message
@@ -296,6 +297,8 @@ async def chat(
     new_messages = [to_framework_message(item, extracted_files) for item in history]
 
     async for event, meta in agent.run(new_messages):
+        if isinstance(event, RequirementAgentFinalAnswerEvent) and use_streaming:
+            yield event.delta
         if not isinstance(event, RequirementAgentSuccessEvent):
             continue
 
