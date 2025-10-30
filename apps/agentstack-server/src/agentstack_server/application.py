@@ -5,15 +5,17 @@ import logging
 import time
 from collections.abc import Iterable
 from contextlib import asynccontextmanager, suppress
+from importlib.metadata import PackageNotFoundError, version
 
 import procrastinate
-from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.exception_handlers import http_exception_handler
-from fastapi.responses import ORJSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse, ORJSONResponse
 from kink import Container, di, inject
 from opentelemetry.metrics import CallbackOptions, Observation, get_meter
 from procrastinate.exceptions import AlreadyEnqueued
-from starlette.requests import Request
 from starlette.status import HTTP_401_UNAUTHORIZED, HTTP_500_INTERNAL_SERVER_ERROR
 
 from agentstack_server.api.routes.a2a import router as a2a_router
@@ -44,6 +46,15 @@ from agentstack_server.telemetry import INSTRUMENTATION_NAME, shutdown_telemetry
 from agentstack_server.utils.fastapi import ProxyHeadersMiddleware
 
 logger = logging.getLogger(__name__)
+
+
+def get_version():
+    try:
+        __version__ = version("agentstack-server")
+    except PackageNotFoundError:
+        __version__ = "0.1.0"
+
+    return __version__
 
 
 def extract_messages(exc):
@@ -111,6 +122,28 @@ def mount_routes(app: FastAPI):
     app.include_router(server_router, prefix="/api/v1", tags=["provider"])
     app.include_router(well_known_router, prefix="/.well-known", tags=["well-known"])
 
+    @app.get("/api/v1/openapi.json", include_in_schema=False)
+    async def custom_openapi(request: Request):
+        openapi_schema = get_openapi(
+            title="Agentstack server",
+            version=get_version(),
+            routes=app.routes,
+        )
+
+        base_url = str(request.base_url)
+        openapi_schema["servers"] = [{"url": base_url}]
+
+        return JSONResponse(openapi_schema)
+
+    @app.get("/api/v1/docs", include_in_schema=False)
+    async def custom_docs(request: Request):
+        openapi_url = request.url_for(custom_openapi.__name__)
+
+        return get_swagger_ui_html(
+            openapi_url=openapi_url,
+            title="BeeAI Platform API Docs",
+        )
+
     @app.get("/healthcheck")
     async def healthcheck():
         return "OK"
@@ -169,9 +202,9 @@ def app(*, dependency_overrides: Container | None = None) -> FastAPI:
     app = FastAPI(
         lifespan=lifespan,
         default_response_class=ORJSONResponse,  # better performance then default + handle NaN floats
-        docs_url="/api/v1/docs",
-        openapi_url="/api/v1/openapi.json",
-        servers=[{"url": f"http://localhost:{configuration.port}"}],
+        docs_url=None,
+        openapi_url=None,
+        servers=None,
     )
 
     logger.info("Mounting routes...")
