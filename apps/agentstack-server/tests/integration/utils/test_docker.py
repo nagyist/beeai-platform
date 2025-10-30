@@ -27,7 +27,7 @@ def configuration():
 @pytest.mark.parametrize(
     "image",
     [
-        DockerImageID(root="ghcr.io/i-am-bee/agentstack/official/beeai-framework/chat:agents-v0.2.14"),
+        DockerImageID(root="ghcr.io/i-am-bee/agentstack/agents/chat:0.4.0-rc1"),
         DockerImageID(root="redis:latest"),
         DockerImageID(root="icr.io/ibm-messaging/mq:latest"),
         DockerImageID(root="registry.goharbor.io/nightly/goharbor/harbor-log:v1.10.0"),
