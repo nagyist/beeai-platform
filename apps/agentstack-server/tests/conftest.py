@@ -27,8 +27,8 @@ class TestConfiguration(BaseSettings):
     llm_api_base: str = "http://localhost:11434/v1"
     llm_model: str = "other:llama3.1:8b"
     llm_api_key: Secret[str] = Secret("dummy")
-    test_agent_image: str = "ghcr.io/i-am-bee/beeai-platform/official/beeai-framework/chat:0.3.2"
-    test_agent_build_repo: str = "https://github.com/i-am-bee/beeai-platform-agent-starter"
+    test_agent_image: str = "ghcr.io/i-am-bee/agentstack/agents/chat:0.4.0-rc1"
+    test_agent_build_repo: str = "https://github.com/i-am-bee/agentstack-starter"
     server_url: str = "http://agentstack-server-svc:8333"
     db_url: str = "postgresql+asyncpg://agentstack-user:password@postgresql:5432/agentstack"
 

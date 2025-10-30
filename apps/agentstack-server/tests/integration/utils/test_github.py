@@ -42,7 +42,7 @@ async def test_github_private_resolve(configuration: Configuration):
 
 
 async def test_github_public_resolve(configuration: Configuration):
-    resolved_url = await GithubUrl("https://github.com/i-am-bee/beeai-platform").resolve_version()
+    resolved_url = await GithubUrl("https://github.com/i-am-bee/agentstack").resolve_version()
     assert resolved_url.version == "main"
     assert resolved_url.commit_hash
     async with httpx.AsyncClient() as client:

@@ -33,7 +33,7 @@ class Configuration(pydantic_settings.BaseSettings):
     debug: bool = False
     home: pathlib.Path = pydantic.Field(default_factory=lambda: pathlib.Path.home() / ".agentstack")
     agent_registry: pydantic.AnyUrl = HttpUrl(
-        f"https://github.com/i-am-bee/beeai-platform@v{version()}#path=agent-registry.yaml"
+        f"https://github.com/i-am-bee/agentstack@v{version()}#path=agent-registry.yaml"
     )
     admin_password: SecretStr | None = None
     oidc_enabled: bool = False
