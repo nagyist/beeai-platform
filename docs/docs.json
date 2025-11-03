@@ -39,7 +39,8 @@
           "build-agents/citations",
           "build-agents/forms",
           "build-agents/agent-settings",
-          "build-agents/secrets"
+          "build-agents/secrets",
+          "build-agents/mcp-oauth"
         ]
       },
       {
