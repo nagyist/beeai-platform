@@ -4,19 +4,21 @@
  */
 
 import { extractServiceExtensionDemands, formExtension } from 'agentstack-sdk';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { getAgentExtensions } from '#api/utils.ts';
 import { MainContent } from '#components/layouts/MainContent.tsx';
 import type { Agent } from '#modules/agents/api/types.ts';
 import { AgentDetailPanel } from '#modules/agents/components/detail/AgentDetailPanel.tsx';
+import { usePlatformContext } from '#modules/platform-context/contexts/index.ts';
 import { SourcesPanel } from '#modules/sources/components/SourcesPanel.tsx';
+import { routes } from '#utils/router.ts';
 
-import { useMessages } from '../../messages/contexts/Messages';
 import { FormRenderView } from '../components/FormRenderView';
 import { RunLandingView } from '../components/RunLandingView';
 import { useAgentRun } from '../contexts/agent-run';
 import { AgentRunProviders } from '../contexts/agent-run/AgentRunProvider';
+import { useSyncRunStateWithRoute } from '../hooks/useSyncRunStateWithRoute';
 import { ChatMessagesView } from './ChatMessagesView';
 
 const formExtensionExtractor = extractServiceExtensionDemands(formExtension);
@@ -34,8 +36,10 @@ export function ChatView({ agent }: Props) {
 }
 
 function Chat() {
-  const { isPending, agent } = useAgentRun();
-  const { messages } = useMessages();
+  const { isPending, agent, hasMessages } = useAgentRun();
+  const { contextId } = usePlatformContext();
+
+  useSyncRunStateWithRoute();
 
   // TODO: move extraction into the agent run context (or a2a client)
   const formRender = useMemo(() => {
@@ -45,16 +49,29 @@ function Chat() {
     return formRender ?? undefined;
   }, [agent]);
 
-  const isLanding = !isPending && !messages.length;
+  const handleMessageSent = useCallback(() => {
+    if (contextId) {
+      window.history.pushState(
+        null,
+        '',
+        routes.agentRun({
+          providerId: agent.provider.id,
+          contextId,
+        }),
+      );
+    }
+  }, [agent, contextId]);
+
+  const isLanding = !isPending && !hasMessages;
 
   return (
     <>
       <MainContent spacing="md" scrollable={isLanding}>
         {isLanding ? (
           formRender ? (
-            <FormRenderView formRender={formRender} />
+            <FormRenderView formRender={formRender} onMessageSent={handleMessageSent} />
           ) : (
-            <RunLandingView />
+            <RunLandingView onMessageSent={handleMessageSent} />
           )
         ) : (
           <ChatMessagesView />

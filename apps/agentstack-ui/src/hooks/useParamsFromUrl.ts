@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+
+import { getRunParamsFromUrl } from '#modules/runs/utils.ts';
 
 export function useParamsFromUrl() {
-  const { providerId, contextId } = useParams<{ providerId?: string; contextId?: string }>();
+  const pathname = usePathname();
 
-  return {
-    providerId,
-    contextId,
-  };
+  return getRunParamsFromUrl(pathname);
 }
