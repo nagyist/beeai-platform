@@ -22,6 +22,7 @@ import { useController, useForm } from 'react-hook-form';
 
 import { CodeSnippet } from '#components/CodeSnippet/CodeSnippet.tsx';
 import { Modal } from '#components/Modal/Modal.tsx';
+import { useApp } from '#contexts/App/index.ts';
 import type { ModalProps } from '#contexts/Modal/modal-context.ts';
 import { useImportAgent } from '#modules/agents/hooks/useImportAgent.ts';
 import type { ImportAgentFormValues } from '#modules/agents/types.ts';
@@ -31,6 +32,10 @@ import classes from './ImportAgentsModal.module.scss';
 
 export function ImportAgentsModal({ onRequestClose, ...modalProps }: ModalProps) {
   const id = useId();
+
+  const {
+    config: { appName },
+  } = useApp();
 
   const { agent, logs, actionRequired, providersToUpdate, isPending, error, importAgent } = useImportAgent();
 
@@ -43,7 +48,7 @@ export function ImportAgentsModal({ onRequestClose, ...modalProps }: ModalProps)
   } = useForm<ImportAgentFormValues>({
     mode: 'onChange',
     defaultValues: {
-      source: ProviderSource.Docker,
+      source: ProviderSource.GitHub,
     },
   });
 
@@ -67,20 +72,20 @@ export function ImportAgentsModal({ onRequestClose, ...modalProps }: ModalProps)
   }, [sourceField.value, resetField]);
 
   return (
-    <Modal {...modalProps}>
+    <Modal {...modalProps} className={classes.root}>
       <ModalHeader buttonOnClick={() => onRequestClose()}>
-        <h2>Import your agent</h2>
+        <h2>Add new agent</h2>
       </ModalHeader>
 
       <ModalBody>
         <form onSubmit={handleSubmit(onSubmit)} className={clsx(classes.form, { [classes.showLogs]: showLogs })}>
           {agent ? (
             <p>
-              <strong>{agent.name}</strong> agent installed successfully.
+              <strong>{agent.name}</strong> agent added successfully.
             </p>
           ) : isPending ? (
             <>
-              <InlineLoading className={classes.loading} description="Importing agent&hellip;" />
+              <InlineLoading className={classes.loading} description="Adding an agent&hellip;" />
 
               {showLogs && (
                 <CodeSnippet className={classes.logs} forceExpand withBorder autoScroll>
@@ -119,15 +124,16 @@ export function ImportAgentsModal({ onRequestClose, ...modalProps }: ModalProps)
             </div>
           ) : (
             <div className={classes.stack}>
+              <p>Once your agent is published, it will be visible to everyone with access to {appName}.</p>
+
               <RadioButtonGroup
                 name={sourceField.name}
-                legendText="Select the source of your agent provider"
                 valueSelected={sourceField.value}
                 onChange={sourceField.onChange}
                 disabled={isPending}
               >
-                <RadioButton labelText="GitHub" value={ProviderSource.GitHub} />
-                <RadioButton labelText="Docker image" value={ProviderSource.Docker} />
+                <RadioButton labelText="Github respository URL" value={ProviderSource.GitHub} />
+                <RadioButton labelText="Container image URL" value={ProviderSource.Docker} />
               </RadioButtonGroup>
 
               {sourceField.value === ProviderSource.GitHub ? (
@@ -135,15 +141,17 @@ export function ImportAgentsModal({ onRequestClose, ...modalProps }: ModalProps)
                   id={`${id}:location`}
                   size="lg"
                   labelText="GitHub repository URL"
-                  placeholder="Type your GitHub repository URL"
+                  placeholder="Enter your agent’s GitHub repository URL"
+                  hideLabel
                   {...register('location', { required: true, disabled: isPending })}
                 />
               ) : (
                 <TextInput
                   id={`${id}:location`}
                   size="lg"
-                  labelText="Docker image URL"
-                  placeholder="Type your Docker image URL"
+                  labelText="Container image URL"
+                  placeholder="Enter your agent’s container image URL"
+                  hideLabel
                   {...register('location', { required: true, disabled: isPending })}
                 />
               )}
@@ -156,21 +164,18 @@ export function ImportAgentsModal({ onRequestClose, ...modalProps }: ModalProps)
         </form>
       </ModalBody>
 
-      <ModalFooter>
-        <Button kind="ghost" onClick={() => onRequestClose()}>
-          {isPending ? 'Cancel' : 'Close'}
-        </Button>
-
-        {!agent && (
+      {!agent && (
+        <ModalFooter>
           <Button
             type="submit"
+            size="sm"
             onClick={handleSubmit(onSubmit)}
             disabled={isPending || !isValid || (actionRequired && !actionField.value)}
           >
-            {isPending ? <InlineLoading description="Importing&hellip;" /> : 'Continue'}
+            {isPending ? <InlineLoading description="Adding&hellip;" /> : 'Add new agent'}
           </Button>
-        )}
-      </ModalFooter>
+        </ModalFooter>
+      )}
     </Modal>
   );
 }
