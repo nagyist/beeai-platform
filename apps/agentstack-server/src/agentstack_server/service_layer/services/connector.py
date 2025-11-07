@@ -141,7 +141,10 @@ class ConnectorService:
 
         await self._revoke_auth_token(connector=connector)
 
+        if connector.auth:
+            connector.auth.flow = None
         connector.state = ConnectorState.disconnected
+        connector.disconnect_reason = "Client request"
 
         async with self._uow() as uow:
             await uow.connectors.update(connector=connector)
@@ -176,12 +179,16 @@ class ConnectorService:
                 auth_metadata = await self._discover_auth_metadata(connector=connector)
                 if not auth_metadata:
                     raise RuntimeError("Authorization server no longer contains necessary metadata")
+                token_endpoint = auth_metadata.get("token_endpoint")
+                if not token_endpoint:
+                    raise RuntimeError("Authorization server has no token endpoint in metadata")
                 token = await client.fetch_token(
-                    auth_metadata.get("token_endpoint"),
+                    token_endpoint,
                     authorization_response=callback_url,
                     code_verifier=connector.auth.flow.code_verifier,
                 )
                 connector.auth.token = Token.model_validate(token)
+                connector.auth.token_endpoint = AnyUrl(str(token_endpoint))
                 connector.auth.flow = None
             try:
                 await self.probe_connector(connector=connector)
@@ -238,6 +245,9 @@ class ConnectorService:
         try:
             await self.probe_connector(connector=connector)
         except Exception as err:
+            await self._revoke_auth_token(connector=connector)
+            if connector.auth:
+                connector.auth.flow = None
             connector.state = ConnectorState.disconnected
             connector.disconnect_reason = str(err)
         finally:
@@ -295,6 +305,7 @@ class ConnectorService:
                 logger.warning("Token revocation failed", exc_info=True)
 
             connector.auth.token = None
+            connector.auth.token_endpoint = None
             async with self._uow() as uow:
                 await uow.connectors.update(connector=connector)
                 await uow.commit()
@@ -329,6 +340,8 @@ class ConnectorService:
             code_challenge_method="S256",
             headers=headers,
             timeout=timeout,
+            leeway=60,  # A job probes connectors every 30 seconds, ensuring the token is valid roughly for at least 30 seconds per request.
+            token_endpoint=str(connector.auth.token_endpoint),
         )
 
     async def _discover_auth_metadata(self, *, connector: Connector) -> AuthorizationServerMetadata | None:
