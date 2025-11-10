@@ -1,73 +1,47 @@
 ---
 name: "Agent Idea"
-about: Suggest an agent concept for others to build
+about: Suggest an agent idea for others to build
 title: "[Agent] <agent name>"
 labels: ["agent-idea"]
 ---
 
-**If you like this idea, vote with a 👍 reaction on this issue.**
+_If this idea excites you, vote with a 👍 so the community knows it’s worth building._
 
----
+### 1. What it does
+Give a short description of the agent and why it’s interesting (1–2 sentences).
 
-## 1. What it does (1–2 sentences)
-Describe the core idea and why it is interesting.
+_Example: A Q&A Builder that watches Slack and Discord, spots new questions, retrieves answers from project docs, and proposes new Q&A entries for review._
 
-_Example:_  
-A Q&A Builder that watches Slack and Discord, detects new questions, retrieves answers from project docs, and proposes new Q&A entries for review.
-
----
-
-## 2. Why this is valuable
+### 2. Why this is valuable
+Explain the motivation:
 - What problem does it solve?  
-- Who benefits from it?
+- Who benefits from it?  
 
-_Example:_  
-Repeated questions across channels, answers drifting from the docs, and no central Q&A database.
+_Example: Teams repeat answers across channels, answers drift from the docs, and there’s no central Q&A source of truth._
 
----
-
-## 3. How it behaves
+### 3. How it behaves
+Describe how the agent works in practice:
 - Triggers (when does it run?)  
 - Inputs (what does it look at?)  
 - Outputs (what does it produce?)  
-- Human in the loop? (optional)
+- Human in the loop?
 
-_Example:_  
-Trigger when a new message ends with a question mark. Retrieve context from docs. Draft answer. Send to a reviewer if confidence is low.
+_Example: Trigger when a message ends with a question mark. Retrieve context from docs. Draft an answer. Send to a reviewer if confidence is low._
 
----
+### 4. What the agent needs access to
+List the main sources, tools, or systems the agent depends on.
 
-## 4. What the agent needs access to
-List the key sources or tools it relies on.
+_Examples: Slack channels, Discord channels, Docs folder, GitHub issues, Knowledge base entries_
 
-_Examples:_  
-- Slack channels  
-- Discord channels  
-- Docs folder  
-- GitHub issues  
-- Knowledge base entries  
+### 5. Rough architecture (very high level)
+Share the big picture. Bullet points or simple diagrams are perfect.
 
----
+_Example: Detect question → Retrieve context → Draft answer with citations → Send to review → Publish to Q&A database_
 
-## 5. Rough architecture (very high level)
-Bullet points or simple diagrams are fine.
+### 6. Open questions
+List anything that’s intentionally unscoped or needs discussion.
 
-_Example:_  
-- Detect question  
-- Retrieve context  
-- Draft answer with citations  
-- Send to review  
-- Publish to Q&A database  
+_Example: Should outdated Q&A items be auto-detected and refreshed?_
 
----
-
-## 6. Open questions
-Anything intentionally unscoped or still under consideration.
-
-_Example:_  
-Should outdated Q&A items be auto-detected and refreshed?
-
----
-
-## 7. Who could build this?
-(Optional) Tag people or teams who might pick it up.
+### 7. Who could build this?
+(Optional) Tag people or teams who might be excited to take this on.
