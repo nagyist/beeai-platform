@@ -1,6 +1,6 @@
 ---
 name: "Agent Idea"
-about: Suggest an agent idea for others to build
+about: Suggest an agent idea to build
 title: "[Agent] <agent name>"
 labels: ["agent-idea"]
 ---
