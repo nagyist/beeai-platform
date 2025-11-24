@@ -111,11 +111,17 @@ class ConnectorService:
                     )
                     connector.state = ConnectorState.auth_required
                 else:
+                    logger.error("Connector failed", exc_info=True)
+                    try:
+                        error = (await err.response.aread()).decode(err.response.encoding or "utf-8")
+                    except Exception:
+                        error = "Connector has returned an error"
                     raise PlatformError(
-                        (await err.response.aread()).decode(err.response.encoding or "utf-8"),
+                        error,
                         status_code=status.HTTP_502_BAD_GATEWAY,
                     ) from err
             elif isinstance(err, httpx.RequestError):
+                logger.error("Connector failed", exc_info=True)
                 raise PlatformError(
                     "Unable to establish connection with the connector",
                     status_code=status.HTTP_504_GATEWAY_TIMEOUT,
@@ -133,9 +139,10 @@ class ConnectorService:
         async with self._uow() as uow:
             connector = await uow.connectors.get(connector_id=connector_id, user_id=user.id if user else None)
 
-        if connector.state not in (ConnectorState.connected, ConnectorState.auth_required):
+        if connector.state not in (ConnectorState.connected, ConnectorState.disconnected, ConnectorState.auth_required):
             raise PlatformError(
-                "Connector must be in connected or auth_required state", status_code=status.HTTP_400_BAD_REQUEST
+                "Connector must be in connected, disconnected or auth_required state",
+                status_code=status.HTTP_400_BAD_REQUEST,
             )
 
         await self._revoke_auth_token(connector=connector)
@@ -239,15 +246,18 @@ class ConnectorService:
         async with self._uow() as uow:
             connector = await uow.connectors.get(connector_id=connector_id, user_id=user.id if user else None)
 
-        if connector.state != ConnectorState.connected:
+        if connector.state not in (ConnectorState.connected, ConnectorState.disconnected):
             return
 
         try:
             await self.probe_connector(connector=connector)
+            connector.state = ConnectorState.connected
+            connector.disconnect_reason = None
         except Exception as err:
-            await self._revoke_auth_token(connector=connector)
-            if connector.auth:
-                connector.auth.flow = None
+            if isinstance(err, httpx.HTTPStatusError) and err.response.status_code == status.HTTP_401_UNAUTHORIZED:
+                await self._revoke_auth_token(connector=connector)
+                if connector.auth:
+                    connector.auth.flow = None
             connector.state = ConnectorState.disconnected
             connector.disconnect_reason = str(err)
         finally:
