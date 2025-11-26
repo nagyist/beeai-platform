@@ -3,31 +3,32 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Button, ToastNotification } from '@carbon/react';
-import clsx from 'clsx';
-import { formatDistanceToNow } from 'date-fns';
+import { Button } from '@carbon/react';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { PropsWithChildren } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
-import { LineClampText } from '#components/LineClampText/LineClampText.tsx';
-import { MarkdownContent } from '#components/MarkdownContent/MarkdownContent.tsx';
+import { Toast } from '#components/Toast/Toast.tsx';
+import { useScrollbar } from '#hooks/useScrollbar.ts';
+import { fadeProps } from '#utils/fadeProps.ts';
 
-import type { Toast, ToastWithKey } from './toast-context';
+import type { Toast as ToastProps, ToastWithKey } from './toast-context';
 import { ToastContext } from './toast-context';
 import classes from './ToastProvider.module.scss';
 
 export function ToastProvider({ children }: PropsWithChildren) {
   const [toasts, setToasts] = useState<ToastWithKey[]>([]);
 
+  const { ref: scrollbarRef, ...scrollbarProps } = useScrollbar();
+
   const addToast = useCallback(
-    (toast: Toast) => {
+    (toast: ToastProps) => {
       setToasts((existing) => {
         const defaults = {
-          lowContrast: true,
-          timeout: 10_000,
           key: uuid(),
           date: new Date(),
+          timeout: 10_000,
         };
         return [{ ...defaults, ...toast }, ...existing];
       });
@@ -36,18 +37,23 @@ export function ToastProvider({ children }: PropsWithChildren) {
   );
 
   const contextValue = useMemo(() => ({ addToast }), [addToast]);
+
+  const hasToasts = toasts.length > 1;
+
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
 
-      <div className={classes.toasts}>
-        {toasts.length > 1 && (
-          <div className={classes.clearButton}>
-            <Button kind="ghost" size="sm" onClick={() => setToasts([])}>
-              Clear all
-            </Button>
-          </div>
-        )}
+      <div className={classes.toasts} ref={scrollbarRef} {...scrollbarProps}>
+        <AnimatePresence mode="popLayout">
+          {hasToasts && (
+            <motion.div className={classes.clearButton} {...fadeProps()}>
+              <Button kind="ghost" size="sm" onClick={() => setToasts([])}>
+                Clear all
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {toasts.map((toast) => (
           <Toast
@@ -62,70 +68,3 @@ export function ToastProvider({ children }: PropsWithChildren) {
     </ToastContext.Provider>
   );
 }
-
-function Toast({ toast, onClose }: { toast: ToastWithKey; onClose: () => void }) {
-  const { key, icon: Icon, date, title, subtitle, apiError, inlineIcon, hideTimeElapsed, ...otherProps } = toast;
-
-  return (
-    <ToastNotification
-      key={key}
-      {...otherProps}
-      onClose={onClose}
-      className={clsx({
-        'cds--toast-notification--custom-icon': Boolean(Icon),
-        'cds--toast-notification--inline-icon': Boolean(inlineIcon),
-      })}
-    >
-      {Icon && <Icon className="cds--toast-notification__icon" />}
-
-      {!hideTimeElapsed && date && (
-        <div className="cds--toast-notification__caption">
-          <ElapsedTime date={date} />
-        </div>
-      )}
-
-      {title && <div className="cds--toast-notification__title">{title}</div>}
-
-      {(subtitle || apiError) && (
-        <div className="cds--toast-notification__subtitle">
-          {subtitle && <div>{subtitle}</div>}
-          {apiError && (
-            <LineClampText lines={8} useBlockElement>
-              <MarkdownContent>{apiError}</MarkdownContent>
-            </LineClampText>
-          )}
-        </div>
-      )}
-    </ToastNotification>
-  );
-}
-
-function ElapsedTime({ date }: { date: Date }) {
-  const [, setTick] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (Date.now() - date.getTime() > MAX_REFRESH_INTERVAL_DURATION) {
-        clearInterval(interval);
-      }
-      setTick((tick) => tick + 1);
-    }, TIME_REFRESH_INTERVAL);
-    return () => clearInterval(interval);
-  }, [date]);
-
-  const millisecondsAgo = Date.now() - date.getTime();
-
-  return (
-    <time dateTime={date.toISOString()}>
-      {millisecondsAgo < JUST_NOW
-        ? 'Just now'
-        : millisecondsAgo > MAX_REFRESH_INTERVAL_DURATION
-          ? 'More than an hour ago'
-          : formatDistanceToNow(date, { addSuffix: true, includeSeconds: true })}
-    </time>
-  );
-}
-
-const JUST_NOW = 5_000; // 5 seconds
-const TIME_REFRESH_INTERVAL = 1_000; // 10 seconds
-const MAX_REFRESH_INTERVAL_DURATION = 3_600_000; // 1 hour

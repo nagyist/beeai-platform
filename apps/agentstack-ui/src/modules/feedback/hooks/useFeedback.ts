@@ -8,6 +8,7 @@ import { useCallback, useMemo, useState } from 'react';
 import type { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 
+import { getErrorMessage } from '#api/utils.ts';
 import { useToast } from '#contexts/Toast/index.ts';
 import type { UIAgentMessage } from '#modules/messages/types.ts';
 import { usePlatformContext } from '#modules/platform-context/contexts/index.ts';
@@ -71,18 +72,16 @@ export function useFeedback({ message, onOpenChange }: Props) {
           await sendFeedback(createSendFeedbackPayload({ agent, message, values, contextId }));
 
           addToast({
-            kind: 'info',
             title: 'Thank you for your feedback!',
-            hideTimeElapsed: true,
+            hideDate: true,
             icon: CheckmarkFilled,
-            inlineIcon: true,
             timeout: 5_000,
           });
         } catch (error) {
           addToast({
             kind: 'error',
             title: 'Failed to send feedback',
-            subtitle: error instanceof Error ? error.message : 'An unknown error occurred',
+            message: getErrorMessage(error) || 'An unknown error occurred',
           });
         }
 
@@ -98,8 +97,9 @@ export function useFeedback({ message, onOpenChange }: Props) {
       const errorMessages = Object.values(errors).map(({ message }) => message);
 
       addToast({
+        kind: 'error',
         title: 'Form contains errors',
-        subtitle: errorMessages.join('\n'),
+        message: errorMessages.join('\n'),
       });
     },
     [addToast],
