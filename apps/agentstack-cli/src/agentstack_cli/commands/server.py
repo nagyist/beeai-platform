@@ -5,6 +5,7 @@ import asyncio
 import logging
 import sys
 import typing
+import uuid
 import webbrowser
 from urllib.parse import urlencode
 
@@ -66,6 +67,10 @@ async def _wait_for_auth_code(port: int = 9001) -> str:
         server.should_exit = True
 
     return code
+
+
+def get_unique_app_name() -> str:
+    return f"Agent Stack CLI {uuid.uuid4()}"
 
 
 @app.command("login | change | select | default | switch")
@@ -137,6 +142,7 @@ async def server_login(server: typing.Annotated[str | None, typer.Argument()] = 
 
         client_id = config.client_id
         client_secret = config.client_secret
+        registration_token = None
 
         if auth_servers:
             if len(auth_servers) == 1:
@@ -161,17 +167,35 @@ async def server_login(server: typing.Annotated[str | None, typer.Argument()] = 
             registration_endpoint = oidc["registration_endpoint"]
             if not client_id and registration_endpoint:
                 async with httpx.AsyncClient() as client:
+                    resp = None
                     try:
+                        app_name = get_unique_app_name()
                         resp = await client.post(
                             registration_endpoint,
-                            json={"client_name": "Agent Stack CLI", "redirect_uris": [REDIRECT_URI]},
+                            json={
+                                "client_name": app_name,
+                                "grant_types": ["authorization_code", "refresh_token"],
+                                "enforce_pkce": True,
+                                "all_users_entitled": True,
+                                "redirect_uris": [REDIRECT_URI],
+                            },
                         )
                         resp.raise_for_status()
                         data = resp.json()
                         client_id = data["client_id"]
                         client_secret = data["client_secret"]
-                    except Exception:
-                        console.warning("Dynamic client registration failed. Proceed with manual input.")
+                        registration_token = data["registration_access_token"]
+                    except Exception as e:
+                        if resp:
+                            try:
+                                error_details = resp.json()
+                                console.warning(
+                                    f"error: {error_details['error']} error description: {error_details['error_description']}"
+                                )
+
+                            except Exception:
+                                console.info("no parsable json response.")
+                        console.warning(f" Dynamic client registration failed. Proceed with manual input.  {e!s}")
 
             if not client_id:
                 client_id = await inquirer.text(  #  type: ignore
@@ -208,6 +232,7 @@ async def server_login(server: typing.Annotated[str | None, typer.Argument()] = 
 
             code = await _wait_for_auth_code()
             async with httpx.AsyncClient() as client:
+                token_resp = None
                 try:
                     token_resp = await client.post(
                         oidc["token_endpoint"],
@@ -223,6 +248,15 @@ async def server_login(server: typing.Annotated[str | None, typer.Argument()] = 
                     token_resp.raise_for_status()
                     token = token_resp.json()
                 except Exception as e:
+                    if resp:
+                        try:
+                            error_details = resp.json()
+                            console.warning(
+                                f"error: {error_details['error']} error description: {error_details['error_description']}"
+                            )
+                        except Exception:
+                            console.info("no parsable json response.")
+
                     raise RuntimeError(f"Token request failed: {e}") from e
 
             if not token:
@@ -234,6 +268,7 @@ async def server_login(server: typing.Annotated[str | None, typer.Argument()] = 
             client_id=client_id,
             client_secret=client_secret,
             token=token,
+            registration_token=registration_token,
         )
 
     config.auth_manager.active_server = server
@@ -248,7 +283,7 @@ async def server_logout(
         typer.Option(),
     ] = False,
 ):
-    config.auth_manager.clear_auth_token(all=all)
+    await config.auth_manager.clear_auth_token(all=all)
     console.success("You have been logged out.")
 
 
