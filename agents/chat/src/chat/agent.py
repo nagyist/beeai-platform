@@ -9,7 +9,8 @@ from a2a.types import (
     AgentSkill,
     Message,
 )
-from beeai_framework.agents.requirement.types import RequirementAgentRunStateStep, RequirementAgentRunState
+from beeai_framework.agents.requirement.utils._tool import FinalAnswerTool
+from beeai_framework.errors import FrameworkError
 from pydantic import BaseModel
 
 from agentstack_sdk.a2a.extensions import (
@@ -29,6 +30,7 @@ from agentstack_sdk.a2a.extensions import (
 # Monkey-patch to remove FormExtensionSpec which no longer exists
 # TODO: remove after next release
 import agentstack_sdk.a2a.extensions as agentstack_extensions
+from chat.tools.files.file_reader import FileReaderTool
 
 agentstack_extensions.FormExtensionSpec = BaseExtensionSpec
 agentstack_extensions.FormExtensionServer = BaseExtensionServer
@@ -37,17 +39,15 @@ agentstack_extensions.TextField = BaseModel
 from beeai_framework.adapters.agentstack.backend.chat import AgentStackChatModel
 from beeai_framework.agents.requirement import RequirementAgent
 from beeai_framework.agents.requirement.events import (
-    RequirementAgentStartEvent,
     RequirementAgentSuccessEvent,
     RequirementAgentFinalAnswerEvent,
 )
-from beeai_framework.agents.requirement.utils._tool import FinalAnswerTool
 from beeai_framework.middleware.trajectory import GlobalTrajectoryMiddleware
-from beeai_framework.tools import Tool
+from beeai_framework.tools import Tool, AnyTool
 from beeai_framework.tools.search.duckduckgo import DuckDuckGoSearchTool
 from beeai_framework.tools.search.wikipedia import WikipediaTool
 from beeai_framework.tools.weather import OpenMeteoTool
-from beeai_framework.backend import ChatModelParameters
+from beeai_framework.backend import ChatModelParameters, AssistantMessage
 from agentstack_sdk.a2a.extensions.services.platform import (
     PlatformApiExtensionServer,
     PlatformApiExtensionSpec,
@@ -60,7 +60,6 @@ from openinference.instrumentation.beeai import BeeAIInstrumentor
 from chat.helpers.citations import extract_citations
 from chat.helpers.trajectory import TrajectoryContent
 from chat.tools.files.file_creator import FileCreatorTool, FileCreatorToolOutput
-from chat.tools.files.file_reader import create_file_reader_tool_class
 from chat.tools.files.utils import extract_files, to_framework_message
 
 from agentstack_sdk.server.store.platform_context_store import PlatformContextStore
@@ -73,7 +72,7 @@ server = Server()
 
 
 @server.agent(
-    name="Chat",
+    name="ChatV2",
     documentation_url=(
         f"https://github.com/i-am-bee/agentstack/blob/{os.getenv('RELEASE_VERSION', 'main')}/agents/chat"
     ),
@@ -156,7 +155,7 @@ async def chat(
     citation: Annotated[CitationExtensionServer, CitationExtensionSpec()],
     llm_ext: Annotated[
         LLMServiceExtensionServer,
-        LLMServiceExtensionSpec.single_demand(suggested=("openai:gpt-4o", "ollama:granite3.3:8b")),
+        LLMServiceExtensionSpec.single_demand(),
     ],
     _: Annotated[PlatformApiExtensionServer, PlatformApiExtensionSpec()],
 ):
@@ -168,20 +167,6 @@ async def chat(
 
     history = [message async for message in context.load_history() if isinstance(message, Message) and message.parts]
     extracted_files = await extract_files(history=history)
-
-    # Configure tools
-    file_reader_tool_class = create_file_reader_tool_class(
-        extracted_files
-    )  # Dynamically created tool input schema based on real provided files ensures that small LLMs can't hallucinate the input
-
-    tools = [
-        # Common tools
-        WikipediaTool(),
-        OpenMeteoTool(),
-        DuckDuckGoSearchTool(),
-        file_reader_tool_class(),
-        FileCreatorTool(),
-    ]
 
     llm = AgentStackChatModel(parameters=ChatModelParameters(stream=True))
     llm.set_context(llm_ext)
@@ -215,7 +200,18 @@ async def chat(
         """
     )
 
+    # Configure tools
+    tools: list[AnyTool] = [
+        WikipediaTool(),
+        OpenMeteoTool(),
+        DuckDuckGoSearchTool(),
+        FileCreatorTool(),
+    ]
+
     if extracted_files:
+        # Dynamically created tool input schema based on real provided files ensures that small LLMs can't hallucinate the input
+        tools.append(FileReaderTool(extracted_files))
+
         files_context = "\n\n## Currently Available Files:"
         files_context += "\nThe user has uploaded the following files that you can access using the File Reader tool:"
         for file in extracted_files:
@@ -235,67 +231,63 @@ async def chat(
         middlewares=[GlobalTrajectoryMiddleware(included=[Tool])],
     )
 
-    final_answer = None
+    final_answer: AssistantMessage | None = None
     new_messages = [to_framework_message(item, extracted_files) for item in history]
 
-    async for event, meta in agent.run(
-        new_messages,
-        expected_output=dedent("""\
-           Assemble and send the final answer to the user. When using information gathered from other tools that provided URL addresses, you MUST properly cite them using markdown citation format: [description](URL).
+    try:
+        async for event, meta in agent.run(
+            new_messages,
+            expected_output=dedent("""\
+               Assemble and send the final answer to the user. When using information gathered from other tools that provided URL addresses, you MUST properly cite them using markdown citation format: [description](URL).
+    
+               # Citation Requirements:
+               - Use descriptive text that summarizes the source content
+               - Include the exact URL provided by the tool
+               - Place citations inline where the information is referenced
+    
+               # Examples:
+               - According to [OpenAI's latest announcement](https://example.com/gpt5), GPT-5 will be released next year.
+               - Recent studies show [AI adoption has increased by 67%](https://example.com/ai-study) in enterprise environments.
+               - Weather data indicates [temperatures will reach 25°C tomorrow](https://weather.example.com/forecast).
+               """),
+        ):
+            match event:
+                case RequirementAgentFinalAnswerEvent(delta=delta):
+                    yield delta
+                case RequirementAgentSuccessEvent(state=state):
+                    final_answer = state.answer
 
-           # Citation Requirements:
-           - Use descriptive text that summarizes the source content
-           - Include the exact URL provided by the tool
-           - Place citations inline where the information is referenced
+                    last_step = state.steps[-1]
+                    if last_step.tool.name == FinalAnswerTool.name:  # internal tool
+                        continue
 
-           # Examples:
-           - According to [OpenAI's latest announcement](https://example.com/gpt5), GPT-5 will be released next year.
-           - Recent studies show [AI adoption has increased by 67%](https://example.com/ai-study) in enterprise environments.
-           - Weather data indicates [temperatures will reach 25°C tomorrow](https://weather.example.com/forecast).
-           """),
-    ):
-        match event:
-            case RequirementAgentFinalAnswerEvent(delta=delta):
-                yield delta
-            case RequirementAgentSuccessEvent(state=state):
-                final_answer = state.answer
-            case RequirementAgentStartEvent(
-                state=RequirementAgentRunState(
-                    steps=[
-                        *_,
-                        RequirementAgentRunStateStep(
-                            tool=Tool() as tool,
-                            input=tool_input,
-                            output=tool_output,
-                            error=tool_error,
-                        ),
-                    ]
-                )
-            ):
-                if tool.name == FinalAnswerTool.name:
-                    continue
+                    trajectory_content = TrajectoryContent(
+                        input=last_step.input, output=last_step.output, error=last_step.error
+                    )
+                    metadata = trajectory.trajectory_metadata(
+                        title=last_step.tool.name, content=trajectory_content.model_dump_json(), group_id=last_step.id
+                    )
+                    yield metadata
+                    await context.store(AgentMessage(metadata=metadata))
 
-                trajectory_content = TrajectoryContent(input=tool_input, output=tool_output, error=tool_error)
-                metadata = trajectory.trajectory_metadata(title=tool.name, content=trajectory_content.model_dump_json())
-                yield metadata
-                await context.store(AgentMessage(metadata=metadata))
+                    if isinstance(last_step.output, FileCreatorToolOutput):
+                        for file_info in last_step.output.result.files:
+                            part = file_info.file.to_file_part()
+                            part.file.name = file_info.display_filename
+                            artifact = AgentArtifact(name=file_info.display_filename, parts=[part])
+                            yield artifact
+                            await context.store(artifact)
 
-                if isinstance(tool_output, FileCreatorToolOutput):
-                    for file_info in tool_output.result.files:
-                        part = file_info.file.to_file_part()
-                        part.file.name = file_info.display_filename
-                        artifact = AgentArtifact(name=file_info.display_filename, parts=[part])
-                        yield artifact
-                        await context.store(artifact)
+        if final_answer:
+            citations, clean_text = extract_citations(final_answer.text)
 
-    if final_answer:
-        citations, clean_text = extract_citations(final_answer.text)
-
-        message = AgentMessage(
-            text=clean_text,
-            metadata=(citation.citation_metadata(citations=citations) if citations else None),
-        )
-        await context.store(message)
+            message = AgentMessage(
+                text=clean_text,
+                metadata=(citation.citation_metadata(citations=citations) if citations else None),
+            )
+            await context.store(message)
+    except FrameworkError as err:
+        raise RuntimeError(err.explain())
 
 
 def serve():
