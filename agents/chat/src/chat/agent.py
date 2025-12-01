@@ -164,8 +164,6 @@ async def chat(
 ):
     """Agent with memory and access to web search, Wikipedia, and weather."""
     await context.store(input)
-    _e.context["test"] = {"test": "test"}
-    raise ValueError("Test error")
 
     # Send initial trajectory
     yield trajectory.trajectory_metadata(title="Starting", content="Received your request")
