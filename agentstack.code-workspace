@@ -17,6 +17,14 @@
             "path": "apps/agentstack-cli"
         },
         {
+            "name": "agentstack-ui",
+            "path": "apps/agentstack-ui",
+        },
+        {
+            "name": "beeai-web",
+            "path": "apps/beeai-web",
+        },
+        {
             "name": "agent-chat",
             "path": "agents/chat"
         },
