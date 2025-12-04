@@ -152,12 +152,50 @@ configuration = Configuration()
 
 @app.command("add")
 async def add_agent(
-    location: typing.Annotated[str, typer.Argument(help="Agent location (public docker image or github url)")],
+    location: typing.Annotated[
+        str | None, typer.Argument(help="Agent location (public docker image or github url)")
+    ] = None,
     dockerfile: typing.Annotated[str | None, typer.Option(help="Use custom dockerfile path")] = None,
     verbose: typing.Annotated[bool, typer.Option("-v", "--verbose", help="Show verbose output")] = False,
     yes: typing.Annotated[bool, typer.Option("--yes", "-y", help="Skip confirmation prompts.")] = False,
 ) -> None:
     """Add a docker image or GitHub repository [aliases: install]"""
+    if location is None:
+        repo_input = (
+            await inquirer.text(  # pyright: ignore[reportPrivateImportUsage]
+                message="Enter GitHub repository (owner/repo or full URL):",
+            ).execute_async()
+            or ""
+        )
+
+        match = re.search(r"^(?:(?:https?://)?(?:www\.)?github\.com/)?([^/]+)/([^/?&]+)", repo_input)
+        if not match:
+            raise ValueError(f"Invalid GitHub URL format: {repo_input}. Expected 'owner/repo' or a full GitHub URL.")
+
+        owner, repo = match.group(1), match.group(2).removesuffix(".git")
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://api.github.com/repos/{owner}/{repo}/tags",
+                headers={"Accept": "application/vnd.github.v3+json"},
+            )
+            tags = [tag["name"] for tag in response.json()] if response.status_code == 200 else []
+
+        if tags:
+            selected_tag = await inquirer.fuzzy(  # pyright: ignore[reportPrivateImportUsage]
+                message="Select a tag to use:",
+                choices=tags,
+            ).execute_async()
+        else:
+            selected_tag = (
+                await inquirer.text(  # pyright: ignore[reportPrivateImportUsage]
+                    message="Enter tag to use:",
+                ).execute_async()
+                or "main"
+            )
+
+        location = f"https://github.com/{owner}/{repo}@{selected_tag}"
+
     url = announce_server_action(f"Installing agent '{location}' for")
     await confirm_server_action("Proceed with installing this agent on", url=url, yes=yes)
     with verbosity(verbose):
@@ -770,24 +808,41 @@ def _create_input_handler(
 @app.command("run")
 async def run_agent(
     search_path: typing.Annotated[
-        str, typer.Argument(..., help="Short ID, agent name or part of the provider location")
-    ],
+        str | None,
+        typer.Argument(
+            help="Short ID, agent name or part of the provider location",
+        ),
+    ] = None,
     input: typing.Annotated[
         str | None,
         typer.Argument(
-            default_factory=lambda: None if sys.stdin.isatty() else sys.stdin.read(),
             help="Agent input as text or JSON",
         ),
-    ],
+    ] = None,
     dump_files: typing.Annotated[
         Path | None, typer.Option(help="Folder path to save any files returned by the agent")
     ] = None,
 ) -> None:
     """Run an agent."""
-    announce_server_action(f"Running agent '{search_path}' on")
+    if search_path is not None and input is None and sys.stdin.isatty():
+        input = sys.stdin.read()
     async with configuration.use_platform_client():
         providers = await Provider.list()
         await ensure_llm_provider()
+
+        if search_path is None:
+            if not providers:
+                err_console.error("No agents found. Add an agent first using 'agentstack agent add'.")
+                sys.exit(1)
+            search_path = await inquirer.fuzzy(  # pyright: ignore[reportPrivateImportUsage]
+                message="Select an agent to run:",
+                choices=[provider.agent_card.name for provider in providers],
+            ).execute_async()
+            if search_path is None:
+                err_console.error("No agent selected. Exiting.")
+                sys.exit(1)
+
+        announce_server_action(f"Running agent '{search_path}' on")
         provider = select_provider(search_path, providers=providers)
 
         context = await Context.create(
