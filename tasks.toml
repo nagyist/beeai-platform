@@ -182,46 +182,102 @@ export PS1="(${VM_NAME}) ${__OLD_PS1}"
 
 """
 
-["release"]
+["release:new"]
 dir = "{{config_root}}"
 run = '''
 #!/bin/bash
 set -eu -o pipefail
 
-# Ensure on main branch
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "ERROR: Working directory not clean"
+  exit 1
+ fi
+
+
+
 current_branch=$(git rev-parse --abbrev-ref HEAD)
 if [[ "$current_branch" != "main" ]]; then
   echo "ERROR: You must be on the 'main' branch (current: $current_branch)"
   exit 1
 fi
 
-# Ensure working directory is clean
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "ERROR: Working directory not clean"
-  git status
-  exit 1
-fi
-
 current_version=$(yq -r '.version' helm/Chart.yaml)
+rc_version="${current_version}-rc1"
 
-# Compute suggested next rc version
-if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-rc([0-9]+))?$ ]]; then
-  if [[ -n "${BASH_REMATCH[5]}" ]]; then
-    suggested_new_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}-rc$((${BASH_REMATCH[5]} + 1))"
-  else
-    suggested_new_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.$((${BASH_REMATCH[3]} + 1))-rc1"
-  fi
+if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+  major="${BASH_REMATCH[1]}"
+  minor="${BASH_REMATCH[2]}"
+  patch="${BASH_REMATCH[3]}"
+  next_version="${major}.${minor}.$((patch + 1))"
 else
-  echo "ERROR: Invalid version format of current version. Use #.#.#[-rc#]"
+  echo "ERROR: Invalid version format: $current_version. Expected format: X.Y.Z"
   exit 1
 fi
 
-# Prompt for new version
-new_version=$(gum input --prompt.foreground="8" --prompt "Bump from ${current_version} -> " --value "$suggested_new_version")
-if [[ ! "$new_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$ ]]; then
-  echo "ERROR: Invalid version format of new version. Use #.#.#[-rc#]"
+# Show what will happen and ask for confirmation
+echo "  Current version (main): $current_version"
+echo ""
+echo "  Actions:"
+echo "  1. Create RC in release branch: $rc_version"
+echo "  2. Bump version in main branch: $next_version"
+echo ""
+
+if ! gum confirm "Proceed with the release?"; then
+  echo "Release cancelled."
+  exit 0
+fi
+
+git checkout release
+git reset --hard origin/main
+
+{{ mise_bin }} release:bump --version="$rc_version"
+
+git checkout main
+git pull origin main
+
+# Bump version on main
+{{ mise_bin }} release:bump --version="$next_version"
+'''
+
+["release:_update-install-sh"]
+hide = true
+dir = "{{config_root}}"
+run = '''
+#!/bin/bash
+set -eu -o pipefail
+
+version='{{option(name="version", required=true)}}'
+
+# Update install.sh based on version type
+if [[ "$version" == *"-rc"* ]]; then
+  # RC version - update LATEST_AGENTSTACK_VERSION only
+  perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$version/" install.sh
+else
+  # Stable version - update BOTH constants (stable becomes new latest)
+  perl -pi -e "s/^(LATEST_STABLE_AGENTSTACK_VERSION=).*/\${1}$version/" install.sh
+  perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$version/" install.sh
+fi
+
+echo "Updated install.sh version constants for: $version"
+'''
+
+["release:bump"]
+dir = "{{config_root}}"
+run = '''
+#!/bin/bash
+set -eu -o pipefail
+
+# Get version parameter
+new_version='{{option(name="version", required=true)}}'
+
+# Validate version format (X.Y.Z or X.Y.Z-rcW)
+if ! [[ "$new_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-rc[0-9]+)?$ ]]; then
+  echo "ERROR: Invalid version format: $new_version"
+  echo "Expected format: X.Y.Z or X.Y.Z-rcW (e.g., 1.2.3 or 1.2.3-rc1)"
   exit 1
 fi
+
+echo "Updating version to $new_version..."
 
 # Update all version fields
 yq -i ".version = \"$new_version\"" helm/Chart.yaml
@@ -234,21 +290,82 @@ yq -i ".version = \"$new_version\"" apps/agentstack-sdk-ts/package.json
 yq -i ".version = \"$new_version\"" apps/agentstack-ui/package.json
 yq -i ".version = \"$new_version\"" apps/beeai-web/package.json
 yq -i ".providers[].location |= sub(\":(.*)\$\"; \":\" + \"$new_version\")" agent-registry.yaml
-perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$new_version/" install.sh
-if [[ "$new_version" != *"-rc"* ]]; then perl -pi -e "s/^(LATEST_STABLE_AGENTSTACK_VERSION=).*/\${1}$new_version/" install.sh; fi
+
+{{ mise_bin }} release:_update-install-sh --version="$new_version"
+
+git add .
+git commit -m "bump: v$new_version"
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$current_branch" == "release" ]]; then
+  echo "On release branch, tagging and pushing tag..."
+  git tag "v$new_version"
+  git push origin tag "v$new_version"
+  echo "✅ Version updated to $new_version, tagged and pushed"
+elif [[ "$current_branch" == "main" ]]; then
+  echo "On main branch, pushing to origin..."
+  git push origin main
+  echo "✅ Version updated to $new_version, committed and pushed to main"
+else
+  echo "ERROR: Cannot push from branch '$current_branch'. Only 'release' and 'main' branches are supported."
+  exit 1
+fi
+'''
+
+["release:publish"]
+dir = "{{config_root}}"
+run = '''
+#!/bin/bash
+set -eu -o pipefail
+
+# Ensure on release branch
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$current_branch" != "release" ]]; then
+  echo "ERROR: You must be on the 'release' branch (current: $current_branch)"
+  exit 1
+fi
+
+# Ensure working directory is clean
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "ERROR: Working directory not clean"
+  git status
+  exit 1
+fi
+
+current_version=$(yq -r '.version' helm/Chart.yaml)
+publish_version="${current_version%-rc*}"
 
 # Confirm commit and push
-if gum confirm "Release version $new_version now?"; then
+if gum confirm "Publish version $publish_version now?"; then
   (
     set -eux -o pipefail
+    {{ mise_bin }} release:bump --version="$publish_version"
+
     git add .
-    git commit -m "release: v$new_version"
-    git tag "v$new_version"
-    git push --atomic origin main "v$new_version"
+    git commit -m "deploy: v$publish_version"
+    git tag "v$publish_version"
+    git push origin tag "v$publish_version"
+    git push origin release
   )
+  
+  # Backport install.sh version updates to main branch
+  echo "Backporting install.sh version updates to main branch..."
+  (
+    set -eux -o pipefail
+    git checkout main
+    git pull origin main
+
+    {{ mise_bin }} release:_update-install-sh --version="$publish_version"
+
+    git add install.sh
+    git commit -m "chore: update install.sh version to v$publish_version"
+    git push origin main
+    git checkout release
+  )
+  
   if command -v gh >/dev/null; then
     gum spin --title="Waiting for GitHub Action to start..." sleep 10
-    gh run watch $(gh run list --workflow=Release --branch=v$new_version --limit=1 --json databaseId,status -q '.[0].databaseId') || true
+    gh run watch $(gh run list --workflow=Release --branch=v$publish_version --limit=1 --json databaseId,status -q '.[0].databaseId') || true
   fi
   echo "GitHub action started. Check the progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 fi
