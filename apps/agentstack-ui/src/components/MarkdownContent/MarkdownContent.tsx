@@ -14,6 +14,7 @@ import type { PluggableList } from 'unified';
 import { components, type ExtendedComponents } from './components';
 import { Code } from './components/Code';
 import { MermaidDiagram } from './components/MermaidDiagram';
+import { MermaidProvider } from './contexts';
 import classes from './MarkdownContent.module.scss';
 import { rehypePlugins } from './rehype';
 import { remarkPlugins } from './remark';
@@ -21,7 +22,7 @@ import { urlTransform } from './utils';
 
 export interface MarkdownContentProps {
   codeBlocksExpanded?: boolean;
-  showMermaidDiagrams?: boolean;
+  isStreaming?: boolean;
   children?: string;
   className?: string;
   remarkPlugins?: PluggableList;
@@ -30,7 +31,7 @@ export interface MarkdownContentProps {
 
 export function MarkdownContent({
   codeBlocksExpanded,
-  showMermaidDiagrams,
+  isStreaming,
   className,
   remarkPlugins: remarkPluginsProps,
   components: componentsProps,
@@ -40,24 +41,26 @@ export function MarkdownContent({
     () => ({
       ...components,
       code: ({ ...props }) => <Code {...props} forceExpand={codeBlocksExpanded} />,
-      mermaidDiagram: ({ ...props }) => <MermaidDiagram {...props} showDiagram={showMermaidDiagrams} />,
+      mermaidDiagram: (props) => <MermaidDiagram {...props} isStreaming={isStreaming} />,
       ...componentsProps,
     }),
-    [codeBlocksExpanded, showMermaidDiagrams, componentsProps],
+    [codeBlocksExpanded, componentsProps, isStreaming],
   );
 
   const extendedRemarkPlugins = useMemo(() => [...remarkPlugins, ...(remarkPluginsProps ?? [])], [remarkPluginsProps]);
 
   return (
-    <div className={clsx(classes.root, className)}>
-      <Markdown
-        rehypePlugins={rehypePlugins}
-        remarkPlugins={extendedRemarkPlugins}
-        components={extendedComponents}
-        urlTransform={urlTransform}
-      >
-        {children}
-      </Markdown>
-    </div>
+    <MermaidProvider>
+      <div className={clsx(classes.root, className)}>
+        <Markdown
+          rehypePlugins={rehypePlugins}
+          remarkPlugins={extendedRemarkPlugins}
+          components={extendedComponents}
+          urlTransform={urlTransform}
+        >
+          {children}
+        </Markdown>
+      </div>
+    </MermaidProvider>
   );
 }
