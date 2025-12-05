@@ -323,6 +323,7 @@ connector:
 ui:
   replicaCount: 1
   enabled: true
+  appName: "Agent Stack"
   image:
     repository: ghcr.io/i-am-bee/agentstack/agentstack-ui
     pullPolicy: IfNotPresent
