@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 
 import kr8s
 from fastapi import status
-from kr8s.asyncio.objects import Deployment, Service
+from kr8s.asyncio.objects import Deployment, Secret, Service
 from pydantic import AnyUrl
 
 from agentstack_server.configuration import Configuration, ConnectorPreset
@@ -47,6 +47,28 @@ class ManagedMcpService:
         async with self.api() as api:
             self._namespace = api.namespace
 
+            secret = Secret(
+                {
+                    "apiVersion": "v1",
+                    "kind": "Secret",
+                    "metadata": {
+                        "name": f"managed-mcp-server-env-{connector.id.hex[:16]}",
+                        "labels": {
+                            "app": "managed-mcp-server",
+                            "connector-id": str(connector.id),
+                        },
+                    },
+                    "type": "Opaque",
+                    "stringData": (preset.stdio.env or {})
+                    | (
+                        {preset.stdio.access_token_env_name: connector.auth.token.access_token}
+                        if connector.auth and connector.auth.token and preset.stdio.access_token_env_name
+                        else {}
+                    ),
+                },
+                api=api,
+            )
+
             mcp_server_deployment = Deployment(
                 {
                     "apiVersion": "apps/v1",
@@ -82,34 +104,11 @@ class ManagedMcpService:
                                         "imagePullPolicy": "IfNotPresent",
                                         "stdin": True,
                                         "tty": False,
+                                        "envFrom": [
+                                            {"secretRef": {"name": f"managed-mcp-server-env-{connector.id.hex[:16]}"}}
+                                        ],
                                         **({} if not preset.stdio.command else {"command": preset.stdio.command}),
                                         **({} if not preset.stdio.args else {"args": preset.stdio.args}),
-                                        **(
-                                            {}
-                                            if not preset.stdio.env
-                                            and not (
-                                                connector.auth
-                                                and connector.auth.token
-                                                and preset.stdio.access_token_env_name
-                                            )
-                                            else {
-                                                "env": [
-                                                    {"name": k, "value": v} for k, v in (preset.stdio.env or {}).items()
-                                                ]
-                                                + (
-                                                    [
-                                                        {
-                                                            "name": preset.stdio.access_token_env_name,
-                                                            "value": connector.auth.token.access_token,
-                                                        }
-                                                    ]
-                                                    if connector.auth
-                                                    and connector.auth.token
-                                                    and preset.stdio.access_token_env_name
-                                                    else []
-                                                )
-                                            }
-                                        ),
                                     },
                                 ],
                             },
@@ -206,6 +205,7 @@ class ManagedMcpService:
             )
 
             try:
+                await secret.create()
                 await mcp_server_deployment.create()
                 await supergateway_deployment.create()
                 await service.create()
@@ -221,6 +221,7 @@ class ManagedMcpService:
     async def undeploy(self, *, connector: Connector) -> None:
         async with self.api() as api:
             for resource_type, resource_name in (
+                ("secret", f"managed-mcp-server-env-{connector.id.hex[:16]}"),
                 ("deployment", f"managed-mcp-server-{connector.id.hex[:16]}"),
                 ("deployment", f"managed-mcp-supergateway-{connector.id.hex[:16]}"),
                 ("service", f"managed-mcp-supergateway-{connector.id.hex[:16]}"),
@@ -231,6 +232,8 @@ class ManagedMcpService:
                         resource = await Deployment.get(name=resource_name, api=api)
                     elif resource_type == "service":
                         resource = await Service.get(name=resource_name, api=api)
+                    elif resource_type == "secret":
+                        resource = await Secret.get(name=resource_name, api=api)
                     if resource:
                         await resource.delete()
                 except Exception as err:
