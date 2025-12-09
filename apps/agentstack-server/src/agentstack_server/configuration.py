@@ -243,7 +243,7 @@ class ConnectorStdioPreset(BaseModel):
     command: list[str] | None = None
     args: list[str] | None = None
     env: dict[str, str] = Field(default_factory=dict)
-    auth_token_env_name: str | None = None
+    access_token_env_name: str | None = None
 
 
 class ConnectorPreset(BaseModel):
