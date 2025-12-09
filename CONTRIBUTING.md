@@ -123,20 +123,12 @@ oidc:
   validate_audience: false
   nextauth_providers: [
     {
-      "name": "IBMiD-PKCE",
-      "id": "ibmid-pkce",
-      "type": "oidc",
-      "client_id": "<ibm_security_verify_openid_connect_app_client_id>",
-      "client_secret": "", # The client secret for a public client (PKCE) is an empty string.  This is the agentstack cli provider.
-      "issuer": "<ibm_security_verify_issuer>" # e.g. "https://isg-verify1.verify.ibm.com/oauth2",
-    },
-    {
       "name": "IBM",
       "id": "sso-provisioned",
-      "type": "oidc",
+      "provider_type": "custom",
       "client_id": "<oidc_client_id>",
       "client_secret": "<oidc_client_secret>",
-      "issuer": "<oidc_issuer>",
+      "issuer": "<oidc_issuer>"
     }
   ]
 ```
@@ -145,7 +137,7 @@ oidc:
   following oidc specific values:
 
 ```JavaScript
-OIDC_PROVIDERS = '[{"name": "w3id","id": "w3id","type": "oidc","client_id": "<oidc_client_id>","client_secret": "<oidc_client_secret>","issuer": "<oidc_issuer>"}]'
+OIDC_PROVIDERS='[{"id":"w3id","name":"w3id","provider_type":"custom","client_id":"<your_client_id>","client_secret":"<your_client_secret>","issuer":"<your_issuer>"}]'
 NEXTAUTH_SECRET = "<To generate a random string, you can use the Auth.js CLI: npx auth secret>"
 NEXTAUTH_URL = "http://localhost:3000"
 OIDC_ENABLED = true
