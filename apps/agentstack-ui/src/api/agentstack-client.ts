@@ -3,39 +3,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { Middleware } from 'openapi-fetch';
-import createClient from 'openapi-fetch';
+import { buildApiClient } from 'agentstack-sdk';
 
 import { ensureToken } from '#app/(auth)/rsc.tsx';
 import { runtimeConfig } from '#contexts/App/runtime-config.ts';
 import { getBaseUrl } from '#utils/api/getBaseUrl.ts';
 
-import type { paths } from './schema';
-import { getProxyHeaders } from './utils';
+import { getProxyHeaders, handleFailedResponse } from './utils';
 
-const authMiddleware: Middleware = {
-  async onRequest({ request }) {
-    const { isAuthEnabled } = runtimeConfig;
+function buildAuthenticatedAgentstackClient() {
+  const { isAuthEnabled } = runtimeConfig;
+  const baseUrl = getBaseUrl();
 
-    let accessToken: string | undefined = undefined;
+  const authenticatedFetch: typeof fetch = async (url, init) => {
+    const request = new Request(url, init);
 
     if (isAuthEnabled) {
       const token = await ensureToken(request);
 
       if (token?.accessToken) {
-        accessToken = token.accessToken;
+        request.headers.set('Authorization', `Bearer ${token.accessToken}`);
       }
     }
-    // add Authorization header to every request
-    if (accessToken) {
-      request.headers.set('Authorization', `Bearer ${accessToken}`);
-    }
-    return request;
-  },
-};
 
-const proxyMiddleware: Middleware = {
-  async onRequest({ request }) {
     const isServer = typeof window === 'undefined';
     if (isServer) {
       const { headers } = await import('next/headers');
@@ -45,17 +35,19 @@ const proxyMiddleware: Middleware = {
       if (forwardedProto) request.headers.set('x-forwarded-proto', forwardedProto);
       if (forwardedFor) request.headers.set('x-forwarded-for', forwardedFor);
     }
-    return request;
-  },
-};
 
-/**
- * @deprecated
- * Use agentstackClient instead
- */
-export const api = createClient<paths>({
-  baseUrl: getBaseUrl(),
-});
+    const response = await fetch(request);
 
-api.use(authMiddleware);
-api.use(proxyMiddleware);
+    if (!response.ok) {
+      const error = await response.json();
+      handleFailedResponse({ response, error });
+    }
+
+    return response;
+  };
+
+  const client = buildApiClient({ baseUrl, fetch: authenticatedFetch });
+  return client;
+}
+
+export const agentstackClient = buildAuthenticatedAgentstackClient();
