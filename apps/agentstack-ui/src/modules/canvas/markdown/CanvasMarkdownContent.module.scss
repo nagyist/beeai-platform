@@ -4,9 +4,9 @@
  */
 
 .root {
-  &,
-  &:active,
-  &:focus {
-    background-color: $background;
+  position: relative;
+
+  ::highlight(canvas-highlight) {
+    background-color: $blue-20;
   }
 }

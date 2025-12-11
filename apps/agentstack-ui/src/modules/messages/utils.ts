@@ -5,8 +5,9 @@
 
 import { match } from 'ts-pattern';
 
-import { transformFilePart } from '#modules/files/utils.ts';
-import { transformSourcePart } from '#modules/sources/utils.ts';
+import { processMessageArtifactPart } from '#modules/canvas/utils.ts';
+import { getFileTransformPart } from '#modules/files/utils.ts';
+import { getSourceTransformPart } from '#modules/sources/utils.ts';
 
 import { Role } from './api/types';
 import type { UIAgentMessage, UIMessage, UIMessagePart, UISourcePart, UITransformPart, UIUserMessage } from './types';
@@ -20,13 +21,26 @@ export function isAgentMessage(message: UIMessage): message is UIAgentMessage {
   return message.role === Role.Agent;
 }
 
-export function getMessageRawContent(message: UIMessage) {
-  const rawContent = message.parts.reduce(
-    (content, part) => (part.kind === UIMessagePartKind.Text ? content.concat(part.text) : content),
-    '',
-  );
+export function getMessagePartsRawContent(parts: UIMessage['parts']) {
+  const rawContent = parts.reduce((content, part) => {
+    match(part)
+      .with({ kind: UIMessagePartKind.Text }, (part) => {
+        content += part.text;
+      })
+      .with({ kind: UIMessagePartKind.Artifact }, (part) => {
+        content += part.parts
+          .map((artifactPart) => (artifactPart.kind === UIMessagePartKind.Text ? artifactPart.text : ''))
+          .join('');
+      });
+
+    return content;
+  }, '');
 
   return rawContent;
+}
+
+export function getMessageRawContent(message: UIMessage) {
+  return getMessagePartsRawContent(message.parts);
 }
 
 export function getMessageContent(message: UIMessage) {
@@ -170,23 +184,26 @@ export function sortMessageParts(parts: UIMessagePart[]): UIMessagePart[] {
   return [...otherParts, ...sortedSourceParts, ...sortedTransformParts];
 }
 
-export function addTranformedMessagePart(part: UIMessagePart, message: UIAgentMessage) {
+export function addMessagePart(part: UIMessagePart, message: UIAgentMessage) {
   const newParts = [...message.parts];
 
   match(part)
     .with({ kind: UIMessagePartKind.File }, (part) => {
-      const transformedPart = transformFilePart(part, message);
+      const transformPart = getFileTransformPart(part, message);
 
-      if (transformedPart) {
-        newParts.push(transformedPart);
+      if (transformPart) {
+        newParts.push(transformPart);
       } else {
         newParts.push(part);
       }
     })
     .with({ kind: UIMessagePartKind.Source }, (part) => {
-      const transformedPart = transformSourcePart(part);
+      const transformPart = getSourceTransformPart(part);
 
-      newParts.push(part, transformedPart);
+      newParts.push(part, transformPart);
+    })
+    .with({ kind: UIMessagePartKind.Artifact }, (part) => {
+      processMessageArtifactPart(part, newParts, message);
     })
     .otherwise((part) => {
       newParts.push(part);

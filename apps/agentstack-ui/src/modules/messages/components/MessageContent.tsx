@@ -6,11 +6,18 @@
 import clsx from 'clsx';
 import { memo } from 'react';
 
+import { LineClampText } from '#components/LineClampText/LineClampText.tsx';
 import type { UIMessage } from '#modules/messages/types.ts';
 import { ChatMarkdownContent } from '#modules/runs/components/ChatMarkdownContent/ChatMarkdownContent.tsx';
 
-import { Role } from '../api/types';
-import { checkMessageStatus, getMessageContent, getMessageSecret, getMessageSources, isAgentMessage } from '../utils';
+import {
+  checkMessageStatus,
+  getMessageContent,
+  getMessageSecret,
+  getMessageSources,
+  isAgentMessage,
+  isUserMessage,
+} from '../utils';
 import classes from './MessageContent.module.scss';
 import { MessageFormResponse } from './MessageFormResponse';
 
@@ -20,11 +27,13 @@ interface Props {
 
 export const MessageContent = memo(function MessageContent({ message }: Props) {
   const content = getMessageContent(message);
-  const form = message.role === Role.User ? message.form : null;
-  const auth = message.role === Role.User ? message.auth : null;
+  const isUser = isUserMessage(message);
+  const form = isUser ? message.form : null;
+  const auth = isUser ? message.auth : null;
+  const canvasEditParams = isUser ? message.canvasEditParams : null;
   const secretPart = getMessageSecret(message);
 
-  const hasContent = content || form || auth;
+  const hasContent = content || form || auth || canvasEditParams;
   const sources = getMessageSources(message);
 
   const status = isAgentMessage(message) ? checkMessageStatus(message) : null;
@@ -36,6 +45,18 @@ export const MessageContent = memo(function MessageContent({ message }: Props) {
 
     if (auth) {
       return <div className={clsx(classes.root)}>User has granted access</div>;
+    }
+
+    if (canvasEditParams) {
+      const { description, content } = canvasEditParams;
+      return (
+        <div className={clsx(classes.root, classes.canvasEditRequest)}>
+          <LineClampText lines={2}>
+            <q>{content}</q>
+          </LineClampText>
+          <p>{description}</p>
+        </div>
+      );
     }
 
     return (

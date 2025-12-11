@@ -3,50 +3,52 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useRef } from 'react';
+import clsx from 'clsx';
+import { useMemo, useRef } from 'react';
 
 import { CopyButton } from '#components/CopyButton/CopyButton.tsx';
-import { MarkdownContent } from '#components/MarkdownContent/MarkdownContent.tsx';
+import { UIMessagePartKind } from '#modules/messages/types.ts';
 
+import { useCanvas } from '../contexts';
+import { CanvasMarkdownContent } from '../markdown/CanvasMarkdownContent';
 import classes from './Canvas.module.scss';
-import { Toolbar } from './Toolbar';
 
 export function Canvas() {
+  const { activeArtifact } = useCanvas();
   const contentRef = useRef(null);
 
+  const content = useMemo(
+    () => activeArtifact?.parts.map((part) => (part.kind === UIMessagePartKind.Text ? part.text : '')).join(''),
+    [activeArtifact],
+  );
+
+  const isCode = useMemo(() => {
+    const containsCodeBlockRegex = /.+```.+/;
+    return Boolean(content && content.startsWith('```') && !containsCodeBlockRegex.test(content));
+  }, [content]);
+
+  if (!activeArtifact) {
+    return null;
+  }
+
   return (
-    <div className={classes.root}>
-      <header className={classes.header}>
-        <h2 className={classes.heading}>Cozy Winter Dinner Party Menu</h2>
+    <div className={clsx(classes.root, { [classes.codeBlock]: isCode })}>
+      <div className={classes.container}>
+        {!isCode && (
+          <header className={classes.header}>
+            {activeArtifact.name && <h2 className={classes.heading}>{activeArtifact.name}</h2>}
 
-        <div className={classes.actions}>
-          <CopyButton contentRef={contentRef} />
+            <div className={classes.actions}>
+              <CopyButton contentRef={contentRef} />
+            </div>
+          </header>
+        )}
+
+        <div className={classes.body} ref={contentRef}>
+          <CanvasMarkdownContent className={classes.content} artifactId={activeArtifact.artifactId}>
+            {content}
+          </CanvasMarkdownContent>
         </div>
-      </header>
-
-      <div className={classes.body} ref={contentRef}>
-        <Toolbar isVisible />
-
-        <MarkdownContent className={classes.content}>{`
-## Appetizer
-- **Baked Brie with Roasted Garlic & Thyme** – Served with toasted baguette slices and a drizzle of honey.
-- **Creamy Roasted Cauliflower Soup** – Smooth, velvety, and finished with crispy shallots and a touch of truffle oil.
-
-## Main Course
-- **Braised Short Ribs with Red Wine & Rosemary** – Slow-cooked until fall-apart tender, served over garlic mashed potatoes.
-- **Roasted Root Vegetables with Citrus Glaze** – A mix of carrots, parsnips, and beets with a honey-orange glaze.
-
-## Side Dish
-- **Sautéed Brussels Sprouts with Pancetta & Balsamic Reduction** – A balance of crispy, smoky, and tangy flavors.
-
-## Dessert
-- **Blood Orange & Olive Oil Cake** – Moist, citrusy, and served with whipped mascarpone.
-- **Dark Chocolate Pots de Crème** – Rich and velvety, topped with a sprinkle of sea salt.
-
-## Drinks
-- **Mulled Wine** – Red wine infused with warm spices and citrus.
-- **Hazelnut Hot Chocolate** – Creamy, nutty, and perfect for a cozy evening.
-        `}</MarkdownContent>
       </div>
     </div>
   );

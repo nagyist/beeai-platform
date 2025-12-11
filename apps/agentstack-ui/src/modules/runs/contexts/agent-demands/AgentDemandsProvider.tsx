@@ -162,6 +162,8 @@ export function AgentDemandsProvider<UIGenericPart>({
         return memo;
       }, fulfillmentsContext.providedSecrets ?? {});
 
+      const { oauthRedirectUri } = fulfillmentsContext;
+
       return buildFulfillments({
         contextToken,
         selectedLLMProviders,
@@ -171,7 +173,7 @@ export function AgentDemandsProvider<UIGenericPart>({
         featureFlags,
         selectedSettings,
         formFulfillments: formFulfillmentsRef.current,
-        oauthRedirectUri: fulfillmentsContext.oauthRedirectUri ?? null,
+        oauthRedirectUri: oauthRedirectUri ?? null,
       });
     },
     [

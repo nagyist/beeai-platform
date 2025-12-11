@@ -4,12 +4,13 @@
  */
 
 import type { TaskArtifactUpdateEvent, TaskStatusUpdateEvent } from '@a2a-js/sdk';
-import { handleAgentCard, handleInputRequired, handleTaskStatusUpdate } from 'agentstack-sdk';
+import { handleAgentCard, handleTaskStatusUpdate, resolveUserMetadata } from 'agentstack-sdk';
 import { defaultIfEmpty, filter, lastValueFrom, Subject } from 'rxjs';
 import { match } from 'ts-pattern';
 
 import { A2AExtensionError } from '#api/errors.ts';
-import type { UIMessagePart } from '#modules/messages/types.ts';
+import type { UITextPart } from '#modules/messages/types.ts';
+import { type UIMessagePart, UIMessagePartKind } from '#modules/messages/types.ts';
 import type { TaskId } from '#modules/tasks/api/types.ts';
 
 import { getAgentClient } from './agent-card';
@@ -53,7 +54,19 @@ function handleArtifactUpdate(event: TaskArtifactUpdateEvent): UIMessagePart[] {
 
   const contentParts = processParts(artifact.parts);
 
-  return contentParts;
+  const { artifactId, description, name } = artifact;
+  const { textParts, otherParts } = contentParts.reduce<{ textParts: UITextPart[]; otherParts: UIMessagePart[] }>(
+    (acc, part) => {
+      if (part.kind === UIMessagePartKind.Text) {
+        acc.textParts.push(part);
+      } else {
+        acc.otherParts.push(part);
+      }
+      return acc;
+    },
+    { textParts: [], otherParts: [] },
+  );
+  return [{ kind: UIMessagePartKind.Artifact, artifactId, description, name, parts: textParts }, ...otherParts];
 }
 
 export interface CreateA2AClientParams<UIGenericPart = never> {
@@ -69,18 +82,17 @@ export const buildA2AClient = async <UIGenericPart = never>({
   const card = await client.getAgentCard();
 
   const { resolveMetadata: resolveAgentCardMetadata, demands } = handleAgentCard(card);
-  const { resolveMetadata: resolveInputRequiredMetadata } = handleInputRequired();
 
-  const chat = ({ message, contextId, fulfillments, responses, taskId: initialTaskId }: ChatParams) => {
+  const chat = ({ message, contextId, fulfillments, inputs, taskId: initialTaskId }: ChatParams) => {
     const messageSubject = new Subject<ChatResult<UIGenericPart>>();
 
     let taskId: undefined | TaskId = initialTaskId;
 
     const iterateOverStream = async () => {
       const agentCardMetadata = await resolveAgentCardMetadata(fulfillments);
-      const inputRequiredMetadata = await resolveInputRequiredMetadata(responses);
+      const userMetadata = await resolveUserMetadata(inputs);
 
-      const metadata = { ...agentCardMetadata, ...inputRequiredMetadata };
+      const metadata = { ...agentCardMetadata, ...userMetadata };
 
       const stream = client.sendMessageStream({
         message: createUserMessage({ message, contextId, metadata, taskId }),

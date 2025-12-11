@@ -4,9 +4,5 @@
  */
 
 .root {
-  &,
-  &:active,
-  &:focus {
-    background-color: $background;
-  }
+  display: flex;
 }

@@ -15,6 +15,9 @@ import { createTextPart } from '#api/a2a/utils.ts';
 import { getErrorCode } from '#api/utils.ts';
 import { useHandleError } from '#hooks/useHandleError.ts';
 import type { Agent } from '#modules/agents/api/types.ts';
+import { CanvasProvider } from '#modules/canvas/contexts/CanvasProvider.tsx';
+import type { UICanvasEditRequestParams } from '#modules/canvas/types.ts';
+import { getCanvasEditRequest } from '#modules/canvas/utils.ts';
 import { FileUploadProvider } from '#modules/files/contexts/FileUploadProvider.tsx';
 import { useFileUpload } from '#modules/files/contexts/index.ts';
 import { convertFilesToUIFileParts } from '#modules/files/utils.ts';
@@ -23,7 +26,7 @@ import { useMessages } from '#modules/messages/contexts/Messages/index.ts';
 import { MessagesProvider } from '#modules/messages/contexts/Messages/MessagesProvider.tsx';
 import type { UIAgentMessage, UIMessageForm, UIUserMessage } from '#modules/messages/types.ts';
 import { UIMessagePartKind, UIMessageStatus } from '#modules/messages/types.ts';
-import { addTranformedMessagePart, isAgentMessage } from '#modules/messages/utils.ts';
+import { addMessagePart, isAgentMessage } from '#modules/messages/utils.ts';
 import { contextKeys } from '#modules/platform-context/api/keys.ts';
 import { usePlatformContext } from '#modules/platform-context/contexts/index.ts';
 import { useEnsurePlatformContext } from '#modules/platform-context/hooks/useEnsurePlatformContext.ts';
@@ -62,9 +65,11 @@ export function AgentRunProviders({ agent, children }: PropsWithChildren<Props>)
       <AgentDemandsProvider agentClient={agentClient}>
         <FileUploadProvider allowedContentTypes={agent.defaultInputModes}>
           <MessagesProvider>
-            <AgentRunProvider agent={agent} agentClient={agentClient}>
-              {children}
-            </AgentRunProvider>
+            <CanvasProvider>
+              <AgentRunProvider agent={agent} agentClient={agentClient}>
+                {children}
+              </AgentRunProvider>
+            </CanvasProvider>
           </MessagesProvider>
         </FileUploadProvider>
       </AgentDemandsProvider>
@@ -176,7 +181,7 @@ function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<Ag
   }, [agentClient, errorHandler, getMessages]);
 
   const run = useCallback(
-    async (message: UIUserMessage, fulfillmentsContext: FulfillmentsContext) => {
+    async (message: UIUserMessage, fulfillmentsContext: FulfillmentsContext = {}) => {
       if (!agentClient) {
         throw new Error('Agent client is not initialized');
       }
@@ -201,13 +206,16 @@ function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<Ag
         messages.unshift(agentMessage, message);
       });
 
+      const { form, canvasEditParams } = message;
+
       try {
         const run = agentClient.chat({
           message,
           contextId,
           fulfillments,
-          responses: {
-            form: message.form?.response,
+          inputs: {
+            form: form?.response,
+            canvasEditRequest: canvasEditParams ? getCanvasEditRequest(canvasEditParams) : undefined,
           },
           taskId: fulfillmentsContext.taskId,
         });
@@ -225,7 +233,7 @@ function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<Ag
 
           parts.forEach((part) => {
             updateCurrentAgentMessage((message) => {
-              const updatedParts = addTranformedMessagePart(part, message);
+              const updatedParts = addMessagePart(part, message);
               message.parts = updatedParts;
             });
           });
@@ -334,7 +342,7 @@ function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<Ag
         form,
       };
 
-      return run(message, {});
+      return run(message);
     },
     [checkPendingRun, provideFormValues, run],
   );
@@ -363,6 +371,26 @@ function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<Ag
       };
 
       return run(message, { taskId, providedSecrets });
+    },
+    [checkPendingRun, run],
+  );
+
+  const submitCanvasEditRequest = useCallback(
+    (params: UICanvasEditRequestParams) => {
+      checkPendingRun();
+
+      const { artifactId, startIndex, endIndex, description } = params;
+
+      const textInput = `Edit artifact ${artifactId} from character ${startIndex} to ${endIndex}: ${description}`;
+
+      const message: UIUserMessage = {
+        id: uuid(),
+        role: Role.User,
+        parts: [createTextPart(textInput)],
+        canvasEditParams: params,
+      };
+
+      return run(message);
     },
     [checkPendingRun, run],
   );
@@ -397,6 +425,7 @@ function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<Ag
       submitRuntimeForm,
       startAuth,
       submitSecrets,
+      submitCanvasEditRequest,
       initialFormRender,
       cancel,
       clear,
@@ -404,18 +433,19 @@ function AgentRunProvider({ agent, agentClient, children }: PropsWithChildren<Ag
   }, [
     agent,
     agentClient,
-    cancel,
-    chat,
-    clear,
-    input,
-    messages.length,
-    startAuth,
-    stats,
     status,
+    messages.length,
+    input,
+    stats,
+    chat,
     submitForm,
     submitRuntimeForm,
+    startAuth,
     submitSecrets,
+    submitCanvasEditRequest,
     initialFormRender,
+    cancel,
+    clear,
   ]);
 
   return (

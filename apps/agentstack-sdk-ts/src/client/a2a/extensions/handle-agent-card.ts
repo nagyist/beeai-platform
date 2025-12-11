@@ -111,6 +111,14 @@ export const handleAgentCard = (agentCard: { capabilities: AgentCapabilities }) 
 
   return {
     resolveMetadata,
-    demands: { llmDemands, embeddingDemands, mcpDemands, oauthDemands, settingsDemands, secretDemands, formDemands },
+    demands: {
+      llmDemands,
+      embeddingDemands,
+      mcpDemands,
+      oauthDemands,
+      settingsDemands,
+      secretDemands,
+      formDemands,
+    },
   };
 };
