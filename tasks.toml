@@ -406,16 +406,36 @@ if gum confirm "Publish version $publish_version now?"; then
   )
   
   # Backport install.sh version updates to main branch
-  echo "Backporting install.sh version updates to main branch..."
   (
     set -eux -o pipefail
     git checkout main
     git pull origin main
 
+    echo "Backporting install.sh version updates to main branch..."
     {{ mise_bin }} release:_update-install-sh --version="$publish_version"
-
     git add install.sh
     git commit -m "chore: update install.sh version to v$publish_version"
+
+    echo "Syncing release docs to stable..."
+
+    # Port docs from release to main branch
+    rm -rf docs/stable docs/development
+    git restore release docs/development
+    mv docs/development docs/stable
+    git restore main docs/development
+
+    # Port docs.json structure
+    git show release:docs/docs.json | \
+      jq '(.navigation.versions[] | select(.version == "development")) | .version = "stable" | (.groups[].pages[] |= sub("development/"; "stable/"))' \
+      > .new-stable.json
+    jq --slurpfile new_stable .new-stable.json \
+      '.navigation.versions = $new_stable + (.navigation.versions | map(select(.version != "stable")))' \
+      docs/docs.json > docs.json.tmp && mv docs.json.tmp docs/docs.json
+    rm .new-stable.json
+
+    git add docs/stable docs/docs.json
+    git commit -m "docs: publish stable docs for v$publish_version"
+
     git push origin main
     git checkout release
   )
