@@ -8,6 +8,7 @@ from contextlib import AsyncExitStack
 from uuid import UUID
 
 import httpx
+from authlib.oauth2 import OAuth2Error
 from fastapi import Request, status
 from fastapi.responses import StreamingResponse
 from kink import inject
@@ -131,32 +132,31 @@ class ConnectorService:
             await self.probe_connector(connector=connector)
             connector.state = ConnectorState.connected
             connector.disconnect_reason = None
-        except Exception as err:
-            if isinstance(err, httpx.HTTPStatusError):
-                if err.response.status_code == status.HTTP_401_UNAUTHORIZED:
-                    await self._external_mcp.bootstrap_auth(
-                        connector=connector, callback_url=callback_uri, redirect_url=redirect_url
-                    )
-                    connector.state = ConnectorState.auth_required
-                else:
-                    logger.error("Connector failed", exc_info=True)
-                    try:
-                        error = (await err.response.aread()).decode(err.response.encoding or "utf-8")
-                    except Exception:
-                        error = "Connector has returned an error"
-                    raise PlatformError(
-                        error,
-                        status_code=status.HTTP_502_BAD_GATEWAY,
-                    ) from err
-            elif isinstance(err, httpx.RequestError):
-                logger.error("Connector failed", exc_info=True)
-                raise PlatformError(
-                    "Unable to establish connection with the connector",
-                    status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                ) from err
+        except (httpx.HTTPStatusError, OAuth2Error) as err:
+            if isinstance(err, OAuth2Error) or err.response.status_code == status.HTTP_401_UNAUTHORIZED:
+                await self._external_mcp.bootstrap_auth(
+                    connector=connector, callback_url=callback_uri, redirect_url=redirect_url
+                )
+                connector.state = ConnectorState.auth_required
             else:
                 logger.error("Connector failed", exc_info=True)
-                raise PlatformError("Connection has failed") from err
+                try:
+                    error = (await err.response.aread()).decode(err.response.encoding or "utf-8")
+                except Exception:
+                    error = "Connector has returned an error"
+                raise PlatformError(
+                    error,
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                ) from err
+        except httpx.RequestError as err:
+            logger.error("Connector failed", exc_info=True)
+            raise PlatformError(
+                "Unable to establish connection with the connector",
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            ) from err
+        except Exception as err:
+            logger.error("Connector failed", exc_info=True)
+            raise PlatformError("Connection has failed") from err
 
         async with self._uow() as uow:
             await uow.connectors.update(connector=connector)
