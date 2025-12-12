@@ -13,6 +13,10 @@
             "path": "apps/agentstack-sdk-py"
         },
         {
+            "name": "agentstack-sdk-ts",
+            "path": "apps/agentstack-sdk-ts"
+        },
+        {
             "name": "agentstack-cli",
             "path": "apps/agentstack-cli"
         },
@@ -47,7 +51,12 @@
             "**/helm/templates/**/*.yaml": "helm",
             "**/helm/templates/**/*.tpl": "helm"
         },
-        "basedpyright.analysis.diagnosticMode": "openFilesOnly"
+        "basedpyright.analysis.diagnosticMode": "openFilesOnly",
+        "cursorpyright.analysis.diagnosticMode": "openFilesOnly",
+        "cursorpyright.analysis.extraPaths": [
+            "${workspaceFolder}/apps/agentstack-sdk-py/src"
+        ],
+        "cursorpyright.analysis.typeCheckingMode": "basic"
     },
     "extensions": {
         "recommendations": [

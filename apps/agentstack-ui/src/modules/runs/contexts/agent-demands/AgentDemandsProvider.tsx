@@ -4,10 +4,11 @@
  */
 
 import { type AgentSettings, type FormFulfillments, ModelCapability } from 'agentstack-sdk';
-import { type PropsWithChildren, useCallback, useEffect, useRef, useState } from 'react';
+import { type PropsWithChildren, useCallback, useRef, useState } from 'react';
 
 import type { AgentA2AClient } from '#api/a2a/types.ts';
 import { useApp } from '#contexts/App/index.ts';
+import { useListConnectors } from '#modules/connectors/api/queries/useListConnectors.ts';
 import type { RunFormValues } from '#modules/form/types.ts';
 import { useCreateContextToken } from '#modules/platform-context/api/mutations/useCreateContextToken.ts';
 import { useMatchProviders } from '#modules/platform-context/api/mutations/useMatchProviders.ts';
@@ -38,7 +39,7 @@ export function AgentDemandsProvider<UIGenericPart>({
   );
 
   const {
-    config: { featureFlags, contextTokenPermissions },
+    config: { contextTokenPermissions },
   } = useApp();
   const { contextId } = usePlatformContext();
 
@@ -112,26 +113,7 @@ export function AgentDemandsProvider<UIGenericPart>({
     formFulfillmentsRef.current = { form_fulfillments: { initial_form: { values } } };
   }, []);
 
-  const [selectedMCPServers, setSelectedMCPServers] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    setSelectedMCPServers(
-      Object.keys(agentClient?.demands.mcpDemands?.mcp_demands ?? {}).reduce(
-        (memo, value) => ({
-          ...memo,
-          [value]: '',
-        }),
-        {},
-      ),
-    );
-  }, [agentClient?.demands.mcpDemands?.mcp_demands]);
-
-  const selectMCPServer = useCallback(
-    (key: string, value: string) => {
-      setSelectedMCPServers((prev) => ({ ...prev, [key]: value }));
-    },
-    [setSelectedMCPServers],
-  );
+  const { data: connectorsData } = useListConnectors();
 
   const getContextToken = useCallback(async () => {
     if (contextId === null) {
@@ -168,22 +150,20 @@ export function AgentDemandsProvider<UIGenericPart>({
         contextToken,
         selectedLLMProviders,
         selectedEmbeddingProviders,
-        selectedMCPServers,
         providedSecrets,
-        featureFlags,
         selectedSettings,
         formFulfillments: formFulfillmentsRef.current,
         oauthRedirectUri: oauthRedirectUri ?? null,
+        connectors: connectorsData?.items ?? [],
       });
     },
     [
       getContextToken,
       selectedLLMProviders,
       selectedEmbeddingProviders,
-      selectedMCPServers,
-      featureFlags,
       selectedSettings,
       demandedSecrets,
+      connectorsData,
     ],
   );
 
@@ -198,8 +178,6 @@ export function AgentDemandsProvider<UIGenericPart>({
         getFulfillments,
         selectLLMProvider,
         selectEmbeddingProvider,
-        selectMCPServer,
-        selectedMCPServers,
         selectedSettings,
         settingsDemands: agentClient?.demands.settingsDemands ?? null,
         formDemands: agentClient?.demands.formDemands ?? null,

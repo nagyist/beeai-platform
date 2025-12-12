@@ -10,7 +10,6 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { mergeRefs } from 'react-merge-refs';
 
 import { TextAreaAutoHeight } from '#components/TextAreaAutoHeight/TextAreaAutoHeight.tsx';
-import { useApp } from '#contexts/App/index.ts';
 import { InteractionMode } from '#modules/agents/api/types.ts';
 import { FileUploadButton } from '#modules/files/components/FileUploadButton.tsx';
 import { useFileUpload } from '#modules/files/contexts/index.ts';
@@ -22,7 +21,6 @@ import { RunModels } from '../settings/RunModels';
 import { RunSettings } from '../settings/RunSettings';
 import { useRunSettingsDialog } from '../settings/useRunSettingsDialog';
 import type { RunRunFormValues } from '../types';
-import { MCPConfig } from './MCPConfig';
 import { PromptExamples } from './PromptExamples';
 import { RunFiles } from './RunFiles';
 import classes from './RunInput.module.scss';
@@ -39,10 +37,6 @@ export function RunInput({ promptExamples, onMessageSent }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const [promptExamplesOpen, setPromptExamplesOpen] = useState(false);
-
-  const {
-    config: { featureFlags },
-  } = useApp();
 
   const { hasMessages } = useAgentRun();
 
@@ -149,8 +143,6 @@ export function RunInput({ promptExamples, onMessageSent }: Props) {
             <RunSettings dialog={settingsDialog} iconOnly />
 
             {!isFileUploadDisabled && <FileUploadButton />}
-
-            {featureFlags.MCP && <MCPConfig />}
 
             <RunModels dialog={modelsDialog} iconOnly />
           </div>

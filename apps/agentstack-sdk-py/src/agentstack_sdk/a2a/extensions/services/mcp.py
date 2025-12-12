@@ -39,7 +39,7 @@ class StdioTransport(pydantic.BaseModel):
 class StreamableHTTPTransport(pydantic.BaseModel):
     type: Literal["streamable_http"] = "streamable_http"
 
-    url: pydantic.AnyHttpUrl
+    url: str
     headers: dict[str, str] | None = None
 
 
@@ -111,13 +111,7 @@ class MCPServiceExtensionServer(BaseExtensionServer[MCPServiceExtensionSpec, MCP
         for fullfilment in self.data.mcp_fulfillments.values():
             if fullfilment.transport.type == "streamable_http":
                 try:
-                    fullfilment.transport.url = pydantic.AnyHttpUrl(
-                        re.sub(
-                            r"^http[s]?://{platform_url}",
-                            platform_url,
-                            str(fullfilment.transport.url),
-                        )
-                    )
+                    fullfilment.transport.url = re.sub("^{platform_url}", platform_url, str(fullfilment.transport.url))
                 except Exception:
                     logger.warning("Platform URL substitution failed", exc_info=True)
 
@@ -126,7 +120,7 @@ class MCPServiceExtensionServer(BaseExtensionServer[MCPServiceExtensionSpec, MCP
         if metadata:
             for name, demand in self.spec.params.mcp_demands.items():
                 if not (fulfillment := metadata.mcp_fulfillments.get(name)):
-                    raise ValueError(f'Fulfillment for demand "{name}" missing')
+                    continue
                 if fulfillment.transport.type not in demand.allowed_transports:
                     raise ValueError(f'Transport "{fulfillment.transport.type}" not allowed for demand "{name}"')
         return metadata
@@ -148,7 +142,8 @@ class MCPServiceExtensionServer(BaseExtensionServer[MCPServiceExtensionSpec, MCP
         fulfillment = self.data.mcp_fulfillments.get(demand) if self.data else None
 
         if not fulfillment:
-            raise ValueError(f'No fulfillment for demand "{demand}"')
+            yield None
+            return
 
         transport = fulfillment.transport
 
@@ -162,7 +157,7 @@ class MCPServiceExtensionServer(BaseExtensionServer[MCPServiceExtensionSpec, MCP
                 yield (read, write)
         elif isinstance(transport, StreamableHTTPTransport):
             async with streamablehttp_client(
-                url=str(transport.url),
+                url=transport.url,
                 headers=transport.headers,
                 auth=await self._create_auth(transport),
             ) as (
@@ -180,12 +175,12 @@ class MCPServiceExtensionServer(BaseExtensionServer[MCPServiceExtensionSpec, MCP
             platform
             and platform.data
             and platform.data.base_url
-            and str(transport.url).startswith(str(platform.data.base_url))
+            and transport.url.startswith(str(platform.data.base_url))
         ):
             return await platform.create_httpx_auth()
         oauth = self._get_oauth_server()
         if oauth:
-            return await oauth.create_httpx_auth(resource_url=transport.url)
+            return await oauth.create_httpx_auth(resource_url=pydantic.AnyUrl(transport.url))
         return None
 
 

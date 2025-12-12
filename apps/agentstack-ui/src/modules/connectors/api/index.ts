@@ -40,9 +40,3 @@ export async function deleteConnector(path: DeleteConnectorPath) {
 
   return ensureData(response);
 }
-
-export async function listConnectors() {
-  const response = await api.GET('/api/v1/connectors');
-
-  return ensureData(response);
-}
