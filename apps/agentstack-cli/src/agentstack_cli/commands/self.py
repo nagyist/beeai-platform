@@ -15,6 +15,7 @@ import typer
 from InquirerPy import inquirer
 
 import agentstack_cli.commands.platform
+from agentstack_cli.api import fetch_server_version
 from agentstack_cli.async_typer import AsyncTyper
 from agentstack_cli.commands.model import setup as model_setup
 from agentstack_cli.configuration import Configuration
@@ -46,7 +47,8 @@ async def version(
     """Print version of the Agent Stack CLI."""
     with verbosity(verbose=verbose):
         cli_version = importlib.metadata.version("agentstack-cli")
-        platform_version = await agentstack_cli.commands.platform.get_driver().version()
+        platform_version = await fetch_server_version()
+        active_server = configuration.auth_manager.active_server
 
         latest_cli_version: str | None = None
         with console.status("Checking for newer version...", spinner="dots"):
@@ -64,6 +66,7 @@ async def version(
         console.print(
             f"agentstack-platform version: [bold]{platform_version.replace('-', '') if platform_version is not None else 'not running'}[/bold]"
         )
+        console.print(f"          agentstack server: [bold]{active_server if active_server else 'none'}[/bold]")
         console.print()
 
         if latest_cli_version and packaging.version.parse(latest_cli_version) > packaging.version.parse(cli_version):
