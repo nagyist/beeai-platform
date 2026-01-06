@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+from datetime import UTC, datetime
 from typing import Annotated, Final
 from uuid import UUID
 
@@ -123,11 +124,19 @@ async def authorized_user(
     request: Request,
 ) -> AuthorizedUser:
     if bearer_auth:
-        # Check Bearer token first - locally this allows for "checking permissions" for development purposes
+        # Check Context token first - locally this allows for "checking permissions" for development purposes
         # even if auth is disabled (requests that would pass with no header may not pass with context token header)
         try:
             parsed_token = verify_internal_jwt(bearer_auth.credentials, configuration=configuration)
             user = await user_service.get_user(parsed_token.user_id)
+
+            iat_dt = datetime.fromtimestamp(parsed_token.iat, tz=UTC)
+            if user.role_updated_at and iat_dt < user.role_updated_at:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token invalidated due to role change",
+                )
+
             token = AuthorizedUser(
                 user=user,
                 global_permissions=parsed_token.global_permissions,

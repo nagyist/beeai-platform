@@ -92,6 +92,7 @@ class ParsedToken(BaseModel):
     context_permissions: Permissions
     context_id: UUID
     user_id: UUID
+    iat: int
     raw: dict[str, Any]
 
 
@@ -142,6 +143,7 @@ def verify_internal_jwt(token: str, configuration: Configuration) -> ParsedToken
         context_permissions=Permissions.model_validate(payload["scope"]["context"]),
         context_id=context_id,
         user_id=UUID(payload["sub"]),
+        iat=payload["iat"],
         raw=payload,
     )
 

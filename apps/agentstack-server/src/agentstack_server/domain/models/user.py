@@ -19,4 +19,5 @@ class User(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     role: UserRole = UserRole.USER
     email: EmailStr
+    role_updated_at: AwareDatetime | None = None
     created_at: AwareDatetime = Field(default_factory=utc_now)
