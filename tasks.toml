@@ -1,4 +1,4 @@
-## grouped tasks
+# grouped tasks
 
 ["setup"]
 depends = ["*:setup"]
@@ -12,15 +12,15 @@ depends = ["*:fix"]
 ["test"]
 depends = ["*:test"]
 
-## git hooks
+# git hooks
 
 ["git-hooks:pre-commit"]
 hide = true
 depends = ["check"]
 
-## common tasks
+# common tasks
 
-### setup
+## setup
 
 ["common:setup"]
 depends = ["common:setup:*"]
@@ -52,7 +52,7 @@ sources = [
 ]
 outputs = { auto = true }
 
-### check
+## check
 
 ["common:check"]
 depends = ["common:check:*"]
@@ -84,7 +84,7 @@ if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$ ]]; then echo "ERROR: $
 if [[ "${GITHUB_REF:-}" == refs/tags/* ]] && [[ $GITHUB_REF != "refs/tags/v$version" ]]; then echo "ERROR: GITHUB_REF '$GITHUB_REF' does not match 'refs/tags/v$version'" >&2; exit 1; fi
 '''
 
-### fix
+## fix
 
 ["common:fix"]
 depends = ["common:fix:*"]
@@ -93,12 +93,12 @@ depends = ["common:fix:*"]
 dir = "{{config_root}}"
 run = "addlicense -l apache -s=only -c '© BeeAI a Series of LF Projects, LLC' $(fd '\\.(py|[jt]sx?|html|s?css)$')"
 
-### test
+## test
 
 ["common:test"]
 run = "true" # Empty tests in case there are no tests
 
-# Platform tasks
+# platform tasks
 
 ["agentstack:start"]
 depends = ["agentstack-server:build", "supergateway:build"]
@@ -135,7 +135,6 @@ run = "{{ mise_bin }} run agentstack-cli:run -- platform delete"
 
 ["agentstack:stop"]
 run = "{{ mise_bin }} run agentstack-cli:run -- platform stop"
-
 
 ["agentstack:stop-all"]
 run = """
@@ -191,10 +190,15 @@ export KUBECONFIG="${AGENTSTACK__HOME:-${HOME}/.agentstack}/lima/${VM_NAME}/copi
 export LIMA_HOME=${AGENTSTACK__HOME:-${HOME}/.agentstack}/lima
 export AGENTSTACK__ADMIN_PASSWORD=test-password
 export PS1="(${VM_NAME}) ${__OLD_PS1}"
-
 """
 
-["release:new"]
+# release tasks
+
+["release:set-version"]
+description = "Update version fields in the current branch in all the relevant places and commit"
+usage = '''
+arg "<version>" help="The new version to set (format: X.Y.Z or X.Y.Z-rcW)"
+'''
 dir = "{{config_root}}"
 run = '''
 #!/bin/bash
@@ -203,19 +207,56 @@ set -eu -o pipefail
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "ERROR: Working directory not clean"
   exit 1
- fi
+fi
 
-
-
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$current_branch" != "main" ]]; then
-  echo "ERROR: You must be on the 'main' branch (current: $current_branch)"
+if ! [[ "$usage_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-rc[0-9]+)?$ ]]; then
+  echo "ERROR: Invalid version format: $usage_version"
+  echo "Expected format: X.Y.Z or X.Y.Z-rcW (e.g., 1.2.3 or 1.2.3-rc1)"
   exit 1
 fi
 
-current_version=$(yq -r '.version' helm/Chart.yaml)
-rc_version="${current_version}-rc1"
+set -x
+yq -i ".version = \"$usage_version\"" helm/Chart.yaml
+yq -i ".appVersion = \"$usage_version\"" helm/Chart.yaml
+(cd apps/agentstack-sdk-py && toml set 'project.version' "$usage_version" --toml-path pyproject.toml && uv lock)
+(cd apps/agentstack-cli && toml set 'project.version' "$usage_version" --toml-path pyproject.toml && uv lock)
+(cd apps/agentstack-server && toml set 'project.version' "$usage_version" --toml-path pyproject.toml && uv lock)
+for agent in agents/*; do (cd $agent && uv lock); done
+yq -i ".version = \"$usage_version\"" apps/agentstack-sdk-ts/package.json
+yq -i ".version = \"$usage_version\"" apps/agentstack-ui/package.json
+yq -i ".version = \"$usage_version\"" apps/beeai-web/package.json
+yq -i ".providers[].location |= sub(\":(.*)\$\"; \":\" + \"$usage_version\")" agent-registry.yaml
 
+perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$usage_version/" install.sh
+if [[ "$usage_version" == *"-rc"* ]]; then
+  perl -pi -e "s/^(LATEST_STABLE_AGENTSTACK_VERSION=).*/\${1}$usage_version/" install.sh
+fi
+
+git add .
+git commit --signoff --no-verify -m "bump: v$usage_version"
+set +x
+
+echo -e "✅ Pending version in \x1b[36m$(git branch --show-current)\x1b[0m bumped to $usage_version"
+'''
+
+["release:new"]
+description = "Open a new release by creating a `release` branch from current `main`"
+dir = "{{config_root}}"
+run = '''
+#!/bin/bash
+set -eu -o pipefail
+
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "ERROR: Working directory not clean"
+  exit 1
+fi
+
+set -x
+git checkout main
+git pull
+set +x
+
+current_version=$(yq -r '.version' helm/Chart.yaml)
 if [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
   major="${BASH_REMATCH[1]}"
   minor="${BASH_REMATCH[2]}"
@@ -226,233 +267,160 @@ else
   exit 1
 fi
 
-# Show what will happen and ask for confirmation
-echo "  Current version (main): $current_version"
 echo ""
-echo "  Actions:"
-echo "  1. Create RC in release branch: $rc_version"
-echo "  2. Bump version in main branch: $next_version"
-echo ""
+echo "⚠️  What will happen:"
+echo "  - Nothing will be published yet."
+echo "  - Tip of the \x1b[36mmain\x1b[0m branch will be prepared for release $current_version in \x1b[36mrelease\x1b[0m branch."
+echo "  - Pending version in \x1b[36mrelease\x1b[0m will be bumped to ${current_version}-rc1."
+echo "  - Pending version in \x1b[36mmain\x1b[0m branch will be bumped to $next_version. (This can be bumped more if the next release needs to be minor/major.)"
+echo "💡 After this, you can use \x1b[36mmise release:publish-rc\x1b[0m to publish a release candidate ${current_version}-rc1, or \x1b[36mmise release:publish-stable\x1b[0m to publish stable $current_version."
+echo "💡 Want to release a different version than $current_version? Cancel, run \x1b[36mmise release:set-version <version>\x1b[0m on the \x1b[36mmain\x1b[0m branch and then re-run this task."
+gum confirm "Proceed?"
 
-if ! gum confirm "Proceed with the release?"; then
-  echo "Release cancelled."
-  exit 0
-fi
-
-git fetch origin
-git checkout release
-git reset --hard origin/main
-
-{{ mise_bin }} release:_bump --version="$rc_version"
-
+set -x
+git checkout -B release origin/main
+{{ mise_bin }} release:set-version "${current_version}-rc1"
 git push --force-with-lease origin release
+set +x
+echo -e "✅ \x1b[36mrelease\x1b[0m branch with pending version ${current_version}-rc1 created."
 
+set -x
 git checkout main
-git pull origin main
+{{ mise_bin }} release:set-version "$next_version"
+git push origin main
+set +x
+echo -e "✅ \x1b[36mmain\x1b[0m pending version bumped to $next_version."
 
-# Bump version on main
-{{ mise_bin }} release:_bump --version="$next_version"
+git checkout release
 '''
 
-["release:bump"]
+["release:publish-rc"]
+description = "Publish the current `release` branch as a release candidate"
 dir = "{{config_root}}"
 run = '''
 #!/bin/bash
 set -eu -o pipefail
 
-# Ensure working directory is clean
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "ERROR: Working directory not clean"
-  git status
   exit 1
 fi
 
-# Ensure on release branch
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$current_branch" != "release" ]]; then
-  echo "ERROR: You must be on the 'release' branch (current: $current_branch)"
-  exit 1
-fi
+set -x
+git checkout release
+git pull
+set +x
 
-# Get current version
 current_version=$(yq -r '.version' helm/Chart.yaml)
-
-# Validate it's an RC version
 if ! [[ "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-rc([0-9]+)$ ]]; then
   echo "ERROR: Current version must be an RC version (X.Y.Z-rcN)"
   echo "Current version: $current_version"
   exit 1
 fi
 
-# Extract version components
-major="${BASH_REMATCH[1]}"
-minor="${BASH_REMATCH[2]}"
-patch="${BASH_REMATCH[3]}"
-rc_num="${BASH_REMATCH[4]}"
+next_version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}-rc$((${BASH_REMATCH[4]} + 1))"
 
-# Increment RC number
-next_rc=$((rc_num + 1))
-next_version="${major}.${minor}.${patch}-rc${next_rc}"
-
-echo "Current version: $current_version"
-echo "Next version: $next_version"
 echo ""
+echo "⚠️  What will happen:"
+echo -e "  - Tip of the \x1b[36mrelease\x1b[0m branch will be tagged \x1b[36mv$current_version\x1b[0m and pushed to GitHub."
+echo -e "  - GitHub Action triggered by the tag will publish a release candidate \x1b[36m$current_version\x1b[0m."
+echo -e "  - Pending version in \x1b[36mrelease\x1b[0m branch will be bumped to \x1b[36m$next_version\x1b[0m."
+echo -e "  - \x1b[36minstall.sh\x1b[0m on the \x1b[36mmain\x1b[0m branch will be updated to install \x1b[36m$current_version\x1b[0m when set to prerelease mode."
+gum confirm "Proceed?"
 
-if ! gum confirm "Bump to $next_version?"; then
-  echo "Release bump cancelled."
-  exit 0
-fi
+set -x
+git tag "v$current_version"
+git push --atomic origin release "v$current_version"
+set +x
+echo -e "✅ Pushed tag $current_version to \x1b[36morigin/release\x1b[0m"
+echo -e "💡 Check the pipeline progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 
-{{ mise_bin }} release:_bump --version="$next_version"
+{{ mise_bin }} release:set-version "$next_version"
+git push
+
+set -x
+git checkout main
+git pull
+git restore --source=release install.sh
+git add install.sh
+git commit --signoff --no-verify -m "chore: update install.sh prerelease version to v$current_version"
+git push
+set +x
+echo -e "✅ Updated \x1b[36minstall.sh\x1b[0m on \x1b[36mmain\x1b[0m to install $current_version when set to prerelease mode"
+
+git checkout release
 '''
 
-["release:_update-install-sh"]
-hide = true
+["release:publish-stable"]
+description = "Publish the current `release` branch as a stable release"
 dir = "{{config_root}}"
 run = '''
 #!/bin/bash
 set -eu -o pipefail
 
-version='{{option(name="version", required=true)}}'
-
-# Update install.sh based on version type
-if [[ "$version" == *"-rc"* ]]; then
-  # RC version - update LATEST_AGENTSTACK_VERSION only
-  perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$version/" install.sh
-else
-  # Stable version - update BOTH constants (stable becomes new latest)
-  perl -pi -e "s/^(LATEST_STABLE_AGENTSTACK_VERSION=).*/\${1}$version/" install.sh
-  perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$version/" install.sh
-fi
-
-echo "Updated install.sh version constants for: $version"
-'''
-
-["release:_bump"]
-hide = true
-dir = "{{config_root}}"
-run = '''
-#!/bin/bash
-set -eu -o pipefail
-
-# Get version parameter
-new_version='{{option(name="version", required=true)}}'
-
-# Validate version format (X.Y.Z or X.Y.Z-rcW)
-if ! [[ "$new_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-rc[0-9]+)?$ ]]; then
-  echo "ERROR: Invalid version format: $new_version"
-  echo "Expected format: X.Y.Z or X.Y.Z-rcW (e.g., 1.2.3 or 1.2.3-rc1)"
-  exit 1
-fi
-
-echo "Updating version to $new_version..."
-
-# Update all version fields
-yq -i ".version = \"$new_version\"" helm/Chart.yaml
-yq -i ".appVersion = \"$new_version\"" helm/Chart.yaml
-(cd apps/agentstack-sdk-py && toml set 'project.version' "$new_version" --toml-path pyproject.toml && uv lock)
-(cd apps/agentstack-cli && toml set 'project.version' "$new_version" --toml-path pyproject.toml && uv lock)
-(cd apps/agentstack-server && toml set 'project.version' "$new_version" --toml-path pyproject.toml && uv lock)
-for agent in agents/*; do (cd $agent && uv lock); done
-yq -i ".version = \"$new_version\"" apps/agentstack-sdk-ts/package.json
-yq -i ".version = \"$new_version\"" apps/agentstack-ui/package.json
-yq -i ".version = \"$new_version\"" apps/beeai-web/package.json
-yq -i ".providers[].location |= sub(\":(.*)\$\"; \":\" + \"$new_version\")" agent-registry.yaml
-
-{{ mise_bin }} release:_update-install-sh --version="$new_version"
-
-git add .
-git commit -m "bump: v$new_version"
-
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$current_branch" == "release" ]]; then
-  echo "On release branch, tagging and pushing tag..."
-  git tag "v$new_version"
-  git push origin tag "v$new_version"
-  git push origin release
-  echo "✅ Version updated to $new_version, tagged and pushed"
-elif [[ "$current_branch" == "main" ]]; then
-  echo "On main branch, pushing to origin..."
-  git push origin main
-  echo "✅ Version updated to $new_version, committed and pushed to main"
-else
-  echo "ERROR: Cannot push from branch '$current_branch'. Only 'release' and 'main' branches are supported."
-  exit 1
-fi
-'''
-
-["release:publish"]
-dir = "{{config_root}}"
-run = '''
-#!/bin/bash
-set -eu -o pipefail
-
-# Ensure on release branch
-current_branch=$(git rev-parse --abbrev-ref HEAD)
-if [[ "$current_branch" != "release" ]]; then
-  echo "ERROR: You must be on the 'release' branch (current: $current_branch)"
-  exit 1
-fi
-
-# Ensure working directory is clean
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "ERROR: Working directory not clean"
-  git status
   exit 1
 fi
+
+set -x
+git checkout release
+git pull
+set +x
 
 current_version=$(yq -r '.version' helm/Chart.yaml)
 publish_version="${current_version%-rc*}"
 
-# Confirm commit and push
-if gum confirm "Publish version $publish_version now?"; then
-  (
-    set -eux -o pipefail
-    {{ mise_bin }} release:_bump --version="$publish_version"
-  )
-  
-  # Backport install.sh version updates to main branch
-  (
-    set -eux -o pipefail
-    git checkout main
-    git pull origin main
+echo ""
+echo "⚠️  What will happen:"
+echo -e "  - Pending version in \x1b[36mrelease\x1b[0m branch will be bumped to \x1b[36m$publish_version\x1b[0m."
+echo -e "  - Tip of the \x1b[36mrelease\x1b[0m branch will be tagged \x1b[36mv$publish_version\x1b[0m and pushed to GitHub."
+echo -e "  - GitHub Action triggered by the tag will publish a stable release \x1b[36m$publish_version\x1b[0m."
+echo -e "  - \x1b[36mdocs/development\x1b[0m on the \x1b[36mrelease\x1b[0m branch will become \x1b[36mdocs/stable\x1b[0m on the \x1b[36mmain\x1b[0m branch."
+echo -e "  - \x1b[36minstall.sh\x1b[0m on the \x1b[36mmain\x1b[0m branch will be updated to install \x1b[36m$publish_version\x1b[0m by default."
+gum confirm "Proceed?"
 
-    echo "Backporting install.sh version updates to main branch..."
-    {{ mise_bin }} release:_update-install-sh --version="$publish_version"
-    git add install.sh
-    git commit -m "chore: update install.sh version to v$publish_version"
+{{ mise_bin }} release:set-version "$publish_version"
 
-    echo "Syncing release docs to stable..."
+set -x
+git tag "v$publish_version"
+git push --atomic origin release "v$publish_version"
+set +x
+echo -e "✅ Pushed tag $publish_version to \x1b[36morigin/release\x1b[0m"
+echo "💡 Check the pipeline progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 
-    # Port docs from release to main branch
-    rm -rf docs/stable docs/development
-    git restore release docs/development
-    mv docs/development docs/stable
-    git restore main docs/development
+set -x
+git checkout main
+git pull
+set +x
 
-    # Port docs.json structure
-    git show release:docs/docs.json | \
-      jq '(.navigation.versions[] | select(.version == "development")) | .version = "stable" | (.groups[].pages[] |= sub("development/"; "stable/"))' \
-      > .new-stable.json
-    jq --slurpfile new_stable .new-stable.json \
-      '.navigation.versions = $new_stable + (.navigation.versions | map(select(.version != "stable")))' \
-      docs/docs.json > docs.json.tmp && mv docs.json.tmp docs/docs.json
-    rm .new-stable.json
+set -x
+git add install.sh
+git commit --signoff --no-verify -m "chore: update install.sh version to v$publish_version"
+git push
+set +x
+echo -e "✅ Updated \x1b[36minstall.sh\x1b[0m on \x1b[36mmain\x1b[0m to install \x1b[36m$publish_version\x1b[0m by default"
 
-    git add docs/stable docs/docs.json
-    git commit -m "docs: publish stable docs for v$publish_version"
-
-    git push origin main
-    git checkout release
-  )
-  
-  if command -v gh >/dev/null; then
-    gum spin --title="Waiting for GitHub Action to start..." sleep 10
-    gh run watch $(gh run list --workflow=Release --branch=v$publish_version --limit=1 --json databaseId,status -q '.[0].databaseId') || true
-  fi
-  echo "GitHub action started. Check the progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
-fi
+set -x
+rm -rf docs/stable docs/development
+git restore --source=release docs/development
+mv docs/development docs/stable
+git restore --source=main docs/development
+git show release:docs/docs.json | \
+  jq '(.navigation.versions[] | select(.version == "development")) | .version = "stable" | (.groups[].pages[] |= sub("development/"; "stable/"))' \
+  > .new-stable.json
+jq --slurpfile new_stable .new-stable.json \
+  '.navigation.versions = $new_stable + (.navigation.versions | map(select(.version != "stable")))' \
+  docs/docs.json > docs.json.tmp && mv docs.json.tmp docs/docs.json
+rm .new-stable.json
+git add docs/stable docs/docs.json
+git commit --signoff --no-verify -m "docs: publish stable docs for v$publish_version"
+git push origin main
+set +x
+echo -e "✅ Published \x1b[36mstable\x1b[0m docs for \x1b[36mv$publish_version\x1b[0m"
 '''
+
+# misc tasks
 
 ["sync-images-to-ghcr"]
 dir = "{{config_root}}"

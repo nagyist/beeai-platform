@@ -4,17 +4,28 @@ description: 'Set up mise tools (Python, Node.js, ...) and install project depen
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v4
+    - name: Cache uv .venv
+      uses: actions/cache@v4
       with:
-        path: .venv
-        key: uv-venv-v1-${{ runner.os }}-${{ hashFiles('uv.lock') }}
-        restore-keys: uv-venv-v1-${{ runner.os }}-
+        path: ${{ github.workspace }}/**/.venv
+        key: uv-venv-v2-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+        restore-keys: uv-venv-v2-${{ runner.os }}-
     
-    - uses: actions/cache@v4
+    - name: Cache pnpm store
+      uses: actions/cache@v4
       with:
         path: ~/.local/share/pnpm/store
         key: pnpm-store-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: pnpm-store-v1-${{ runner.os }}-
+      
+    - name: Cache Next.js cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ github.workspace }}/**/.next/cache
+        key: nextjs-cache-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+        restore-keys: |
+          nextjs-cache-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          nextjs-cache-v1-${{ runner.os }}-
     
     - name: Set environment variables
       shell: bash

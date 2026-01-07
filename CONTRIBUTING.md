@@ -250,9 +250,9 @@ mise x -- telepresence connect
 # Receive traffic to a pod by replacing it in the cluster
 mise x -- telepresence replace <pod-name>
 
-# More information about how replace/intercept/ingress works can be found in the [Telepresence documentation](https://telepresence.io/docs/howtos/engage).
+# More information about how replace/intercept/ingress works: https://telepresence.io/docs/howtos/engage
+
 # Once done, quit Telepresence using:
-```sh
 mise x -- telepresence quit
 ```
 
@@ -328,7 +328,7 @@ This would
 
 ### Step 2: QA & Polish the release on release branch
 
-You can then iteratively polish the release in `main` branch and cherry-pick the commits to `release`. When you are ready to create a new release candidate, run `mise run release:bump` to bump up the release candidate version.
+You can then iteratively polish the release in `main` branch and cherry-pick the commits to `release`. When you are ready to create a new release candidate, run `mise run release:publish-rc` to bump up the release candidate version.
 
 Creating new RC would trigger GH action to deploy pre-release version of the package for testing.
 
@@ -337,14 +337,13 @@ Creating new RC would trigger GH action to deploy pre-release version of the pac
 Once you've verified the RC version works, publish the final release from the `release` branch:
 
 ```shell
-git checkout release
-mise run release:publish
+mise run release:publish-rc
 ```
 
 This task will simply create a final tag for `release` version and push, which triggers GH action to deploy to pypi and npm.
 
 ## Documentation
 
-All changes that modify existing features or introduce new functionality must include documentation updates as part of the pull request. Documentation files should be added or updated in the `docs` folder.
+All changes that modify existing features or introduce new functionality must include documentation updates as part of the pull request. Documentation files should be added or updated in the `docs/development` folder.
 
 A GitHub workflow automatically checks that documentation requirements are met. If your change does not require documentation updates (e.g., bug fixes that don't change behavior, internal refactoring, or test-only changes), you must explicitly note this in your PR description.
