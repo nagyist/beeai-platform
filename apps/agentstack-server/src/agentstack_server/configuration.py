@@ -295,7 +295,7 @@ class DoclingExtractionConfiguration(BaseModel):
 
 
 class ContextConfiguration(BaseModel):
-    resources_expire_after_days: int = 7  # Expires files and vector_stores attached to a context
+    resources_expire_after_days: int = 0  # Expires files and vector_stores attached to a context
 
 
 class A2AProxyConfiguration(BaseModel):
