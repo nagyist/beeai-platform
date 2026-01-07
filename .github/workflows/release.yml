@@ -171,3 +171,8 @@ jobs:
       - name: Publish TS SDK
         working-directory: apps/agentstack-sdk-ts
         run: npm publish --tag ${{ steps.version.outputs.npmTag }}
+
+      - run: |
+          git fetch origin
+          git checkout -B install origin/main
+          git push --force --set-upstream origin install
