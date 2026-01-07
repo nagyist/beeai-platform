@@ -271,14 +271,14 @@ gum confirm "Proceed?"
 set -x
 git checkout -B $release_branch origin/main
 {{ mise_bin }} release:set-version "${current_version}-rc1"
-git push
+git push --set-upstream origin $release_branch
 set +x
 echo -e "✅ \x1b[36m$release_branch\x1b[0m branch with pending version ${current_version}-rc1 created."
 
 set -x
 git checkout main
 {{ mise_bin }} release:set-version "$next_version"
-git push origin main
+git push
 set +x
 echo -e "✅ \x1b[36mmain\x1b[0m pending version bumped to $next_version."
 
