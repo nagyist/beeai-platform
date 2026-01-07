@@ -227,11 +227,6 @@ yq -i ".version = \"$usage_version\"" apps/agentstack-ui/package.json
 yq -i ".version = \"$usage_version\"" apps/beeai-web/package.json
 yq -i ".providers[].location |= sub(\":(.*)\$\"; \":\" + \"$usage_version\")" agent-registry.yaml
 
-perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$usage_version/" install.sh
-if [[ "$usage_version" == *"-rc"* ]]; then
-  perl -pi -e "s/^(LATEST_STABLE_AGENTSTACK_VERSION=).*/\${1}$usage_version/" install.sh
-fi
-
 git add .
 git commit --signoff --no-verify -m "bump: v$usage_version"
 set +x
@@ -341,7 +336,7 @@ git push
 set -x
 git checkout main
 git pull
-git restore --source=release install.sh
+perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$current_version/" install.sh
 git add install.sh
 git commit --signoff --no-verify -m "chore: update install.sh prerelease version to v$current_version"
 git push
@@ -392,9 +387,8 @@ echo "💡 Check the pipeline progress and result on: https://github.com/i-am-be
 set -x
 git checkout main
 git pull
-set +x
-
-set -x
+perl -pi -e "s/^(LATEST_AGENTSTACK_VERSION=).*/\${1}$publish_version/" install.sh
+perl -pi -e "s/^(LATEST_STABLE_AGENTSTACK_VERSION=).*/\${1}$publish_version/" install.sh
 git add install.sh
 git commit --signoff --no-verify -m "chore: update install.sh version to v$publish_version"
 git push
