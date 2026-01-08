@@ -318,7 +318,6 @@ from uuid import uuid4
 
 async def call_agent(
     provider: Provider,  # any agent from Provider.list() call
-    user_access_token: str,  # Access token obtained from OIDC provider (e.g. using authorization code OAuth flow)
 ):
     # 1. Create context and generate token
     context = await Context.create(provider_id="your_provider_id")
@@ -379,12 +378,6 @@ async def call_agent(
             }
         )
 
-    # Platform API extension - token passed as auth_token
-    if platform_spec:
-        metadata |= PlatformApiExtensionClient(platform_spec).api_auth_metadata(
-            auth_token=context_token.token, expires_at=context_token.expires_at
-        )
-
     # 4. Create message and run agent
     message = Message(
         message_id=str(uuid4()),
@@ -396,8 +389,8 @@ async def call_agent(
 
     # 5. Execute agent run
     async with httpx.AsyncClient(
-        # Add user token from OIDC provider
-        headers={"Authorization": f"Bearer {user_access_token}"},
+        # Add context token from before
+        headers={"Authorization": f"Bearer {context_token.token.get_secret_value()}"},
         follow_redirects=True,
         timeout=timedelta(hours=1).total_seconds(),
     ) as httpx_client:
@@ -452,7 +445,7 @@ async def my_agent(
 <Note>
     **How it works**
 
-    1. The client passes the context token via `PlatformApiExtensionClient.api_auth_metadata()`
+    1. The client passes the context token via the `Authorization` header
     2. The `PlatformApiExtensionServer` receives the token and sets up the authentication context
     3. All `File`, `VectorStore`, and other platform API calls automatically use this token
     4. By default, context-scopeable resources are associated with the context (via `context_id="auto"`)
