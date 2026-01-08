@@ -305,11 +305,13 @@ mise agentstack-server:run
 
 ## Releasing
 
-Agent Stack is using `main` branch for next version development (integration branch) and `release` (stable) branch for stable releases.
+Agent Stack is using `main` branch for next version development (integration branch) and `release-v*` branches for stable releases.
 
 The release process consists of three steps:
 
 ### Step 1: Cut the release
+
+Ensure that the currently set version in `main` branch is the desired release version. If not, first run `mise run release:set-version <new-version>`.
 
 Run the `release:new` task from the `main` branch:
 
@@ -317,27 +319,25 @@ Run the `release:new` task from the `main` branch:
 mise run release:new
 ```
 
-This would
-
-1. reset the `release` branch to latest `main`
-2. bumps the release to `rc1`
-3. bumps the next version in `main`.
+This will prepare a new branch `release-vX.Y` (with the version number from `main`), and bump up the version in `main` to the next patch version (e.g., `1.2.3` -> `1.2.4`).
 
 ### Step 2: QA & Polish the release on release branch
 
-You can then iteratively polish the release in `main` branch and cherry-pick the commits to `release`. When you are ready to create a new release candidate, run `mise run release:publish-rc` to bump up the release candidate version.
+You can then iteratively polish the release in `release-v*` branch. Do not forget to apply relevant fixes to both the release branch and `main`, e.g. by `git cherrypick`.
 
-Creating new RC would trigger GH action to deploy pre-release version of the package for testing.
+To publish a release candidate from the release branch, run `mise run release:publish-rc`. This will publish `X.Y.Z-rcN` version, where `N` is incremented on each RC publish.
+
+Creating new RC will trigger GH action to deploy pre-release version of the package for testing.
 
 ### Step 3: Publish
 
-Once you've verified the RC version works, publish the final release from the `release` branch:
+Once the RC makes the QA rounds, publish the final release from the release branch:
 
 ```shell
 mise run release:publish-rc
 ```
 
-This task will simply create a final tag for `release` version and push, which triggers GH action to deploy to pypi and npm.
+In addition to publishing the stable version, this action also ensures that the docs in `main` branch are updated to reflect the new version by moving the `docs/development` folder from the release branch to `docs/stable` on `main`.
 
 ## Documentation
 
