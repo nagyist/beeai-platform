@@ -410,9 +410,23 @@ rm -rf docs/stable docs/development
 git restore --source=$release_branch docs/development
 mv docs/development docs/stable
 git restore --source=main docs/development
-git show release:docs/docs.json | \
-  jq '(.navigation.versions[] | select(.version == "development")) | .version = "stable" | (.groups[].pages[] |= sub("development/"; "stable/"))' \
-  > .new-stable.json
+git show $release_branch:docs/docs.json | \
+jq '
+  (.navigation.versions[]
+   | select(.version == "development")
+   | .version = "stable"
+   | .groups[].pages |=
+       map(
+         if type == "string" then
+           sub("^development/"; "stable/")
+         elif type == "object" then
+           .pages |= map(sub("^development/"; "stable/"))
+         else
+           .
+         end
+       )
+  )
+' > .new-stable.json
 jq --slurpfile new_stable .new-stable.json \
   '.navigation.versions = $new_stable + (.navigation.versions | map(select(.version != "stable")))' \
   docs/docs.json > docs.json.tmp && mv docs.json.tmp docs/docs.json
