@@ -43,7 +43,6 @@
               "stable/agent-integration/agent-settings",
               "stable/agent-integration/secrets",
               "stable/agent-integration/rag",
-              "stable/agent-integration/mcp-oauth",
               "stable/agent-integration/mcp",
               "stable/agent-integration/env-variables",
               "stable/agent-integration/error",
@@ -52,7 +51,9 @@
           },
           {
             "group": "Reference",
-            "pages": ["stable/reference/cli-reference"]
+            "pages": [
+              "stable/reference/cli-reference"
+            ]
           },
           {
             "group": "Deploy Agent Stack",
@@ -65,7 +66,14 @@
           {
             "group": "Custom UI Integration",
             "pages": [
-              "stable/custom-ui/client-sdk",
+              {
+                "group": "Client SDK (Typescript)",
+                "pages": [
+                  "stable/custom-ui/client-sdk/overview",
+                  "stable/custom-ui/client-sdk/extensions",
+                  "stable/custom-ui/client-sdk/api-client"
+                ]
+              },
               "stable/custom-ui/permissions-and-tokens"
             ]
           },
@@ -78,7 +86,9 @@
           },
           {
             "group": "Community",
-            "pages": ["stable/community/contribute"]
+            "pages": [
+              "stable/community/contribute"
+            ]
           }
         ]
       },
@@ -123,7 +133,9 @@
           },
           {
             "group": "Reference",
-            "pages": ["development/reference/cli-reference"]
+            "pages": [
+              "development/reference/cli-reference"
+            ]
           },
           {
             "group": "Deploy Agent Stack",
@@ -156,7 +168,9 @@
           },
           {
             "group": "Community",
-            "pages": ["development/community/contribute"]
+            "pages": [
+              "development/community/contribute"
+            ]
           }
         ]
       }
@@ -168,7 +182,12 @@
       "label": "GitHub",
       "href": "https://github.com/i-am-bee/agentstack"
     },
-    "links": [{ "label": "Discord", "href": "https://discord.gg/NradeA6ZNF" }]
+    "links": [
+      {
+        "label": "Discord",
+        "href": "https://discord.gg/NradeA6ZNF"
+      }
+    ]
   },
   "footer": {
     "socials": {
