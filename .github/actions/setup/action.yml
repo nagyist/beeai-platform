@@ -7,17 +7,17 @@ runs:
     - name: Cache uv .venv
       uses: actions/cache@v4
       with:
-        path: ${{ github.workspace }}/**/.venv
-        key: uv-venv-v2-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
-        restore-keys: uv-venv-v2-${{ runner.os }}-
-    
+        path: /tmp/.uv-cache
+        key: uv-cache-v1-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
+        restore-keys: uv-cache-v1-${{ runner.os }}-
+
     - name: Cache pnpm store
       uses: actions/cache@v4
       with:
         path: ~/.local/share/pnpm/store
         key: pnpm-store-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
         restore-keys: pnpm-store-v1-${{ runner.os }}-
-      
+
     - name: Cache Next.js cache
       uses: actions/cache@v4
       with:
@@ -26,12 +26,13 @@ runs:
         restore-keys: |
           nextjs-cache-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
           nextjs-cache-v1-${{ runner.os }}-
-    
+
     - name: Set environment variables
       shell: bash
       run: |
         echo "UV_FROZEN=true" >> $GITHUB_ENV
-    
+        echo "UV_CACHE_DIR=/tmp/.uv-cache" >> $GITHUB_ENV
+
     - uses: jdx/mise-action@5ff8b6c87089a23d44f61309fd05300c2f616b73
       with:
         version: 2026.1.0

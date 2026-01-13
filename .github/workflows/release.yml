@@ -177,3 +177,5 @@ jobs:
           git fetch origin
           git checkout -B install origin/main
           git push --force --set-upstream origin install
+      
+      - run: uv cache prune --ci

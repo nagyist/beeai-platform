@@ -36,3 +36,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mise run agentstack-sdk-py:test-all --python=${{ matrix.python }}
+      - run: uv cache prune --ci

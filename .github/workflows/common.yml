@@ -20,3 +20,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mise run check
       - run: mise run test
+      - run: uv cache prune --ci

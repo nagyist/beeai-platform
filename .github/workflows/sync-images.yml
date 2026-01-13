@@ -30,3 +30,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract and sync images
         run: mise run sync-images-to-ghcr
+      - run: uv cache prune --ci

@@ -35,3 +35,4 @@ jobs:
           file: ./apps/beeai-web/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}/beeai-web:${{ github.sha }},ghcr.io/${{ github.repository }}/beeai-web:latest
+      - run: uv cache prune --ci
