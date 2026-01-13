@@ -173,7 +173,7 @@ jobs:
         run: npm publish --tag ${{ steps.version.outputs.npmTag }}
 
       - run: |
-          git reset --hard origin/main
+          git reset --hard HEAD
           git fetch origin
           git checkout -B install origin/main
           git push --force --set-upstream origin install
