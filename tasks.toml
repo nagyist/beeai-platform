@@ -333,7 +333,6 @@ git tag "v$current_version"
 git push --atomic origin $release_branch "v$current_version"
 set +x
 echo -e "✅ Pushed tag $current_version to \x1b[36morigin/$release_branch\x1b[0m"
-echo -e "💡 Check the pipeline progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 
 {{ mise_bin }} release:set-version "$next_version"
 git push
@@ -349,6 +348,8 @@ set +x
 echo -e "✅ Updated \x1b[36minstall.sh\x1b[0m on \x1b[36mmain\x1b[0m to install $current_version when set to prerelease mode"
 
 git checkout $release_branch
+
+echo -e "💡 Check the pipeline progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 '''
 
 ["release:publish-stable"]
@@ -392,7 +393,6 @@ git tag "v$publish_version"
 git push --atomic origin $release_branch "v$publish_version"
 set +x
 echo -e "✅ Pushed tag $publish_version to \x1b[36morigin/$release_branch\x1b[0m"
-echo "💡 Check the pipeline progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 
 set -x
 git checkout main
@@ -436,6 +436,8 @@ git commit --signoff --no-verify -m "docs: publish stable docs for v$publish_ver
 git push origin main
 set +x
 echo -e "✅ Published \x1b[36mstable\x1b[0m docs for \x1b[36mv$publish_version\x1b[0m"
+
+echo "💡 Check the pipeline progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 '''
 
 # misc tasks
