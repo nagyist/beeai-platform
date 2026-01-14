@@ -40,7 +40,7 @@ Usage: agentstack [OPTIONS] COMMAND [ARGS]...
 │ logs                              Stream agent execution logs              │
 │ env                               Manage agent environment variables       │
 │ build                             Build an agent remotely                  │
-│ client-side-build                 Build an agent container image locally [Local only]│
+│ client-side-build                 Build an agent container image locally   │
 ╰────────────────────────────────────────────────────────────────────────────╯
 
 ╭─ Platform & Configuration ─────────────────────────────────────────────────╮
