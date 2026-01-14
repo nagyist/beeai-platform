@@ -29,31 +29,31 @@ export const AgentCredits = memo(function AgentCredits({ author, contributors }:
   }
 
   return (
-    <div className={classes.root}>
-      <span>
-        {!author ? (
-          <em className={classes.noAuthor}>No author</em>
-        ) : (
-          <>
-            By <AuthorView {...author} />
-          </>
-        )}
-      </span>
-
-      {hasContributors && (
-        <div className={classes.contributors}>
-          (+
-          <ul>
-            {validContributors.map((contributor, idx) => (
-              <li key={idx}>
-                <AuthorView {...contributor} />
-              </li>
-            ))}
-          </ul>
-          )
+    <dl className={classes.root}>
+      {author && (
+        <div>
+          <dt>Author</dt>
+          <dd>
+            <AuthorView {...author} />
+          </dd>
         </div>
       )}
-    </div>
+
+      {hasContributors && (
+        <div>
+          <dt>Contributors</dt>
+          <dd>
+            <ul className={classes.contributors}>
+              {validContributors.map((contributor, idx) => (
+                <li key={idx}>
+                  <AuthorView {...contributor} />
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      )}
+    </dl>
   );
 });
 

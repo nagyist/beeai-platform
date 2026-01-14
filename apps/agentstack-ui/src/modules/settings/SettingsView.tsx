@@ -4,7 +4,6 @@
  */
 
 'use client';
-
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@carbon/react';
 import type { ComponentType } from 'react';
 import { useMemo } from 'react';
@@ -45,7 +44,7 @@ export function SettingsView() {
     <MainContent>
       <Container size="lg">
         <ViewStack>
-          <ViewHeader heading="Settings" />
+          <ViewHeader heading="Global settings" />
           <Tabs>
             <TabList>
               {items.map(({ title }) => (
@@ -67,8 +66,8 @@ export function SettingsView() {
 }
 
 const ITEMS: { title: string; component: ComponentType; featureName?: FeatureName }[] = [
+  { title: 'Theme', component: ThemeView },
   { title: 'Variables', component: VariablesView, featureName: 'Variables' },
   { title: 'Agent providers', component: ProvidersView, featureName: 'Providers' },
   { title: 'Connectors', component: ConnectorsView, featureName: 'Connectors' },
-  { title: 'Theme', component: ThemeView },
 ];

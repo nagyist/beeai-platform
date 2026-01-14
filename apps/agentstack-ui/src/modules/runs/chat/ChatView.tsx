@@ -7,7 +7,6 @@ import { useCallback } from 'react';
 
 import { MainContent } from '#components/layouts/MainContent.tsx';
 import type { Agent } from '#modules/agents/api/types.ts';
-import { AgentDetailPanel } from '#modules/agents/components/detail/AgentDetailPanel.tsx';
 import { usePlatformContext } from '#modules/platform-context/contexts/index.ts';
 import { SourcesPanel } from '#modules/sources/components/SourcesPanel.tsx';
 import { routes } from '#utils/router.ts';
@@ -28,7 +27,6 @@ export function ChatView({ agent }: Props) {
   return (
     <AgentRunProviders agent={agent}>
       <Chat />
-      <AgentDetailPanel />
     </AgentRunProviders>
   );
 }

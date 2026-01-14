@@ -4,8 +4,9 @@
  */
 
 .empty {
-  font-size: rem(14px);
-  line-height: math.div(18, 14);
+  @include type-style(heading-02);
+  font-weight: 400;
+  line-height: math.div(18, 16);
   letter-spacing: $letter-spacing;
   color: $text-placeholder;
 }

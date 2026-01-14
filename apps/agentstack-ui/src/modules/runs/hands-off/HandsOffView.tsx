@@ -5,7 +5,6 @@
 
 import { MainContent } from '#components/layouts/MainContent.tsx';
 import type { Agent } from '#modules/agents/api/types.ts';
-import { AgentDetailPanel } from '#modules/agents/components/detail/AgentDetailPanel.tsx';
 import { useMessages } from '#modules/messages/contexts/Messages/index.ts';
 import { SourcesPanel } from '#modules/sources/components/SourcesPanel.tsx';
 
@@ -23,7 +22,6 @@ export function HandsOffView({ agent }: Props) {
   return (
     <AgentRunProviders agent={agent}>
       <HandsOff />
-      <AgentDetailPanel />
     </AgentRunProviders>
   );
 }

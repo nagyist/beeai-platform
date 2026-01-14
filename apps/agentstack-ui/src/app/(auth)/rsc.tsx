@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 'use server';
+
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getToken } from 'next-auth/jwt';

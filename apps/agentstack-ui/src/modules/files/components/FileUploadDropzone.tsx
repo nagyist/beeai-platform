@@ -11,10 +11,10 @@ import { useApp } from '#contexts/App/index.ts';
 import classes from './FileUploadDropzone.module.scss';
 
 export function FileUploadDropzone() {
-  const { sidebarOpen } = useApp();
+  const { navbarOpen } = useApp();
 
   return (
-    <div className={clsx(classes.root, { [classes.sidebarOpen]: sidebarOpen })}>
+    <div className={clsx(classes.root, { [classes.navbarOpen]: navbarOpen })}>
       <div className={classes.content}>
         <CloudUpload size={96} />
 

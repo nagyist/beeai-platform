@@ -18,11 +18,10 @@ export interface SessionItem {
   contextId: string;
   providerId: string;
   heading: string;
-  subHeading?: string;
   isActive?: boolean;
 }
 
-export function SessionItem({ contextId, providerId, heading, subHeading, isActive }: SessionItem) {
+export function SessionItem({ contextId, providerId, heading, isActive }: SessionItem) {
   const router = useRouter();
   const [optionsOpen, setOptionsOpen] = useState(false);
 
@@ -43,8 +42,6 @@ export function SessionItem({ contextId, providerId, heading, subHeading, isActi
     >
       <Link href={routes.agentRun({ providerId, contextId })} className={classes.link}>
         <span className={classes.heading}>{heading}</span>
-
-        {subHeading && <span className={classes.subHeading}>{subHeading}</span>}
       </Link>
 
       <div className={classes.options}>
@@ -59,7 +56,7 @@ export function SessionItem({ contextId, providerId, heading, subHeading, isActi
 SessionItem.Skeleton = function NavItemSkeleton() {
   return (
     <li>
-      <ButtonSkeleton className={classes.skeleton} />
+      <ButtonSkeleton className={classes.skeleton} size="sm" />
     </li>
   );
 };

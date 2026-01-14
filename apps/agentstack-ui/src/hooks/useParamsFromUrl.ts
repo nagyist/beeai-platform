@@ -6,12 +6,12 @@
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 
-import { getRunParamsFromUrl } from '#modules/runs/utils.ts';
+import { getAgentParamsFromUrl } from '#modules/runs/utils.ts';
 
 export function useParamsFromUrl() {
   const pathname = usePathname();
 
-  const params = useMemo(() => getRunParamsFromUrl(pathname), [pathname]);
+  const params = useMemo(() => getAgentParamsFromUrl(pathname), [pathname]);
 
   return params;
 }

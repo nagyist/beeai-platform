@@ -11,12 +11,19 @@ export const routes = {
   signIn: ({ callbackUrl }: { callbackUrl?: string } = {}) =>
     `/signin${callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`,
   notFound: () => '/not-found' as const,
+  agentRoute: ({ providerId }: AgentRouteParams) => `/agent/${encodeURIComponent(providerId)}`,
   agentRun: ({ providerId, contextId }: AgentRunParams) =>
-    `/run/${encodeURIComponent(providerId)}${contextId ? `/c/${encodeURIComponent(contextId)}` : ''}`,
-  settings: () => '/settings' as const,
+    `${routes.agentRoute({ providerId })}${contextId ? `/c/${encodeURIComponent(contextId)}` : ''}`,
+  agentSettings: (params: AgentRouteParams) => `${routes.agentRoute(params)}/settings`,
+  agentAbout: (params: AgentRouteParams) => `${routes.agentRoute(params)}/about`,
+  settings: ({ providerId }: Partial<AgentRouteParams> = {}) =>
+    providerId ? `${routes.agentRoute({ providerId })}/global-settings` : '/settings',
 };
 
-interface AgentRunParams {
+interface AgentRouteParams {
   providerId: string;
+}
+
+interface AgentRunParams extends AgentRouteParams {
   contextId?: string;
 }

@@ -6,7 +6,7 @@
 import { IconButton } from '@carbon/react';
 import type { MouseEventHandler } from 'react';
 
-import NewSession from '../../../components/Sidebar/NewSession.svg';
+import NewSession from '../../../components/Navbar/NewSession.svg';
 import classes from './NewSessionButton.module.scss';
 
 interface Props {

@@ -6,7 +6,6 @@
 import { Container } from '#components/layouts/Container.tsx';
 import { MainContent } from '#components/layouts/MainContent.tsx';
 import type { Agent } from '#modules/agents/api/types.ts';
-import { AgentDetailPanel } from '#modules/agents/components/detail/AgentDetailPanel.tsx';
 import { AgentHeading } from '#modules/agents/components/detail/AgentHeading.tsx';
 
 import classes from './UiNotAvailableView.module.scss';
@@ -31,8 +30,6 @@ export function UiNotAvailableView({ agent }: Props) {
           </p>
         </Container>
       </MainContent>
-
-      <AgentDetailPanel />
     </>
   );
 }

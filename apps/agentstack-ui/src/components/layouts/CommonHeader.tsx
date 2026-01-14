@@ -4,31 +4,39 @@
  */
 
 'use client';
-import { Add } from '@carbon/icons-react';
+import { Link, Share } from '@carbon/icons-react';
 import { Button } from '@carbon/react';
+import { usePathname } from 'next/navigation';
+import { useCallback } from 'react';
 
 import { AppName } from '#components/AppName/AppName.tsx';
 import { AppHeader } from '#components/layouts/AppHeader.tsx';
-import { useModal } from '#contexts/Modal/index.tsx';
-import { ImportAgentsModal } from '#modules/agents/components/import/ImportAgentsModal.tsx';
-import { useCanManageProviders } from '#modules/providers/hooks/useCanManageProviders.ts';
+import { useToast } from '#contexts/Toast/index.ts';
+import { routes } from '#utils/router.ts';
 
 import classes from './CommonHeader.module.scss';
 
 export function CommonHeader() {
-  const { openModal } = useModal();
+  const { addToast } = useToast();
+  const pathname = usePathname();
 
-  const canManageProviders = useCanManageProviders();
+  const handleCopy = useCallback(() => {
+    const url = `${window.location.origin}${routes.home()}`;
+    navigator.clipboard.writeText(url);
+    addToast({ title: 'Link copied to clipboard', icon: Link, timeout: 10_000 });
+  }, [addToast]);
+
+  const isHome = pathname === routes.home();
 
   return (
     <AppHeader>
       <div className={classes.root}>
-        <AppName />
+        <AppName withLink />
 
-        {canManageProviders && (
+        {isHome && (
           <div className={classes.right}>
-            <Button renderIcon={Add} size="sm" onClick={() => openModal((props) => <ImportAgentsModal {...props} />)}>
-              Add new agent
+            <Button renderIcon={Share} size="sm" onClick={() => handleCopy()} kind="tertiary">
+              Share catalog
             </Button>
           </div>
         )}

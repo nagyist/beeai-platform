@@ -72,7 +72,7 @@ export function AgentRunProviders({ agent, children }: PropsWithChildren<Props>)
 function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
   const queryClient = useQueryClient();
   const errorHandler = useHandleError();
-  const { agentClient } = useA2AClient();
+  const { agentClient, contextToken } = useA2AClient();
 
   const { messages, getMessages, setMessages } = useMessages();
 
@@ -387,14 +387,14 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
   const sources = useMemo(() => getMessagesSourcesMap(messages), [messages]);
 
   const status = useMemo(() => {
-    if (!contextId || !agentClient) {
+    if (!contextId || !agentClient || !contextToken) {
       return AgentRunStatus.Initializing;
     }
     if (isPending) {
       return AgentRunStatus.Pending;
     }
     return AgentRunStatus.Ready;
-  }, [agentClient, contextId, isPending]);
+  }, [agentClient, contextId, contextToken, isPending]);
 
   const initialFormRender = useMemo(() => formDemands?.form_demands?.initial_form, [formDemands]);
 

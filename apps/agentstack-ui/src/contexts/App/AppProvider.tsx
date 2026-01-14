@@ -14,15 +14,15 @@ interface Props {
 }
 
 export function AppProvider({ config, children }: PropsWithChildren<Props>) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [navbarOpen, setNavbarOpen] = useState(true);
   const [activeSidePanel, setActiveSidePanel] = useState<SidePanelVariant | null>(null);
 
-  const openSidebar = useCallback(() => {
-    setSidebarOpen(true);
+  const openNavbar = useCallback(() => {
+    setNavbarOpen(true);
   }, []);
 
-  const closeSidebar = useCallback(() => {
-    setSidebarOpen(false);
+  const closeNavbar = useCallback(() => {
+    setNavbarOpen(false);
   }, []);
 
   const openSidePanel = useCallback((variant: SidePanelVariant) => {
@@ -36,14 +36,14 @@ export function AppProvider({ config, children }: PropsWithChildren<Props>) {
   const contextValue = useMemo(
     () => ({
       config,
-      sidebarOpen,
+      navbarOpen,
       activeSidePanel,
-      openSidebar,
-      closeSidebar,
+      openNavbar,
+      closeNavbar,
       openSidePanel,
       closeSidePanel,
     }),
-    [config, sidebarOpen, activeSidePanel, openSidebar, closeSidebar, openSidePanel, closeSidePanel],
+    [config, navbarOpen, activeSidePanel, openNavbar, closeNavbar, openSidePanel, closeSidePanel],
   );
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

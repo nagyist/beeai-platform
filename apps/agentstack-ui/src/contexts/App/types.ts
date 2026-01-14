@@ -7,7 +7,6 @@ import type { ContextTokenPermissions } from '#modules/platform-context/types.ts
 import type { FeatureFlags } from '#utils/feature-flags.ts';
 
 export enum SidePanelVariant {
-  AgentDetail = 'AgentDetail',
   Sources = 'Sources',
 }
 

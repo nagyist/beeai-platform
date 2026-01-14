@@ -24,7 +24,7 @@ export function TrajectoryButton({ isOpen, onClick }: Props) {
       className={clsx(classes.root, { [classes.isOpen]: isOpen })}
       onClick={onClick}
     >
-      How did I get this answer?
+      Activity
     </Button>
   );
 }

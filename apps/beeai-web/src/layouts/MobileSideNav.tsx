@@ -4,7 +4,8 @@
  */
 
 import { HeaderMenuItem, HeaderSideNavItems, SideNav, SideNavItems } from '@carbon/react';
-import type { MainNavItem } from '@i-am-bee/agentstack-ui';
+
+import type { MainNavItem } from '@/components/MainNav/MainNav';
 
 import classes from './MobileSideNav.module.scss';
 

@@ -8,19 +8,18 @@ import { Button } from '@carbon/react';
 import { useCopyToClipboard } from 'usehooks-ts';
 
 import { useToast } from '#contexts/Toast/index.ts';
-import type { Agent } from '#modules/agents/api/types.ts';
 import { routes } from '#utils/router.ts';
 
 interface Props {
-  agent: Agent;
+  providerId: string;
 }
 
-export function AgentShareButton({ agent }: Props) {
+export function AgentShareButton({ providerId }: Props) {
   const [, copy] = useCopyToClipboard();
   const { addToast } = useToast();
 
   const handleShare = () => {
-    copy(`${window.location.origin}${routes.agentRun({ providerId: agent.provider.id })}`);
+    copy(`${window.location.origin}${routes.agentRun({ providerId })}`);
     addToast({
       title: 'Link has been copied to clipboard!',
       icon: Link,

@@ -10,11 +10,11 @@ import { useAgentSecrets } from '../../contexts/agent-secrets';
 import { SecretsModal } from './SecretsModal';
 
 export function SecretsModalPortal() {
-  const { hasSeenModal, markModalAsSeen, demandedSecrets } = useAgentSecrets();
+  const { hasSeenModal, markModalAsSeen, demandedSecrets, isPendingVariables } = useAgentSecrets();
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (hasSeenModal) {
+    if (hasSeenModal || isPendingVariables) {
       return;
     }
     const unresolvedSecrets = demandedSecrets.filter((s) => !s.isReady);
@@ -23,7 +23,7 @@ export function SecretsModalPortal() {
       markModalAsSeen();
       setIsOpen(true);
     }
-  }, [hasSeenModal, markModalAsSeen, demandedSecrets]);
+  }, [hasSeenModal, markModalAsSeen, demandedSecrets, isPendingVariables]);
 
   if (!isOpen || typeof document === 'undefined') {
     return null;

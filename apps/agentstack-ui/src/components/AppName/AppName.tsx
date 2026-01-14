@@ -1,28 +1,29 @@
 /**
- * Copyright 2025 © BeeAI a Series of LF Projects, LLC
+ * Copyright 2026 © BeeAI a Series of LF Projects, LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AnimatePresence, motion } from 'framer-motion';
-
 import { useApp } from '#contexts/App/index.ts';
-import { fadeProps } from '#utils/fadeProps.ts';
+import { routes, TransitionLink } from '#index.ts';
 
 import classes from './AppName.module.scss';
 
-export function AppName() {
+interface Props {
+  withLink?: boolean;
+}
+
+export function AppName({ withLink }: Props) {
   const {
-    sidebarOpen,
     config: { appName },
   } = useApp();
 
-  return (
-    <AnimatePresence initial={false}>
-      {!sidebarOpen && (
-        <motion.p className={classes.root} {...fadeProps()}>
-          {appName}
-        </motion.p>
-      )}
-    </AnimatePresence>
+  const content = <span className={classes.name}>{appName}</span>;
+
+  return withLink ? (
+    <TransitionLink className={classes.link} href={routes.home()}>
+      {content}
+    </TransitionLink>
+  ) : (
+    content
   );
 }

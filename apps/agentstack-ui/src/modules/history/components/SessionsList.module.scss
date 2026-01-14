@@ -11,4 +11,6 @@
 
 .empty {
   padding: rem(7px) $spacing-03;
+  font-size: rem(16px);
+  line-height: math.div(18, 16);
 }

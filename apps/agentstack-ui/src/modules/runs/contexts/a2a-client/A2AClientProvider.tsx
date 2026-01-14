@@ -25,7 +25,7 @@ export function A2AClientProvider({ agent, children }: PropsWithChildren<Props>)
   });
 
   const contextValue = useMemo(() => {
-    if (!contextToken || !agentClient) {
+    if (!agentClient) {
       return null;
     }
 

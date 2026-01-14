@@ -11,6 +11,6 @@ import type { AgentA2AClient } from '#api/a2a/types.ts';
 export const A2AClientContext = createContext<A2AClientContextValue | null>(null);
 
 export interface A2AClientContextValue {
-  contextToken: ContextToken;
+  contextToken?: ContextToken;
   agentClient: AgentA2AClient;
 }

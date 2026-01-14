@@ -48,7 +48,7 @@ export function AgentSecretsProvider({ agent, children }: PropsWithChildren<Prop
     secretsLocalStorageOptions,
   );
 
-  const { data } = useListVariables();
+  const { data, isPending } = useListVariables();
   const variables = data ? data.variables : null;
 
   const hasSeenModal = useMemo(() => {
@@ -99,8 +99,9 @@ export function AgentSecretsProvider({ agent, children }: PropsWithChildren<Prop
       hasSeenModal,
       markModalAsSeen,
       demandedSecrets,
+      isPendingVariables: isPending,
     }),
-    [demandedSecrets, hasSeenModal, markModalAsSeen],
+    [demandedSecrets, hasSeenModal, isPending, markModalAsSeen],
   );
 
   return <AgentSecretsContext.Provider value={contextValue}>{children}</AgentSecretsContext.Provider>;

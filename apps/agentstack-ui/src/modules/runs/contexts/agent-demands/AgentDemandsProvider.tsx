@@ -101,6 +101,10 @@ export function AgentDemandsProvider({ children }: PropsWithChildren) {
 
   const getFulfillments = useCallback(
     async (fulfillmentsContext: FulfillmentsContext) => {
+      if (!contextToken) {
+        throw new Error('Context token is not available');
+      }
+
       const providedSecrets = demandedSecrets.reduce((memo, secret) => {
         if (secret.isReady) {
           memo[secret.key] = secret.value;

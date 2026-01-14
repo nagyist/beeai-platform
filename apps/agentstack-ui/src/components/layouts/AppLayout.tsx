@@ -5,14 +5,14 @@
 
 import type { PropsWithChildren } from 'react';
 
-import { Sidebar } from '#components/Sidebar/Sidebar.tsx';
+import { Navbar } from '#components/Navbar/Navbar.tsx';
 
 import classes from './AppLayout.module.scss';
 
 export function AppLayout({ children }: PropsWithChildren) {
   return (
     <div className={classes.root}>
-      <Sidebar className={classes.sidebar} />
+      <Navbar className={classes.sidebar} />
 
       <main className={classes.main} data-route-transition>
         {children}

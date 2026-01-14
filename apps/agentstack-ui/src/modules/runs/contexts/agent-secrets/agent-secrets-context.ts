@@ -11,11 +11,13 @@ import type { AgentSecret } from './types';
 export const AgentSecretsContext = createContext<AgentSecretsContextValue>({
   demandedSecrets: [],
   hasSeenModal: false,
+  isPendingVariables: false,
   markModalAsSeen: noop,
 });
 
 interface AgentSecretsContextValue {
   demandedSecrets: AgentSecret[];
   hasSeenModal: boolean;
+  isPendingVariables: boolean;
   markModalAsSeen: () => void;
 }

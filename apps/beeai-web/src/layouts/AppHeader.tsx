@@ -5,11 +5,11 @@
 'use client';
 import { ArrowUpRight } from '@carbon/icons-react';
 import { HeaderMenuButton } from '@carbon/react';
-import { MainNav } from '@i-am-bee/agentstack-ui';
 import clsx from 'clsx';
 import Link from 'next/link';
 import { useState } from 'react';
 
+import { MainNav } from '@/components/MainNav/MainNav';
 import { APP_NAME, FRAMEWORK_DOCS_LINK, PLATFORM_DOCS_LINK } from '@/constants';
 import { routeDefinitions } from '@/utils/router';
 
