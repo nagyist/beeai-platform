@@ -131,7 +131,11 @@ class WSLDriver(BaseDriver):
         set_values_list: list[str],
         values_file: pathlib.Path | None = None,
         import_images: list[str] | None = None,
+        pull_on_host: bool = False,
     ) -> None:
+        if pull_on_host:
+            raise NotImplementedError("Pulling on host is not supported on this platform.")
+
         host_ip = (
             (
                 await self.run_in_vm(
@@ -205,7 +209,7 @@ class WSLDriver(BaseDriver):
         await run_command(["wsl.exe", "--unregister", self.vm_name], "Deleting Agent Stack platform", check=False)
 
     @typing.override
-    async def import_image(self, tag: str) -> None:
+    async def import_images(self, *tags: str) -> None:
         raise NotImplementedError("Importing images is not supported on this platform.")
 
     @typing.override

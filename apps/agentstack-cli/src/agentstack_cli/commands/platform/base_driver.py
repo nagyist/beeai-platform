@@ -15,6 +15,7 @@ from tenacity import AsyncRetrying, stop_after_attempt
 
 import agentstack_cli.commands.platform.istio
 from agentstack_cli.configuration import Configuration
+from agentstack_cli.utils import run_command
 
 
 class BaseDriver(abc.ABC):
@@ -46,7 +47,7 @@ class BaseDriver(abc.ABC):
     async def delete(self) -> None: ...
 
     @abc.abstractmethod
-    async def import_image(self, tag: str) -> None: ...
+    async def import_images(self, *tags: str) -> None: ...
 
     @abc.abstractmethod
     async def import_image_to_internal_registry(self, tag: str) -> None: ...
@@ -104,6 +105,7 @@ class BaseDriver(abc.ABC):
         set_values_list: list[str],
         values_file: pathlib.Path | None = None,
         import_images: list[str] | None = None,
+        pull_on_host: bool = False,
     ) -> None:
         await self.run_in_vm(
             ["sh", "-c", "mkdir -p /tmp/agentstack && cat >/tmp/agentstack/chart.tgz"],
@@ -140,21 +142,33 @@ class BaseDriver(abc.ABC):
                 "Listing necessary images",
             )
         ).stdout.decode()
-        for image in import_images or []:
-            await self.import_image(image)
-            self.loaded_images.add(image)
-        for image in {typing.cast(str, yaml.safe_load(line)) for line in images_str.splitlines()} - set(
-            import_images or []
-        ):
+
+        def canonify(tag: str) -> str:
+            return tag if "." in tag.split("/")[0] else f"docker.io/{tag}"
+
+        required_images = {canonify(typing.cast(str, yaml.safe_load(line))) for line in images_str.splitlines()}
+        images_to_import = {canonify(tag) for tag in import_images or []}
+        images_to_pull = required_images - images_to_import
+
+        if pull_on_host:
+            for image in images_to_pull:
+                await run_command(["docker", "pull", image], f"Pulling image {image} on host")
+            images_to_import = required_images
+            images_to_pull = set[str]()
+
+        if images_to_import:
+            await self.import_images(*images_to_import)
+
+        for image in images_to_pull:
             async for attempt in AsyncRetrying(stop=stop_after_attempt(5)):
                 with attempt:
                     attempt_num = attempt.retry_state.attempt_number
-                    image_id = image if "." in image.split("/")[0] else f"docker.io/{image}"
-                    self.loaded_images.add(image_id)
                     await self.run_in_vm(
-                        ["k3s", "ctr", "image", "pull", image_id],
+                        ["k3s", "ctr", "image", "pull", image],
                         f"Pulling image {image}" + (f" (attempt {attempt_num})" if attempt_num > 1 else ""),
                     )
+
+        self.loaded_images = required_images
 
         if any("auth.oidc.enabled=true" in value.lower() for value in set_values_list):
             await agentstack_cli.commands.platform.istio.install(driver=self)
