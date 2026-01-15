@@ -1,14 +1,16 @@
 # Copyright 2025 © BeeAI a Series of LF Projects, LLC
 # SPDX-License-Identifier: Apache-2.0
 
-
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
+from typing import Literal, overload
+from uuid import UUID
 
 import janus
 from a2a.types import Artifact, Message, MessageSendConfiguration, Task
 from pydantic import BaseModel, PrivateAttr
 
 from agentstack_sdk.a2a.types import RunYield, RunYieldResume
+from agentstack_sdk.platform.context import ContextHistoryItem
 from agentstack_sdk.server.store.context_store import ContextStoreInstance
 
 
@@ -30,11 +32,28 @@ class RunContext(BaseModel, arbitrary_types_allowed=True):
             data = data.model_copy(deep=True, update={"context_id": self.context_id, "task_id": self.task_id})
         await self._store.store(data)
 
-    async def load_history(self) -> AsyncIterator[Message | Artifact]:
+    @overload
+    async def load_history(
+        self, load_history_items: Literal[False] = False
+    ) -> AsyncGenerator[Message | Artifact, None]:
+        yield ...  # type: ignore
+
+    @overload
+    async def load_history(self, load_history_items: Literal[True]) -> AsyncGenerator[ContextHistoryItem, None]:
+        yield ...  # type: ignore
+
+    async def load_history(
+        self, load_history_items: bool = False
+    ) -> AsyncGenerator[ContextHistoryItem | Message | Artifact]:
         if not self._store:
             raise RuntimeError("Context store is not initialized")
-        async for item in self._store.load_history():
+        async for item in self._store.load_history(load_history_items=load_history_items):
             yield item
+
+    async def delete_history_from_id(self, from_id: UUID) -> None:
+        if not self._store:
+            raise RuntimeError("Context store is not initialized")
+        await self._store.delete_history_from_id(from_id)
 
     def yield_sync(self, value: RunYield) -> RunYieldResume:
         self._yield_queue.sync_q.put(value)

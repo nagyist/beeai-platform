@@ -5,25 +5,29 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from typing import Literal
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pydantic
 from a2a.types import Artifact, Message
-from pydantic import AwareDatetime, BaseModel, SerializeAsAny
+from pydantic import AwareDatetime, BaseModel, Field, SerializeAsAny, computed_field
 
 from agentstack_sdk.platform.client import PlatformClient, get_platform_client
 from agentstack_sdk.platform.common import PaginatedResult
 from agentstack_sdk.platform.provider import Provider
 from agentstack_sdk.platform.types import Metadata, MetadataPatch
-from agentstack_sdk.util.utils import filter_dict
+from agentstack_sdk.util.utils import filter_dict, utc_now
 
 
 class ContextHistoryItem(BaseModel):
-    id: UUID
+    id: UUID = Field(default_factory=uuid4)
     data: Artifact | Message
-    created_at: AwareDatetime
-    context_id: UUID
-    kind: Literal["message", "artifact"]
+    created_at: AwareDatetime = Field(default_factory=utc_now)
+    context_id: str
+
+    @computed_field
+    @property
+    def kind(self) -> Literal["message", "artifact"]:
+        return getattr(self.data, "kind", "artifact")
 
 
 class ContextToken(pydantic.BaseModel):
@@ -235,6 +239,21 @@ class Context(pydantic.BaseModel):
             _ = (
                 await platform_client.post(
                     url=f"/api/v1/contexts/{target_context_id}/history", json=data.model_dump(mode="json")
+                )
+            ).raise_for_status()
+
+    async def delete_history_from_id(
+        self: Context | str,
+        *,
+        from_id: UUID | str,
+        client: PlatformClient | None = None,
+    ) -> None:
+        """Delete all history items from a specific item onwards (inclusive)"""
+        target_context_id = self if isinstance(self, str) else self.id
+        async with client or get_platform_client() as platform_client:
+            _ = (
+                await platform_client.delete(
+                    url=f"/api/v1/contexts/{target_context_id}/history", params={"from_id": str(from_id)}
                 )
             ).raise_for_status()
 
