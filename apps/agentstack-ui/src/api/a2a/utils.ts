@@ -11,7 +11,7 @@ import type {
   Message,
   Part,
   TextPart,
-} from '@a2a-js/sdk';
+} from 'agentstack-sdk';
 import {
   type Citation,
   citationExtension,
@@ -124,7 +124,7 @@ export function getFileUrl(file: FilePart['file']): string {
   return `data:${mimeType};base64,${bytes}`;
 }
 
-export function createSourcePart(citation: Citation, taskId: string | undefined): UISourcePart | null {
+export function createSourcePart(citation: Citation, taskId: string | undefined | null): UISourcePart | null {
   const { url, start_index, end_index, title, description } = citation;
 
   if (!url || !taskId) {

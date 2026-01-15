@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type { GetTaskResponse, TaskArtifactUpdateEvent, TaskStatusUpdateEvent } from '@a2a-js/sdk';
 import type { A2AClient } from '@a2a-js/sdk/client';
+import type { GetTaskResponse, TaskArtifactUpdateEvent, TaskStatusUpdateEvent } from 'agentstack-sdk';
 import { handleAgentCard, handleTaskStatusUpdate, resolveUserMetadata } from 'agentstack-sdk';
 import { defaultIfEmpty, filter, lastValueFrom, Subject } from 'rxjs';
 import { match } from 'ts-pattern';
