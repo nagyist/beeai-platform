@@ -6,7 +6,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
   packages: write
   id-token: write
 
@@ -81,8 +81,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       HELM_EXPERIMENTAL_OCI: '1'
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - id: version
