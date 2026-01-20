@@ -23,6 +23,12 @@ Deploy Agent Stack on Kubernetes using Helm to create a centralized environment 
 - Persistent storage (20GB+ for PostgreSQL)
 - LLM provider API access (OpenAI, Anthropic, etc.)
 
+<Warning>
+  **OpenShift**: Use [OpenShift
+  CLI](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/cli_tools/openshift-cli-oc)
+  for login and administration.
+</Warning>
+
 ## Get Started
 
 ### Step 1: Create Configuration File
@@ -52,7 +58,6 @@ encryptionKey: "encryption-key-from-command"
 # This requires passing an admin password to certain endpoints, you can disable auth for insecure deployments
 auth:
   enabled: true
-  jwtSecretKey: "my-secret-key"
   basic:
     # CAUTION: this leaves most features accessible without authentication, please read the authentication section below
     enabled: true
@@ -128,7 +133,6 @@ For production deployments, multi-user environments, or cost control, use OIDC a
 ```yaml
 auth:
   enabled: true
-  jwtSecretKey: "my-secret-key" # fill in a strong secret
   basic:
     enabled: true
     adminPassword: "my-admin-password" # fill in a strong admin password
@@ -143,7 +147,6 @@ trustProxyHeaders: true # This is important if validate_audience is enabled
 
 auth:
   enabled: true
-  jwtSecretKey: "my-secret-key" # fill in a strong secret
   oidc:
     # Important: redirect URIs must be configured correctly in your provider:
     #  - UI endpoint: "https://your-public-url/api/auth/callback"
@@ -156,16 +159,17 @@ auth:
     nextauth_secret: "<To generate a random string, you can use the Auth.js CLI: npx auth secret>"
     nextauth_url: "https://agentstack.localhost:8336"
     validate_audience: true # audience must be set to the public URL of your application in your OIDC provider
-    providers: [
-      {
-        "id": "w3id",
-        "name": "w3id",
-        "provider_type": "custom",
-        "client_id": "<oidc_client_id>",
-        "client_secret": "<oidc_client_secret>",
-        "issuer": "<oidc_issuer>"
-      }
-    ]
+    providers:
+      [
+        {
+          "id": "w3id",
+          "name": "w3id",
+          "provider_type": "custom",
+          "client_id": "<oidc_client_id>",
+          "client_secret": "<oidc_client_secret>",
+          "issuer": "<oidc_issuer>",
+        },
+      ]
 ```
 
 ### Rate Limiting
@@ -208,9 +212,13 @@ Ingress is not configured by default. You can expose the following services usin
 - `agentstack-ui-svc`: access to the UI (which includes the API proxy)
 - `agentstack-server-svc` (optional): direct access to the server API, required for CLI
 
-Typically, this means creating a custom [ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
-or adding [routes](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/ingress_and_load_balancing/configuring-routes)
-in OpenShift.
+Typically, this means creating a custom [ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/).
+
+<Warning>
+  **OpenShift**:
+  [Routes](https://docs.redhat.com/en/documentation/openshift_container_platform/4.20/html/ingress_and_load_balancing/configuring-routes)
+  can be used instead of ingress.
+</Warning>
 
 ### Agent Configuration
 
@@ -257,8 +265,12 @@ setup a few things:
 - docker image registry credentials with write permissions, see [Private image registries](#private-image-registries)
 - [optional] github credentials (optional) to access private or enterprise GitHub repositories
 - [optional] external cluster (optional) for better security
-- [opsnehift only] service account with appropriate [SCC](https://www.redhat.com/en/blog/managing-sccs-in-openshift)
-  to allow elevated container permissions
+
+<Warning>
+  **OpenShift**: It is also necessary to setup a service account with
+  appropriate [SCC](https://www.redhat.com/en/blog/managing-sccs-in-openshift)
+  to allow elevated container permissions.
+</Warning>
 
 ```yaml
 providerBuilds:

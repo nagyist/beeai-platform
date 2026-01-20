@@ -7,8 +7,17 @@
     "light": "#c5c5c5",
     "dark": "#000000"
   },
-    "contextual": {
-      "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -49,7 +58,8 @@
               "stable/agent-integration/mcp",
               "stable/agent-integration/env-variables",
               "stable/agent-integration/error",
-              "stable/agent-integration/tool-calls"
+              "stable/agent-integration/tool-calls",
+              "stable/agent-integration/canvas"
             ]
           },
           {

@@ -222,19 +222,21 @@ Here is an example how you can create a context and generate a custom token with
     from agentstack_sdk.platform.context import Context, Permissions, ContextPermissions
 
     # Create a context
+    providers = await Provider.list()
     context = await Context.create()
 
     # Generate a token with specific permissions
     token = await context.generate_token(
-    grant_global_permissions=Permissions(
-    files={"read", "write"},
-    llm={"*"},
-    embeddings={"*"},
-    ),
-    grant_context_permissions=ContextPermissions(
-    files={"read", "write"},
-    context_data={"read", "write"},
-    ),
+        providers=[providers[0]],
+        grant_global_permissions=Permissions(
+            files={"read", "write"},
+            llm={"*"},
+            embeddings={"*"},
+        ),
+        grant_context_permissions=ContextPermissions(
+            files={"read", "write"},
+            context_data={"read", "write"},
+        ),
     )
 
     # Use the token
@@ -246,8 +248,8 @@ Here is an example how you can create a context and generate a custom token with
     ```bash REST API
     # 1. Create a context
     curl -X POST "https://api.agentstack.example.com/api/v1/contexts" \
-    -H "Authorization: Bearer YOUR_USER_TOKEN" \
-    -H "Content-Type: application/json"
+        -H "Authorization: Bearer YOUR_USER_TOKEN" \
+        -H "Content-Type: application/json"
 
     # Response
     {
@@ -257,19 +259,20 @@ Here is an example how you can create a context and generate a custom token with
 
     # 2. Generate a context token
     curl -X POST "https://api.agentstack.example.com/api/v1/contexts/{context_id}/token" \
-    -H "Authorization: Bearer YOUR_USER_TOKEN" \
-    -H "Content-Type: application/json" \
-    -d '{
-    "grant_global_permissions": {
-    "files": ["read", "write"],
-    "llm": ["*"],
-    "embeddings": ["*"]
-},
-    "grant_context_permissions": {
-    "files": ["read", "write"],
-    "context_data": ["read", "write"]
-}
-}'
+        -H "Authorization: Bearer YOUR_USER_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d '{
+            "grant_global_permissions": {
+                "files": ["read", "write"],
+                "llm": ["*"],
+                "embeddings": ["*"],
+                "a2a_proxy": ["<provider_id>"]
+            },
+            "grant_context_permissions": {
+                "files": ["read", "write"],
+                "context_data": ["read", "write"]
+            }
+        }'
 
     # Response
     {
@@ -315,7 +318,6 @@ from uuid import uuid4
 
 async def call_agent(
     provider: Provider,  # any agent from Provider.list() call
-    user_access_token: str,  # Access token obtained from OIDC provider (e.g. using authorization code OAuth flow)
 ):
     # 1. Create context and generate token
     context = await Context.create(provider_id="your_provider_id")
@@ -376,12 +378,6 @@ async def call_agent(
             }
         )
 
-    # Platform API extension - token passed as auth_token
-    if platform_spec:
-        metadata |= PlatformApiExtensionClient(platform_spec).api_auth_metadata(
-            auth_token=context_token.token, expires_at=context_token.expires_at
-        )
-
     # 4. Create message and run agent
     message = Message(
         message_id=str(uuid4()),
@@ -393,8 +389,8 @@ async def call_agent(
 
     # 5. Execute agent run
     async with httpx.AsyncClient(
-        # Add user token from OIDC provider
-        headers={"Authorization": f"Bearer {user_access_token}"},
+        # Add context token from before
+        headers={"Authorization": f"Bearer {context_token.token.get_secret_value()}"},
         follow_redirects=True,
         timeout=timedelta(hours=1).total_seconds(),
     ) as httpx_client:
@@ -449,7 +445,7 @@ async def my_agent(
 <Note>
     **How it works**
 
-    1. The client passes the context token via `PlatformApiExtensionClient.api_auth_metadata()`
+    1. The client passes the context token via the `Authorization` header
     2. The `PlatformApiExtensionServer` receives the token and sets up the authentication context
     3. All `File`, `VectorStore`, and other platform API calls automatically use this token
     4. By default, context-scopeable resources are associated with the context (via `context_id="auto"`)
