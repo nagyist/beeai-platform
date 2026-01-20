@@ -5,6 +5,7 @@
 
 'use client';
 import { useQueryClient } from '@tanstack/react-query';
+import type { ApprovalDecision } from 'agentstack-sdk';
 import { TaskStatusUpdateType } from 'agentstack-sdk';
 import type { PropsWithChildren } from 'react';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -193,6 +194,7 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
       });
 
       const { form, canvasEditParams } = message;
+      const { approvalDecision } = fulfillmentsContext;
 
       try {
         const run = agentClient.chat({
@@ -202,6 +204,7 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
           inputs: {
             form: form?.response,
             canvasEditRequest: canvasEditParams ? getCanvasEditRequest(canvasEditParams) : undefined,
+            approvalResponse: approvalDecision ? { decision: approvalDecision } : undefined,
           },
           taskId: fulfillmentsContext.taskId,
         });
@@ -245,6 +248,15 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
             message.parts.push({
               kind: UIMessagePartKind.SecretRequired,
               secret: result.demands,
+              taskId: result.taskId,
+            });
+          });
+        } else if (result && result.type === TaskStatusUpdateType.ApprovalRequired) {
+          updateCurrentAgentMessage((message) => {
+            message.status = UIMessageStatus.InputRequired;
+            message.parts.push({
+              kind: UIMessagePartKind.ApprovalRequired,
+              request: result.request,
               taskId: result.taskId,
             });
           });
@@ -361,6 +373,21 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
     [checkPendingRun, run],
   );
 
+  const submitApproval = useCallback(
+    (taskId: TaskId, decision: ApprovalDecision) => {
+      checkPendingRun();
+
+      const message: UIUserMessage = {
+        id: uuid(),
+        role: Role.User,
+        parts: [{ kind: UIMessagePartKind.ApprovalResponse, result: { decision } }],
+      };
+
+      return run(message, { taskId, approvalDecision: decision });
+    },
+    [checkPendingRun, run],
+  );
+
   const submitCanvasEditRequest = useCallback(
     (params: UICanvasEditRequestParams) => {
       checkPendingRun();
@@ -411,6 +438,7 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
       submitRuntimeForm,
       startAuth,
       submitSecrets,
+      submitApproval,
       submitCanvasEditRequest,
       initialFormRender,
       cancel,
@@ -428,6 +456,7 @@ function AgentRunProvider({ agent, children }: PropsWithChildren<Props>) {
     submitRuntimeForm,
     startAuth,
     submitSecrets,
+    submitApproval,
     submitCanvasEditRequest,
     initialFormRender,
     cancel,

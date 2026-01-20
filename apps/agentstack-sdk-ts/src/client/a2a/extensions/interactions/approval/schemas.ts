@@ -5,6 +5,8 @@
 
 import z from 'zod';
 
+import { ApprovalDecision } from './types';
+
 export const genericApprovalRequestSchema = z.object({
   action: z.literal('generic'),
   title: z.string().nullish().describe('A human-readable title for the action being approved.'),
@@ -13,8 +15,8 @@ export const genericApprovalRequestSchema = z.object({
 
 export const toolCallApprovalRequestSchema = z.object({
   action: z.literal('tool-call'),
-  title: z.string().nullish().describe('A human-readable title for the tool call being approved.'),
-  description: z.string().nullish().describe('A human-readable description of the tool call being approved.'),
+  title: z.string().nullish().describe('A human-readable title of the tool.'),
+  description: z.string().nullish().describe('A human-readable description of the tool.'),
   name: z.string().describe('The programmatic name of the tool.'),
   input: z.object().nullish().describe('The input for the tool.'),
   server: z
@@ -32,6 +34,8 @@ export const approvalRequestSchema = z.discriminatedUnion('action', [
   toolCallApprovalRequestSchema,
 ]);
 
-export const approvalResultSchema = z.object({
-  decision: z.enum(['approve', 'reject']),
+export const approvalDecisionSchema = z.enum(ApprovalDecision);
+
+export const approvalResponseSchema = z.object({
+  decision: approvalDecisionSchema,
 });
