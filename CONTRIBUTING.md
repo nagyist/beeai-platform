@@ -334,7 +334,7 @@ Creating new RC will trigger GH action to deploy pre-release version of the pack
 Once the RC makes the QA rounds, publish the final release from the release branch:
 
 ```shell
-mise run release:publish-rc
+mise run release:publish-stable
 ```
 
 In addition to publishing the stable version, this action also ensures that the docs in `main` branch are updated to reflect the new version by moving the `docs/development` folder from the release branch to `docs/stable` on `main`.
