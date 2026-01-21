@@ -551,14 +551,10 @@ set -eu -o pipefail
 
 git fetch origin --tags --quiet
 
-latest_release_branch_version=$(git branch -r | \
-  awk '/origin\/release-v[0-9]+\.[0-9]+\.[0-9]+$/ {sub(/^origin\/release-v/, ""); print}' | \
-  sort -V | tail -n 1)
-
 branch=$(git branch -r --sort=-version:refname --format "%(refname:short)" | grep 'origin/release-v' | head -n1 | sed 's|origin/||')
 
 if git rev-parse "${branch/release//}" >/dev/null 2>&1; then
-  echo "⚠️  Latest release v$latest_branch already finalized!"
+  echo "⚠️  Latest release v$branch already finalized!"
 fi
 
 git checkout "$branch"
