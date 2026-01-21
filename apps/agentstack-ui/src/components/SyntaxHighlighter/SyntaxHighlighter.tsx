@@ -3,10 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import clsx from 'clsx';
-import { Light as Highlighter } from 'react-syntax-highlighter';
+'use client';
 
-import { registerLanguages } from './languages';
+import { CodeSnippetSkeleton } from '@carbon/react';
+import clsx from 'clsx';
+import dynamic from 'next/dynamic';
+
+import { registerLanguagesAsync } from './languages';
 import classes from './SyntaxHighlighter.module.scss';
 import { blogStyle, customStyle, style } from './theme';
 
@@ -16,6 +19,19 @@ interface Props {
   className?: string;
   variant?: 'blog';
 }
+
+const Highlighter = dynamic(
+  () =>
+    import('react-syntax-highlighter').then(({ Light }) => {
+      registerLanguagesAsync(Light);
+
+      return Light;
+    }),
+  {
+    ssr: false,
+    loading: () => <CodeSnippetSkeleton type="multi" className="" />,
+  },
+);
 
 export function SyntaxHighlighter({ language, className, variant, children }: Props) {
   const isBlogVariant = variant === 'blog';
@@ -33,5 +49,3 @@ export function SyntaxHighlighter({ language, className, variant, children }: Pr
     </div>
   );
 }
-
-registerLanguages(Highlighter);

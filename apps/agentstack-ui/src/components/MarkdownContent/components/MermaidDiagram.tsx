@@ -4,12 +4,12 @@
  */
 
 import { InlineLoading, InlineNotification } from '@carbon/react';
-import mermaid from 'mermaid';
 import { type HTMLAttributes, useEffect, useId } from 'react';
 import type { ExtraProps } from 'react-markdown';
 
 import { useTheme } from '#contexts/Theme/index.ts';
 import { Theme } from '#contexts/Theme/types.ts';
+import { usePrevious } from '#hooks/usePrevious.ts';
 
 import { useMermaid } from '../contexts';
 import { Code } from './Code';
@@ -21,7 +21,7 @@ export type MermaidDiagramProps = HTMLAttributes<HTMLElement> &
 export function MermaidDiagram({ children, mermaidIndex, isStreaming }: MermaidDiagramProps) {
   const id = useId();
   const { theme } = useTheme();
-  const { diagrams, setDiagram } = useMermaid();
+  const { diagrams, setDiagram, mermaidApi, setMermaidApi } = useMermaid();
 
   if (mermaidIndex === undefined) {
     console.error('MermaidDiagram component requires a `mermaidIndex` prop.');
@@ -30,16 +30,10 @@ export function MermaidDiagram({ children, mermaidIndex, isStreaming }: MermaidD
 
   const diagram = diagrams.get(index);
 
-  useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: theme === Theme.Dark ? 'dark' : 'default',
-      suppressErrorRendering: true,
-    });
-  }, [theme]);
-
+  const themePrevious = usePrevious(theme);
   useEffect(() => {
     let isMounted = true;
+    const hasThemeChanged = themePrevious && theme !== themePrevious;
 
     async function renderDiagram() {
       if (typeof children !== 'string') {
@@ -47,7 +41,19 @@ export function MermaidDiagram({ children, mermaidIndex, isStreaming }: MermaidD
       }
 
       try {
-        const { svg } = await mermaid.render(id, children);
+        let api = mermaidApi;
+        if (!api || hasThemeChanged) {
+          api = (await import('mermaid')).default;
+          api.initialize({
+            startOnLoad: false,
+            theme: theme === Theme.Dark ? 'dark' : 'default',
+            suppressErrorRendering: true,
+          });
+
+          setMermaidApi(api);
+        }
+
+        const { svg } = await api.render(id, children);
 
         if (isMounted) {
           setDiagram(index, svg);
@@ -65,7 +71,7 @@ export function MermaidDiagram({ children, mermaidIndex, isStreaming }: MermaidD
     return () => {
       isMounted = false;
     };
-  }, [children, theme, id, setDiagram, index, isStreaming]);
+  }, [children, theme, themePrevious, id, setDiagram, index, isStreaming, mermaidApi, setMermaidApi]);
 
   return (
     <div className={classes.root}>
