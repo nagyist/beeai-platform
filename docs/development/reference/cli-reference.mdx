@@ -25,6 +25,7 @@ $ agentstack [OPTIONS] COMMAND [ARGS]...
 * `ui`: Launch the graphical interface.
 * `model`: Manage model providers.
 * `agent`: Manage agents.
+* `connector`: Manage connectors to external services.
 * `platform`: Manage Agent Stack platform.
 * `client-side-build`: Build agent locally using Docker.
 * `build`: Build agent from a GitHub repository in...
@@ -529,6 +530,156 @@ $ agentstack agent feedback list [OPTIONS] [SEARCH_PATH]
 
 * `--limit INTEGER`: Number of results per page   [default: 50]
 * `--after TEXT`: Cursor for pagination
+* `--help`: Show this message and exit.
+
+## `agentstack connector`
+
+Manage connectors to external services.
+
+**Usage**:
+
+```console
+$ agentstack connector [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `create`: Create a connector to an external service.
+* `remove | rm | delete`: Remove connectors.
+* `list`: List all connectors.
+* `list-presets`: List connector presets.
+* `get`: Get connector details.
+* `connect`: Connect a connector (e.g., start OAuth flow).
+* `disconnect`: Disconnect one or more connectors.
+
+### `agentstack connector create`
+
+Create a connector to an external service.
+
+**Usage**:
+
+```console
+$ agentstack connector create [OPTIONS] URL
+```
+
+**Arguments**:
+
+* `URL`: Agent location (public docker image or github url)  [required]
+
+**Options**:
+
+* `--client-id TEXT`: Client ID for authentication, acquired from env if not supplied
+* `--client-secret TEXT`: Client secret for authentication, acquired from env if not supplied
+* `--metadata TEXT`: Metadata as JSON string
+* `--match-preset`: Use preset configuration for given url if it exists  [default: True]
+* `--help`: Show this message and exit.
+
+### `agentstack connector remove | rm | delete`
+
+Remove connectors.
+
+**Usage**:
+
+```console
+$ agentstack connector remove | rm | delete [OPTIONS] [SEARCH_PATH]
+```
+
+**Arguments**:
+
+* `[SEARCH_PATH]`: Short ID or connector url, supports partial matching
+
+**Options**:
+
+* `-y, --yes`: Skip confirmation prompts.
+* `-a, --all`: Remove all connectors without selection.
+* `--help`: Show this message and exit.
+
+### `agentstack connector list`
+
+List all connectors.
+
+**Usage**:
+
+```console
+$ agentstack connector list [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `agentstack connector list-presets`
+
+List connector presets.
+
+**Usage**:
+
+```console
+$ agentstack connector list-presets [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `agentstack connector get`
+
+Get connector details.
+
+**Usage**:
+
+```console
+$ agentstack connector get [OPTIONS] SEARCH_PATH
+```
+
+**Arguments**:
+
+* `SEARCH_PATH`: Short ID or connector url, supports partial matching  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `agentstack connector connect`
+
+Connect a connector (e.g., start OAuth flow).
+
+**Usage**:
+
+```console
+$ agentstack connector connect [OPTIONS] SEARCH_PATH
+```
+
+**Arguments**:
+
+* `SEARCH_PATH`: Short ID or connector url, supports partial matching  [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+### `agentstack connector disconnect`
+
+Disconnect one or more connectors.
+
+**Usage**:
+
+```console
+$ agentstack connector disconnect [OPTIONS] [SEARCH_PATH]
+```
+
+**Arguments**:
+
+* `[SEARCH_PATH]`: Short ID or connector url, supports partial matching
+
+**Options**:
+
+* `-y, --yes`: Skip confirmation prompts.
+* `-a, --all`: Deisconnect all connectors without selection.
 * `--help`: Show this message and exit.
 
 ## `agentstack platform`
