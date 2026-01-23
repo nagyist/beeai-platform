@@ -407,6 +407,7 @@ rm -rf docs/stable docs/development
 git restore --source=$release_branch docs/development
 mv docs/development docs/stable
 git restore --source=main docs/development
+find docs/stable -type f \( -name "*.md" -o -name "*.mdx" \) -exec perl -pi -e 's|/development/|/stable/|g' {} +
 git show $release_branch:docs/docs.json | \
 jq '
   (.navigation.versions[]
