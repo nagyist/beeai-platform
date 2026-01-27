@@ -71,7 +71,7 @@ spec:
               value: http
             # Keycloak Hostname Configuration
             - name: KC_HOSTNAME
-              value: {{ if hasPrefix "http://keycloak" .Values.auth.keycloakIssuerUrl }}"http://localhost:8336"{{ else }}{{ .Values.auth.keycloakIssuerUrl | quote }}{{ end }}
+              value: {{ if hasPrefix "http://keycloak" .Values.auth.keycloakIssuerUrl }}"http://localhost:8336"{{ else }}{{ regexReplaceAll "/realms/.*" .Values.auth.keycloakIssuerUrl "" | quote }}{{ end }}
             - name: KC_HOSTNAME_STRICT
               value: "true"
             - name: KC_HOSTNAME_BACKCHANNEL_DYNAMIC
