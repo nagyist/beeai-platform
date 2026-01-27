@@ -36,7 +36,7 @@ jobs:
               return;
             }
             
-            if (filenames.some(f => /^\.mdx?$/.test(f))) {
+            if (filenames.some(f => /\.mdx?$/.test(f))) {
               core.info('✅ Docs updated.');
             } else {
               core.setFailed('❌ No docs changes found and "No Docs Needed" not checked.');
