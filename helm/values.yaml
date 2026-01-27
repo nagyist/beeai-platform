@@ -705,7 +705,7 @@ keycloak:
       #   enabled: true
   image:
     repository: ghcr.io/i-am-bee/agentstack/keycloak-themed
-    tag: 26.5.0
+    tag: 26.5.2
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
