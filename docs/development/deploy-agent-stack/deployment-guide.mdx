@@ -128,19 +128,19 @@ trustProxyHeaders: true # This is important if validate_audience is enabled
 auth:
   enabled: true
   # Check helm/values.yaml for all available options
-  keycloakIssuerUrl: "https://keycloak.myapp.com/realms/agentstack" # Public URL of keycloak
+  keycloakIssuerUrl: "https://keycloak.example.com/realms/agentstack" # Public URL of keycloak
   
   # Next.js settings
-  nextauthUrl: "https://myapp.com" # Public URL of the UI
-  apiUrl: "https://api.myapp.com" # Public URL of the API
+  nextauthUrl: "https://example.com" # Public URL of the UI
+  apiUrl: "https://api.example.com" # Public URL of the API
 ```
   
 <Warning>
 It is important to expose the following endpoints publicly and configure the value above:
 
-- UI (https://myapp.com)
-- API (https://api.myapp.com) - used by the CLI to authenticate
-- Keycloak (https://keycloak.myapp.com) - used by the UI and CLI to authenticate
+- UI (https://example.com)
+- API (https://api.example.com) - used by the CLI to authenticate
+- Keycloak (https://keycloak.example.com) - used by the UI and CLI to authenticate
 
 Use
 [ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/), 
@@ -540,7 +540,7 @@ kubectl get events --sort-by=.lastTimestamp
 
 Make sure you have configured your OIDC provider correctly:
 
-- redirect URI should be the public URL + `/api/auth/callback` (e.g. `https://your-public-url.com/api/auth/callback`)
+- redirect URI should be the public URL + `/api/auth/callback` (e.g. `https://example.com.com/api/auth/callback`)
 - for CLI, the redirect URI should be `http://localhost:9001/callback`
 - consider creating a separate public OIDC application for the CLI
 - `audience` claim should be the public URL of your application without a trailing slash (e.g. `https://example.com`)

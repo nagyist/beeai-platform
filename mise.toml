@@ -9,7 +9,7 @@ uv = "0.9.5"
 nodejs = "22"
 pnpm = "10.15.1"
 
-# Java & Maven
+# Java
 java = "21"
 maven = "3.9.12"
 
