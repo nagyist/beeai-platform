@@ -302,8 +302,17 @@ In addition to publishing the stable version, this action also ensures that the 
 
 ## Documentation
 
-All changes that modify existing features or introduce new functionality must include documentation updates as part of the pull request. Documentation files should be added or updated in the `docs/development` folder.
+There are two documentation folders: `docs/stable` and `docs/development`. Due to the nature of Mintlify, docs are deployed from the `main` branch, so we keep `docs/stable` frozen to correspond to the latest stable release. **Only make manual changes in `docs/stable` in order to fix issues with the docs, feature PRs should only edit `docs/development`.**
 
-The documentation for the CLI is auto-generated. Run `mise run agentstack-cli:docs` to generate it.
+All PRs **must** either include corresponding documentation in `docs/development`, or include `[x] No Docs Needed` in the PR description. This is checked by GitHub Actions.
 
-A GitHub workflow automatically checks that documentation requirements are met. If your change does not require documentation updates (e.g., bug fixes that don't change behavior, internal refactoring, or test-only changes), you must explicitly note this in your PR description.
+Special care needs to be taken with the `docs/development/reference/cli-reference.mdx` file, which is automatically generated. Use `mise run agentstack-cli:docs` to regenerate this file when modifying the CLI interface.
+
+Try to follow this structure:
+
+- **Elevator pitch:** What value this feature brings to the user.
+- **Pre-requisites:** Extra dependencies required on top of Agent Stack -- non-default agents, Docker runtime, 3rd party libraries, environment variables like API keys, etc. (Note that `uv` is part of the Agent Stack install.)
+- **Step-by-step instructions**
+- **Troubleshooting:** Common errors and solutions.
+
+Make sure to preview docs locally using: `mise docs:run`. This runs a development server which refreshes as you make changes to the `.mdx` files.
