@@ -31,6 +31,7 @@ from agentstack_server.api.routes.files import router as files_router
 from agentstack_server.api.routes.model_providers import router as model_providers_router
 from agentstack_server.api.routes.openai import router as openai_router
 from agentstack_server.api.routes.provider_builds import router as provider_builds_router
+from agentstack_server.api.routes.provider_discovery import router as provider_discovery_router
 from agentstack_server.api.routes.providers import router as provider_router
 from agentstack_server.api.routes.user import router as user_router
 from agentstack_server.api.routes.user_feedback import router as user_feedback_router
@@ -122,6 +123,7 @@ def mount_routes(app: FastAPI):
     server_router.include_router(users_router, prefix="/users")
     server_router.include_router(a2a_router, prefix="/a2a")
     server_router.include_router(provider_router, prefix="/providers", tags=["providers"])
+    server_router.include_router(provider_discovery_router, prefix="/providers/discovery", tags=["provider_discovery"])
     server_router.include_router(provider_builds_router, prefix="/provider_builds", tags=["provider_builds"])
     server_router.include_router(model_providers_router, prefix="/model_providers", tags=["model_providers"])
     server_router.include_router(configuration_router, prefix="/configurations", tags=["configurations"])
