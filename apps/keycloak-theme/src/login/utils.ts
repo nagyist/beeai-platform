@@ -4,6 +4,7 @@
  */
 
 import { APP_NAME } from "../constants";
+import type { ThemeName } from "../kc.gen";
 import type { InfoMessage, Provider, Realm } from "./types";
 
 export function isIbmProvider({
@@ -31,4 +32,8 @@ export function getAppName(realm: Realm): string {
   // Keycloak uses the realm name as a fallback if no display name is set, we dont want to show that
   const hasDisplayName = realm.displayName && realm.displayName !== realm.name;
   return hasDisplayName ? realm.displayName : APP_NAME;
+}
+
+export function isSsoOnlyTheme(themeName: ThemeName): boolean {
+  return themeName === "agentstack-sso";
 }

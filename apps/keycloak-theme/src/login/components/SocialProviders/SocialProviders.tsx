@@ -4,34 +4,40 @@
  */
 
 import { Button } from "@carbon/react";
+import clsx from "clsx";
 
 import type { Provider } from "../../types";
 import classes from "./SocialProviders.module.scss";
 
 interface SocialProvidersProps {
   providers: Provider[];
+  isSsoOnly?: boolean;
 }
 
-export function SocialProviders({ providers }: SocialProvidersProps) {
+export function SocialProviders({
+  providers,
+  isSsoOnly,
+}: SocialProvidersProps) {
   if (providers.length === 0) {
     return null;
   }
 
   return (
-    <div className={classes.root}>
+    <ul className={clsx(classes.root, { [classes.ssoOnly]: isSsoOnly })}>
       {providers.map((provider) => {
         const { alias, displayName, loginUrl } = provider;
         return (
-          <Button
-            key={alias}
-            id={`social-${alias}`}
-            href={loginUrl}
-            kind="primary"
-          >
-            Continue with {displayName}
-          </Button>
+          <li key={alias}>
+            <Button
+              id={`social-${alias}`}
+              href={loginUrl}
+              kind={isSsoOnly ? "secondary" : "primary"}
+            >
+              Login with {displayName}
+            </Button>
+          </li>
         );
       })}
-    </div>
+    </ul>
   );
 }

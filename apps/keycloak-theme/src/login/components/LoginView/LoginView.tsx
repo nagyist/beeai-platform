@@ -18,7 +18,7 @@ import { useId, useState } from "react";
 import type { I18n } from "../../i18n";
 import type { KcContext } from "../../KcContext";
 import Template from "../../layout/Template";
-import { getAppName } from "../../utils";
+import { getAppName, isSsoOnlyTheme } from "../../utils";
 import { Layout } from "../Layout/Layout";
 import { PageHeading } from "../PageHeading/PageHeading";
 import { PasskeyLogin } from "../PasskeyLogin/PasskeyLogin";
@@ -58,6 +58,7 @@ export function LoginView({
     login,
     registrationDisabled,
     messagesPerField,
+    themeName,
   } = kcContext;
 
   const { msg, msgStr } = i18n;
@@ -66,7 +67,7 @@ export function LoginView({
   const appName = getAppName(realm);
   const webAuthnButtonId = "authenticateWebAuthnButton";
   const providers = social?.providers ?? [];
-  const hasCredentialsAuth = Boolean(realm.password);
+  const isSsoOnly = !realm.password || isSsoOnlyTheme(themeName);
 
   const hasError = withPassword
     ? messagesPerField.existsError("username", "password")
@@ -90,9 +91,7 @@ export function LoginView({
           </PageHeading>
         }
         displayInfo={
-          hasCredentialsAuth &&
-          realm.registrationAllowed &&
-          !registrationDisabled
+          !isSsoOnly && realm.registrationAllowed && !registrationDisabled
         }
         infoNode={
           <div className={classes.registration}>
@@ -104,7 +103,7 @@ export function LoginView({
         }
       >
         <div className={classes.content}>
-          {hasCredentialsAuth && (
+          {!isSsoOnly && (
             <form
               className={classes.form}
               onSubmit={() => {
@@ -192,11 +191,9 @@ export function LoginView({
             </form>
           )}
 
-          {hasCredentialsAuth && providers.length !== 0 && (
-            <Separator text="OR" />
-          )}
+          {!isSsoOnly && providers.length !== 0 && <Separator text="OR" />}
 
-          <SocialProviders providers={providers} />
+          <SocialProviders providers={providers} isSsoOnly={isSsoOnly} />
 
           <PasskeyLogin
             kcContext={kcContext}
