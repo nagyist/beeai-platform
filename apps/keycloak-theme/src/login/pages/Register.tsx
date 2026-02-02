@@ -4,16 +4,15 @@
  */
 
 import { Button, Checkbox, Link } from "@carbon/react";
-import type { PageProps } from "keycloakify/login/pages/PageProps";
-import type { UserProfileFormFieldsProps } from "keycloakify/login/UserProfileFormFieldsProps";
-import type { JSX } from "keycloakify/tools/JSX";
-import type { LazyOrNot } from "keycloakify/tools/LazyOrNot";
 import { useLayoutEffect, useRef, useState } from "react";
 
-import { Container } from "../components/Container/Container";
+import { Layout } from "../components/Layout/Layout";
 import { PageHeading } from "../components/PageHeading/PageHeading";
 import type { I18n } from "../i18n";
 import type { KcContext } from "../KcContext";
+import Template from "../layout/Template";
+import type { CustomPageProps, UserProfileFormPageProps } from "../types";
+import UserProfileFormFields from "../UserProfileFormFields";
 import { getAppName } from "../utils";
 import classes from "./Register.module.scss";
 
@@ -23,25 +22,11 @@ declare global {
   }
 }
 
-type RegisterProps = PageProps<
-  Extract<KcContext, { pageId: "register.ftl" }>,
-  I18n
-> & {
-  UserProfileFormFields: LazyOrNot<
-    (props: UserProfileFormFieldsProps) => JSX.Element
-  >;
-  doMakeUserConfirmPassword: boolean;
-};
+type RegisterProps = CustomPageProps<{ pageId: "register.ftl" }> &
+  UserProfileFormPageProps;
 
 export default function Register(props: RegisterProps) {
-  const {
-    kcContext,
-    i18n,
-    doUseDefaultCss,
-    Template,
-    UserProfileFormFields,
-    doMakeUserConfirmPassword,
-  } = props;
+  const { kcContext, i18n, doMakeUserConfirmPassword } = props;
 
   const {
     messageHeader,
@@ -73,19 +58,17 @@ export default function Register(props: RegisterProps) {
   }, []);
 
   return (
-    <Container>
+    <Layout i18n={i18n}>
       <Template
         kcContext={kcContext}
         i18n={i18n}
-        doUseDefaultCss={doUseDefaultCss}
+        doUseDefaultCss={false}
         headerNode={
           messageHeader !== undefined ? (
             advancedMsg(messageHeader)
           ) : (
             <PageHeading>
-              <>
-                Register to <strong>{appName}</strong>
-              </>
+              Register to <strong>{appName}</strong>
             </PageHeading>
           )
         }
@@ -117,14 +100,12 @@ export default function Register(props: RegisterProps) {
 
             {recaptchaRequired &&
               (recaptchaVisible || recaptchaAction === undefined) && (
-                <div className={classes.recaptcha}>
-                  <div
-                    className="g-recaptcha"
-                    data-size="compact"
-                    data-sitekey={recaptchaSiteKey}
-                    data-action={recaptchaAction}
-                  ></div>
-                </div>
+                <div
+                  className="g-recaptcha"
+                  data-size="compact"
+                  data-sitekey={recaptchaSiteKey}
+                  data-action={recaptchaAction}
+                ></div>
               )}
 
             <div className={classes.formOptions}>
@@ -159,7 +140,7 @@ export default function Register(props: RegisterProps) {
           </form>
         </div>
       </Template>
-    </Container>
+    </Layout>
   );
 }
 

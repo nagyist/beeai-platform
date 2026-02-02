@@ -3,10 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-.root {
-  justify-content: center;
-}
-
 .content {
   inline-size: 100%;
   display: flex;
@@ -19,16 +15,6 @@
   max-block-size: rem(400px);
   overflow-y: auto;
   margin-block-end: $spacing-05;
-}
-
-.actions {
-  display: flex;
-  gap: $spacing-03;
-  flex-direction: column;
-
-  @include breakpoint-up(md) {
-    flex-direction: row;
-  }
 }
 
 @include breakpoint-up(md) {

@@ -1,26 +1,31 @@
 /**
- * Copyright 2026 © BeeAI a Series of LF Projects, LLC
+ * Copyright 2025 © BeeAI a Series of LF Projects, LLC
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { Slot } from "@radix-ui/react-slot";
 import clsx from "clsx";
-import type { ReactNode } from "react";
+import type { PropsWithChildren } from "react";
 
 import classes from "./Container.module.scss";
 
-interface ContainerProps {
-  children: ReactNode;
-  contentClassname?: string;
+export interface ContainerProps {
+  size?: "xs" | "sm" | "md" | "lg" | "xlg" | "xxl" | "max" | "full";
+  asChild?: boolean;
+  className?: string;
 }
 
-export function Container({ children, contentClassname }: ContainerProps) {
+export function Container({
+  size = "xs",
+  asChild,
+  className,
+  children,
+}: PropsWithChildren<ContainerProps>) {
+  const Comp = asChild ? Slot : "div";
+
   return (
-    <div className={classes.root}>
-      <div className={classes.main}>
-        <div className={clsx(classes.content, contentClassname)}>
-          {children}
-        </div>
-      </div>
-    </div>
+    <Comp className={clsx(classes.root, className, { [classes[size]]: size })}>
+      {children}
+    </Comp>
   );
 }
