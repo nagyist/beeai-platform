@@ -5,7 +5,7 @@
 """add provider_discoveries table
 
 Revision ID: a1b2c3d4e5f6
-Revises: fb04d94673c6
+Revises: 109a6afdf170
 Create Date: 2026-01-23 12:00:00.000000
 
 """
