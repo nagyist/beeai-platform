@@ -59,10 +59,10 @@ dev = [
     "pytest-httpx>=0.35.0",
     "pytest-subtests>=0.14.1",
     "reportlab>=4.4.2",
-    "pyright>=1.1.399",
     "ruff>=0.8.5",
     "agentstack-sdk",
     "python-keycloak>=7.0.2",
+    "pyrefly>=0.52.0",
 ]
 
 [tool.uv.sources]
@@ -117,9 +117,8 @@ lint.ignore = [
     "N999", # invalid module name agentstack-server (yeah, we use a dash, deal with it)
 ]
 
-[tool.pyright]
-ignore = ["tests/**"]
-venvPath = "."
-venv = ".venv"
-enableTypeIgnoreComments = true
-reportIgnoreCommentWithoutRule="none"
+[tool.pyrefly]
+project-includes = [
+    "**/*.py*",
+    "**/*.ipynb",
+]

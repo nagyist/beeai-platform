@@ -31,9 +31,9 @@ async def get_github_token(host: str) -> str | None:
 
     if not (conf := di[Configuration].github_registry.get(host)):
         return None
-    if conf.type == "pat":
+    if isinstance(conf, GithubPATConfiguration):
         return conf.token.get_secret_value()
-    else:
+    elif isinstance(conf, GithubAppConfiguration):
         now = time.time()
         payload = {"iat": int(now), "exp": int(now) + 600, "iss": conf.app_id}
         encoded_jwt = jwt.encode({"alg": "RS256"}, payload, conf.private_key.get_secret_value()).decode("utf-8")
@@ -261,7 +261,7 @@ class GithubUrl(RootModel):
     async def resolve_version(self) -> ResolvedGithubUrl:
         if not (token := await get_github_token(self._host)):
             if self._host == "github.com":
-                return await self._resolve_version_public()
+                return await self._resolve_version_public()  # pyrefly: ignore[not-async, bad-argument-count]
             raise ValueError(f"GitHub token not configured for host {self._host}")
         return await self._resolve_version_api(token=token)
 

@@ -160,7 +160,7 @@ def mount_routes(app: FastAPI):
         openapi_url = request.url_for(custom_openapi.__name__)
 
         return get_swagger_ui_html(
-            openapi_url=openapi_url,
+            openapi_url=str(openapi_url),
             title="BeeAI Platform API Docs",
         )
 
@@ -202,14 +202,15 @@ def app(*, dependency_overrides: Container | None = None, enable_workers: bool =
     bootstrap_dependencies_sync(dependency_overrides=dependency_overrides)
     configuration = di[Configuration]
 
-    @asynccontextmanager
     @inject
+    @asynccontextmanager
     async def lifespan(_app: FastAPI, procrastinate_app: procrastinate.App, user_feedback: UserFeedbackService):
         try:
             register_telemetry()
             async with (
                 procrastinate_app.open_async(),
                 user_feedback,
+                # pyrefly: ignore[bad-context-manager, bad-argument-count, unexpected-keyword]
                 run_workers(app=procrastinate_app) if enable_workers else nullcontext(),
             ):
                 # Force initial synchronization job
@@ -228,7 +229,7 @@ def app(*, dependency_overrides: Container | None = None, enable_workers: bool =
             raise
 
     app = FastAPI(
-        lifespan=lifespan,
+        lifespan=lifespan,  # pyrefly: ignore[bad-argument-type]
         default_response_class=ORJSONResponse,  # better performance then default + handle NaN floats
         docs_url=None,
         openapi_url=None,

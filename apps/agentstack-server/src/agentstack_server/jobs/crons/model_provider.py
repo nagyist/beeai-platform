@@ -44,6 +44,7 @@ async def update_system_configuration(
 
 
 # TODO: Can't use DI here because it's not initialized yet
+# pyrefly: ignore[bad-argument-type]
 @blueprint.periodic(cron=get_configuration().model_provider.update_models_period_cron)
 @blueprint.task(queueing_lock="update_model_state_and_cache", queue=str(Queues.CRON_MODEL_PROVIDER))
 @inject
@@ -59,6 +60,7 @@ async def update_model_state_and_cache(
 
 
 # TODO: Can't use DI here because it's not initialized yet
+# pyrefly: ignore[bad-argument-type]
 @blueprint.periodic(cron=get_configuration().model_provider_registry.sync_period_cron)
 @blueprint.task(queueing_lock="check_model_provider_registry", queue=str(Queues.CRON_MODEL_PROVIDER))
 @inject
@@ -109,7 +111,7 @@ async def check_model_provider_registry(
         provider_record = desired_providers[provider_origin]
 
         try:
-            await model_provider_service.patch_provider(  # pyright: ignore[reportUnusedCallResult]
+            await model_provider_service.patch_provider(
                 model_provider_id=provider.id,
                 name=provider_record.name,
                 description=provider_record.description,

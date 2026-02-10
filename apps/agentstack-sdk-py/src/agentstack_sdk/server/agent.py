@@ -54,7 +54,7 @@ from agentstack_sdk.util.logging import logger
 AgentFunction: TypeAlias = Callable[[], AsyncGenerator[RunYield, RunYieldResume]]
 AgentFunctionFactory: TypeAlias = Callable[[RequestContext, ContextStore], AbstractAsyncContextManager[AgentFunction]]
 
-OriginalFnType = TypeVar("OriginalFnType", bound=Callable[..., Any])  # pyright: ignore[reportExplicitAny]
+OriginalFnType = TypeVar("OriginalFnType", bound=Callable[..., Any])
 
 
 class AgentExecuteFn(typing.Protocol):
@@ -121,7 +121,7 @@ def agent(
     """
 
     capabilities = capabilities.model_copy(deep=True) if capabilities else AgentCapabilities(streaming=True)
-    detail = detail or AgentDetail()  # pyright: ignore [reportCallIssue]
+    detail = detail or AgentDetail()
 
     def decorator(fn: OriginalFnType) -> AgentFactory:
         def agent_factory(modify_dependencies: Callable[[dict[str, Depends]], None]):
@@ -339,7 +339,7 @@ class AgentRun:
                     else initialize_deps_exceptions[0]
                 )
 
-            self.run_context._store = await self._context_store.create(  # pyright: ignore[reportPrivateUsage]
+            self.run_context._store = await self._context_store.create(
                 context_id=self.run_context.context_id,
                 initialized_dependencies=list(dependency_args.values()),
             )
@@ -360,8 +360,8 @@ class AgentRun:
         )
 
     async def _run_agent_function(self, initial_message: Message) -> None:
-        yield_queue = self.run_context._yield_queue  # pyright: ignore[reportPrivateUsage]
-        yield_resume_queue = self.run_context._yield_resume_queue  # pyright: ignore[reportPrivateUsage]
+        yield_queue = self.run_context._yield_queue
+        yield_resume_queue = self.run_context._yield_resume_queue
 
         try:
             async with self._dependencies_lifespan(initial_message) as dependency_args:
@@ -566,6 +566,7 @@ class Executor(AgentExecutor):
 
         async def cleanup_fn():
             await asyncio.sleep(self._task_timeout.total_seconds())
+            # pyrefly: ignore [no-matching-overload]
             if not (run := self._running_tasks.get(task_id)):
                 return
             try:
@@ -587,7 +588,9 @@ class Executor(AgentExecutor):
             except Exception as ex:
                 logger.error("Error when cleaning up task", exc_info=ex)
             finally:
+                # pyrefly: ignore [no-matching-overload, unbound-name]
                 self._running_tasks.pop(task_id, None)
+                # pyrefly: ignore [no-matching-overload, unbound-name]
                 self._scheduled_cleanups.pop(task_id, None)
 
         self._scheduled_cleanups[task_id] = asyncio.create_task(cleanup_fn())

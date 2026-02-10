@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import builtins
 from collections.abc import AsyncIterator
 from typing import Literal
 from uuid import UUID, uuid4
@@ -78,6 +79,7 @@ class Context(pydantic.BaseModel):
                 (
                     await client.post(
                         url="/api/v1/contexts",
+                        # pyrefly: ignore [bad-argument-type]
                         json=filter_dict({"metadata": metadata, "provider_id": provider_id}),
                     )
                 )
@@ -103,6 +105,7 @@ class Context(pydantic.BaseModel):
                     await client.get(
                         url="/api/v1/contexts",
                         params=filter_dict(
+                            # pyrefly: ignore [bad-argument-type]
                             {
                                 "page_token": page_token,
                                 "limit": limit,
@@ -181,7 +184,7 @@ class Context(pydantic.BaseModel):
     async def generate_token(
         self: Context | str,
         *,
-        providers: list[str] | list[Provider] | None = None,
+        providers: builtins.list[str] | builtins.list[Provider] | None = None,
         client: PlatformClient | None = None,
         grant_global_permissions: Permissions | None = None,
         grant_context_permissions: ContextPermissions | None = None,
@@ -271,6 +274,7 @@ class Context(pydantic.BaseModel):
                     await platform_client.get(
                         url=f"/api/v1/contexts/{target_context_id}/history",
                         params=filter_dict(
+                            # pyrefly: ignore [bad-argument-type]
                             {"page_token": page_token, "limit": limit, "order": order, "order_by": order_by}
                         ),
                     )

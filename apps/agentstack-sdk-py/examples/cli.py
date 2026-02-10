@@ -53,11 +53,12 @@ async def cli(base_url: str, context_id: str) -> None:
                         a2a.types.TaskState.auth_required,
                     ]
                 ):
-                    prompt: str = asyncclick.prompt("\n👤 User (CTRL-D to cancel)")
+                    prompt: str = await asyncclick.prompt("\n👤 User (CTRL-D to cancel)")
                     message = a2a.types.Message(
                         message_id=str(uuid.uuid4()),
                         role=a2a.types.Role.user,
                         parts=[a2a.types.Part(root=a2a.types.TextPart(text=prompt))],
+                        # pyrefly: ignore [bad-argument-type]
                         task_id=task and task.id,
                         context_id=context_id,
                         metadata=(
@@ -92,7 +93,7 @@ async def cli(base_url: str, context_id: str) -> None:
                         ),
                     )
 
-                    file_path: str = asyncclick.prompt(
+                    file_path: str = await asyncclick.prompt(
                         "Select a file path to attach? (press enter to skip)",
                         default="",
                         show_default=False,

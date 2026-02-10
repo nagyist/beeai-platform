@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import builtins
 import typing
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -197,7 +198,7 @@ class File(pydantic.BaseModel):
     async def create_extraction(
         self: File | str,
         *,
-        formats: list[ExtractionFormatLiteral] | None = None,
+        formats: builtins.list[ExtractionFormatLiteral] | None = None,
         client: PlatformClient | None = None,
         context_id: str | None | Literal["auto"] = "auto",
     ) -> Extraction:
@@ -278,6 +279,7 @@ class File(pydantic.BaseModel):
                     await platform_client.get(
                         url="/api/v1/files",
                         params=filter_dict(
+                            # pyrefly: ignore [bad-argument-type]
                             {
                                 "context_id": context_id,
                                 "content_type": content_type,

@@ -57,12 +57,13 @@ class Server:
 
     @functools.wraps(agent_decorator)
     def agent(*args, **kwargs) -> Callable:
-        self, other_args = args[0], args[1:]  # Must hide self due to pyright issues
+        self, other_args = args[0], args[1:]  # TODO(typing): resolve without hiding `self`
         if self._agent_factory:
             raise ValueError("Server can have only one agent.")
 
         def decorator(fn: Callable) -> Callable:
-            self._agent_factory = agent_decorator(*other_args, **kwargs)(fn)  # pyright: ignore [reportArgumentType]
+            # pyrefly: ignore [bad-argument-type]
+            self._agent_factory = agent_decorator(*other_args, **kwargs)(fn)
             return fn
 
         return decorator
@@ -167,7 +168,8 @@ class Server:
                 reload_task = asyncio.create_task(self._reload_variables_periodically()) if self_registration else None
 
                 try:
-                    async with lifespan_fn(app) if lifespan_fn else nullcontext():  # pyright: ignore [reportArgumentType]
+                    # pyrefly: ignore [bad-argument-type]
+                    async with lifespan_fn(app) if lifespan_fn else nullcontext():
                         yield
                 finally:
                     if register_task:
@@ -277,7 +279,7 @@ class Server:
 
     @functools.wraps(serve)
     def run(*args, **kwargs) -> None:
-        self = args[0]  # Must hide self due to pyright issues
+        self = args[0]  # TODO(typing): resolve without hiding `self`
         asyncio.run(self.serve(**kwargs))
 
     @property

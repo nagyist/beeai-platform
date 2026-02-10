@@ -47,7 +47,9 @@ from rag.tools.general.act import ActAlwaysFirstRequirement, ActTool, act_tool_m
 from rag.tools.general.clarification import ClarificationTool, clarification_tool_middleware
 from rag.tools.general.current_time import CurrentTimeTool
 
-BeeAIInstrumentor().instrument()
+beeai_instrumentor = BeeAIInstrumentor()
+if beeai_instrumentor:
+    beeai_instrumentor.instrument()
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +138,7 @@ async def rag(
 
 # CORRECT Format (use this):
 "Based on [Doc1_file.pdf](https://platform.com/files/123/content), the findings show..."
-"""  # type: ignore
+"""
 
     tools = [
         # Auxiliary tools
@@ -172,6 +174,7 @@ async def rag(
             yield vector_store_create_metadata
             await context.store(AgentMessage(metadata=vector_store_create_metadata))
 
+        # pyrefly: ignore [bad-argument-type]
         tools.append(VectorSearchTool(vector_store_id=vector_store_id, embedding_function=embedding))
         async for item in embed_all_files(
             embedding_function=embedding,
@@ -299,7 +302,7 @@ def _get_clients(
     llm.set_context(llm_ext)
 
     embedding_conf = None
-    if embedding_ext:
+    if embedding_ext and embedding_ext.data:
         [embedding_conf] = embedding_ext.data.embedding_fulfillments.values()
 
     embedding_client = AsyncOpenAI(

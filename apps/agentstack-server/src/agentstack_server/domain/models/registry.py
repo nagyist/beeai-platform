@@ -92,6 +92,8 @@ class FileSystemRegistryLocation(RootModel[FileUrl]):
     root: FileUrl
 
     async def load(self) -> list[ProviderRegistryRecord]:
+        if self.root.path is None:
+            return []
         content = await Path(self.root.path).read_text()
         return parse_providers_manifest(yaml.safe_load(content))
 
@@ -125,6 +127,8 @@ class FileSystemModelProviderRegistryLocation(RootModel[FileUrl]):
     root: FileUrl
 
     async def load(self) -> list[ModelProviderRegistryRecord]:
+        if self.root.path is None:
+            return []
         content = await Path(self.root.path).read_text()
         return parse_model_providers_manifest(yaml.safe_load(content))
 

@@ -51,11 +51,6 @@ class BaseExtensionSpec(abc.ABC, typing.Generic[ParamsT]):
     Description to be attached with the extension spec.
     """
 
-    Params: type[ParamsT]
-    """
-    Type of the extension params, attached to the agent card.
-    """
-
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.Params = _get_generic_args(cls, BaseExtensionSpec)[0]
@@ -72,7 +67,7 @@ class BaseExtensionSpec(abc.ABC, typing.Generic[ParamsT]):
         self.params = params
 
     @classmethod
-    def from_agent_card(cls, agent: AgentCard) -> typing.Self | None:
+    def from_agent_card(cls: type[BaseExtensionSpec], agent: AgentCard) -> typing.Self | None:
         """
         Client should construct an extension instance using this classmethod.
         """
@@ -127,6 +122,7 @@ class BaseExtensionServer(abc.ABC, typing.Generic[ExtensionSpecT, MetadataFromCl
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
+        # pyrefly: ignore [no-access]
         cls.MetadataFromClient = _get_generic_args(cls, BaseExtensionServer)[1]
 
     _metadata_from_client: MetadataFromClientT | None = None
@@ -189,6 +185,7 @@ class BaseExtensionClient(abc.ABC, typing.Generic[ExtensionSpecT, MetadataFromSe
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
+        # pyrefly: ignore [no-access]
         cls.MetadataFromServer = _get_generic_args(cls, BaseExtensionClient)[1]
 
     def __init__(self, spec: ExtensionSpecT) -> None:

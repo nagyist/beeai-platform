@@ -116,6 +116,7 @@ async def bootstrap_dependencies(dependency_overrides: Container | None = None):
 
     # Register object storage repository and file service
     _set_di(IObjectStorageRepository, S3ObjectStorageRepository(di[Configuration]))
+    # pyrefly: ignore[bad-argument-type]
     _set_di(procrastinate.App, create_instance=lambda: create_app(di[Configuration]))
     _set_di(ITextExtractionBackend, DoclingTextExtractionBackend(di[Configuration].text_extraction))
 
