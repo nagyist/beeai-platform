@@ -5,6 +5,7 @@
 
 import { TextInput } from '@carbon/react';
 import type { TextField } from 'agentstack-sdk';
+import { useId } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { FormRequirement } from '#components/FormRequirement/FormRequirement.tsx';
@@ -17,10 +18,12 @@ import { FormLabel } from '../FormLabel';
 
 interface Props {
   field: TextField;
+  autoFocus?: boolean;
 }
 
-export function TextField({ field }: Props) {
-  const { id, label, placeholder, auto_resize } = field;
+export function TextField({ field, autoFocus }: Props) {
+  const id = useId();
+  const { label, placeholder, auto_resize } = field;
 
   const { register, formState } = useFormContext<ValuesOfField<TextField>>();
   const { rules, invalid, invalidText } = useFormFieldValidation({ field, formState });
@@ -42,6 +45,7 @@ export function TextField({ field }: Props) {
           rows={1}
           maxRows={8}
           invalid={invalid}
+          autoFocus={autoFocus}
           {...inputProps}
         />
 
@@ -50,5 +54,14 @@ export function TextField({ field }: Props) {
     );
   }
 
-  return <TextInput size="lg" labelText={label} invalid={invalid} invalidText={invalidText} {...inputProps} />;
+  return (
+    <TextInput
+      size="lg"
+      labelText={label}
+      invalid={invalid}
+      invalidText={invalidText}
+      autoFocus={autoFocus}
+      {...inputProps}
+    />
+  );
 }
