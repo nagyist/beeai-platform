@@ -5,9 +5,9 @@
 
 import clsx from 'clsx';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { useAutoScroll } from '#hooks/useAutoScroll.ts';
+import { usePrevious } from '#hooks/usePrevious.ts';
 import type { UITrajectoryPart } from '#modules/messages/types.ts';
 import { fadeProps } from '#utils/fadeProps.ts';
 
@@ -17,30 +17,20 @@ import classes from './TrajectoryList.module.scss';
 interface Props {
   trajectories: UITrajectoryPart[];
   isOpen?: boolean;
-  autoScroll?: boolean;
+  isPending?: boolean;
 }
 
-export function TrajectoryList({ trajectories, isOpen, autoScroll }: Props) {
-  const { ref: autoScrollRef } = useAutoScroll<HTMLLIElement>([trajectories.length], { duration: AUTOSCROLL_DURATION });
-  const listRef = useRef<HTMLUListElement>(null);
-  const [listHeight, setListHeight] = useState<number>(0);
+export function TrajectoryList({ trajectories, isOpen, isPending }: Props) {
+  const [canClampContent, setCanClampContent] = useState(!isPending);
 
+  const previouslyOpen = usePrevious(isOpen);
   useEffect(() => {
-    if (!autoScroll || !listRef.current) {
-      return;
+    // Re-enable clamping when closed while no longer pending - ensuring trajectories
+    // are not clamped when pending, or on first open after being in pending state
+    if (previouslyOpen && !isOpen && !isPending) {
+      setCanClampContent(true);
     }
-
-    const updateHeight = () => {
-      setListHeight(listRef.current?.offsetHeight ?? 0);
-    };
-
-    updateHeight();
-
-    const resizeObserver = new ResizeObserver(updateHeight);
-    resizeObserver.observe(listRef.current);
-
-    return () => resizeObserver.disconnect();
-  }, [autoScroll, trajectories.length]);
+  }, [isOpen, isPending, previouslyOpen]);
 
   return (
     <AnimatePresence>
@@ -50,22 +40,18 @@ export function TrajectoryList({ trajectories, isOpen, autoScroll }: Props) {
             visible: { height: 'auto' },
             hidden: { height: 0 },
           })}
-          className={clsx(classes.root, { [classes.autoScroll]: autoScroll })}
+          className={clsx(classes.root)}
         >
-          <div className={classes.border} style={{ blockSize: autoScroll ? `${listHeight}px` : undefined }} />
-          <ul className={classes.list} ref={listRef}>
+          <div className={classes.border} />
+          <ul className={classes.list}>
             {trajectories.map((trajectory) => (
               <li key={trajectory.id}>
-                <TrajectoryItem trajectory={trajectory} />
+                <TrajectoryItem trajectory={trajectory} isPending={isPending} canClampContent={canClampContent} />
               </li>
             ))}
-
-            {autoScroll && <li ref={autoScrollRef} className={classes.scrollGuard}></li>}
           </ul>
         </motion.div>
       )}
     </AnimatePresence>
   );
 }
-
-const AUTOSCROLL_DURATION = 1.4;

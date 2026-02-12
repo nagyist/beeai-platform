@@ -5,23 +5,24 @@
 'use client';
 import { useMemo, useState } from 'react';
 
+import { Spinner } from '#components/Spinner/Spinner.tsx';
 import type { UITrajectoryPart } from '#modules/messages/types.ts';
 import { hasViewableTrajectoryParts } from '#modules/trajectories/utils.ts';
 
+import { useCurrentTrajectory } from '../hooks/useCurrentTrajectory';
 import { TrajectoryButton } from './TrajectoryButton';
 import { TrajectoryList } from './TrajectoryList';
 import classes from './TrajectoryView.module.scss';
 
 interface Props {
   trajectories: UITrajectoryPart[];
-  toggleable?: boolean;
-  autoScroll?: boolean;
+  isPending?: boolean;
 }
 
-export function TrajectoryView({ trajectories, toggleable, autoScroll }: Props) {
+export function TrajectoryView({ trajectories, isPending }: Props) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const filteredTrajectories = trajectories.filter(hasViewableTrajectoryParts);
+  const filteredTrajectories = useMemo(() => trajectories.filter(hasViewableTrajectoryParts), [trajectories]);
   const hasTrajectories = filteredTrajectories.length > 0;
 
   const groupedTrajectories = useMemo(() => {
@@ -62,15 +63,26 @@ export function TrajectoryView({ trajectories, toggleable, autoScroll }: Props) 
     return grouped;
   }, [filteredTrajectories, hasTrajectories]);
 
+  const currentTrajectory = useCurrentTrajectory({
+    trajectories: groupedTrajectories,
+    isPending,
+  });
+
   if (!hasTrajectories) {
     return null;
   }
 
   return (
     <div className={classes.root}>
-      {toggleable && <TrajectoryButton isOpen={isOpen} onClick={() => setIsOpen((state) => !state)} />}
-
-      <TrajectoryList trajectories={groupedTrajectories} autoScroll={autoScroll} isOpen={toggleable ? isOpen : true} />
+      <div className={classes.header}>
+        <TrajectoryButton
+          isOpen={isOpen}
+          onClick={() => setIsOpen((state) => !state)}
+          message={currentTrajectory && !isOpen ? currentTrajectory.title || currentTrajectory.content : undefined}
+        />
+        {isPending && <Spinner center />}
+      </div>
+      <TrajectoryList trajectories={groupedTrajectories} isOpen={isOpen} isPending={isPending} />
     </div>
   );
 }
