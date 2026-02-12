@@ -22,6 +22,8 @@ from agentstack_cli.utils import extract_messages, format_error
 
 DEBUG = Configuration().debug
 
+sys.unraisablehook = lambda _: None  # Suppress benign cleanup errors
+
 
 class _LeftAlignedHeading(Heading):
     def __rich_console__(self, *args, **kwargs) -> RenderResult:

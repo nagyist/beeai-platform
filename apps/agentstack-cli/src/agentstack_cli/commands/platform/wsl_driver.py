@@ -6,6 +6,7 @@ import os
 import pathlib
 import platform
 import sys
+import tempfile
 import textwrap
 import typing
 
@@ -132,9 +133,6 @@ class WSLDriver(BaseDriver):
         values_file: pathlib.Path | None = None,
         image_pull_mode: ImagePullMode = ImagePullMode.guest,
     ) -> None:
-        if image_pull_mode in {ImagePullMode.host, ImagePullMode.hybrid}:
-            raise NotImplementedError("Importing host images is not supported on Windows.")
-
         host_ip = (
             (
                 await self.run_in_vm(
@@ -170,7 +168,7 @@ class WSLDriver(BaseDriver):
 
             [Service]
             Type=simple
-            ExecStart=/bin/bash -c 'IFS=":" read svc port <<< "%i"; exec /usr/local/bin/kubectl port-forward --address=127.0.0.1 svc/$svc $port:$port'
+            ExecStart=/bin/bash -c 'IFS=":" read svc port <<< "%i"; exec /usr/local/bin/k3s kubectl port-forward --kubeconfig=/etc/rancher/k3s/k3s.yaml --address=127.0.0.1 svc/$svc $port:$port'
             Restart=on-failure
             User=root
 
@@ -208,19 +206,20 @@ class WSLDriver(BaseDriver):
         await run_command(["wsl.exe", "--unregister", self.vm_name], "Deleting Agent Stack platform", check=False)
 
     @typing.override
-    async def import_images(self, *tags: str) -> None:
-        raise NotImplementedError("Importing images is not supported on this platform.")
-
-    @typing.override
-    async def import_image_to_internal_registry(self, tag: str) -> None:
-        raise NotImplementedError("Importing images to internal registry is not supported on this platform.")
-
-    @typing.override
     async def exec(self, command: list[str]):
         await anyio.run_process(
             ["wsl.exe", "--user", "root", "--distribution", self.vm_name, "--", *command],
-            input=None if sys.stdin.isatty() else sys.stdin.read().encode(),
             check=False,
-            stdout=None,
-            stderr=None,
+            stdin=sys.stdin,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+            cwd="/",
         )
+
+    @typing.override
+    def _get_export_import_paths(self) -> tuple[str, str]:
+        fd, tmp_path = tempfile.mkstemp(suffix=".tar")
+        os.close(fd)
+        windows_path = str(pathlib.Path(tmp_path).resolve().absolute())
+        wsl_path = f"/mnt/{windows_path[0].lower()}/{windows_path[2:].replace('\\', '/').removeprefix('/')}"
+        return (windows_path, wsl_path)
