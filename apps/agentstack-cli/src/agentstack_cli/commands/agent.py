@@ -117,6 +117,8 @@ from agentstack_cli.async_typer import AsyncTyper, console, create_table, err_co
 from agentstack_cli.server_utils import announce_server_action, confirm_server_action
 from agentstack_cli.utils import (
     generate_schema_example,
+    get_github_repo_tags,
+    github_url_verbose_pattern,
     is_github_url,
     parse_env_var,
     print_log,
@@ -235,9 +237,8 @@ async def add_agent(
     - **Combined Formats**: `https://github.com/myorg/myrepo.git@v1.0.0#path=/path/to/agent`
     - **Enterprise GitHub**: `https://github.mycompany.com/myorg/myrepo`
     - **With a custom Dockerfile location**: `agentstack add --dockerfile /my-agent/path/to/Dockerfile "https://github.com/my-org/my-awesome-agents@main#path=/my-agent"`
-
-    [aliases: install]
     """
+    repo_input = location
     if location is None:
         repo_input = (
             await inquirer.text(
@@ -246,33 +247,40 @@ async def add_agent(
             or ""
         )
 
-        match = re.search(r"^(?:(?:https?://)?(?:www\.)?github\.com/)?([^/]+)/([^/?&]+)", repo_input)
-        if not match:
-            raise ValueError(f"Invalid GitHub URL format: {repo_input}. Expected 'owner/repo' or a full GitHub URL.")
+    if not repo_input:
+        console.error("No location provided. Exiting.")
+        sys.exit(1)
 
-        owner, repo = match.group(1), match.group(2).removesuffix(".git")
+    if match := re.match(github_url_verbose_pattern, repo_input, re.VERBOSE):
+        owner, repo, version, path = (
+            match.group("org"),
+            match.group("repo").removesuffix(".git"),
+            match.group("version"),
+            match.group("path"),
+        )
 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"https://api.github.com/repos/{owner}/{repo}/tags",
-                headers={"Accept": "application/vnd.github.v3+json"},
-            )
-            tags = [tag["name"] for tag in response.json()] if response.status_code == 200 else []
+        if version is None and path is None:
+            host = match.group("host")
+            tags = await get_github_repo_tags(host, owner, repo)
 
-        if tags:
-            selected_tag = await inquirer.fuzzy(
-                message="Select a tag to use:",
-                choices=tags,
-            ).execute_async()
-        else:
-            selected_tag = (
-                await inquirer.text(
-                    message="Enter tag to use:",
+            if tags:
+                selected_tag = await inquirer.fuzzy(
+                    message="Select a tag to use:",
+                    choices=tags,
                 ).execute_async()
-                or "main"
-            )
+            else:
+                selected_tag = (
+                    await inquirer.text(
+                        message="Enter tag to use:",
+                    ).execute_async()
+                    or "main"
+                )
 
-        location = f"https://github.com/{owner}/{repo}@{selected_tag}"
+            location = f"https://github.com/{owner}/{repo}@{selected_tag}"
+        else:
+            location = repo_input
+    else:
+        location = repo_input
 
     url = announce_server_action(f"Installing agent '{location}' for")
     await confirm_server_action("Proceed with installing this agent on", url=url, yes=yes)
@@ -339,17 +347,17 @@ async def update_agent(
         else:
             provider = select_provider(search_path, providers=providers)
 
-        if location is None and is_github_url(provider.source):
-            match = re.search(r"^(?:(?:https?://)?(?:www\.)?github\.com/)?([^/]+)/([^/@?&]+)", provider.source)
-            if match:
-                owner, repo = match.group(1), match.group(2).removesuffix(".git")
+        if location is None and is_github_url(provider.origin):
+            match = re.match(github_url_verbose_pattern, provider.origin, re.VERBOSE)
 
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(
-                        f"https://api.github.com/repos/{owner}/{repo}/tags",
-                        headers={"Accept": "application/vnd.github.v3+json"},
-                    )
-                    tags = [tag["name"] for tag in response.json()] if response.status_code == 200 else []
+            if match:
+                host, owner, repo = (
+                    match.group("host"),
+                    match.group("owner"),
+                    match.group("repo").removesuffix(".git"),
+                )
+
+                tags = await get_github_repo_tags(host, owner, repo)
 
                 if tags:
                     selected_tag = await inquirer.fuzzy(
@@ -363,7 +371,7 @@ async def update_agent(
             location = (
                 await inquirer.text(
                     message="Enter new agent location (public docker image or github url):",
-                    default=provider.source,
+                    default=provider.origin.lstrip("git+"),
                 ).execute_async()
                 or ""
             )
@@ -372,7 +380,7 @@ async def update_agent(
             console.error("No location provided. Exiting.")
             sys.exit(1)
 
-        url = announce_server_action(f"Upgrading agent from '{provider.source}' to {location}")
+        url = announce_server_action(f"Upgrading agent from '{provider.origin}' to {location}")
         await confirm_server_action("Proceed with upgrading agent on", url=url, yes=yes)
 
         if is_github_url(location):
