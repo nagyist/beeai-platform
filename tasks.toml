@@ -215,13 +215,13 @@ fi
 set -x
 yq -i ".version = \"$usage_version\"" helm/Chart.yaml
 yq -i ".appVersion = \"$usage_version\"" helm/Chart.yaml
-(cd apps/agentstack-sdk-py && toml set 'project.version' "$usage_version" --toml-path pyproject.toml && uv lock)
-(cd apps/agentstack-cli && toml set 'project.version' "$usage_version" --toml-path pyproject.toml && uv lock)
-(cd apps/agentstack-server && toml set 'project.version' "$usage_version" --toml-path pyproject.toml && uv lock)
-for agent in agents/*; do (cd $agent && uv lock); done
-yq -i ".version = \"$usage_version\"" apps/agentstack-sdk-ts/package.json
-yq -i ".version = \"$usage_version\"" apps/agentstack-ui/package.json
-yq -i ".version = \"$usage_version\"" apps/beeai-web/package.json
+for pyproject in $(fd -t f -g pyproject.toml apps agents); do
+  toml set project.version "$usage_version" --toml-path "$pyproject"
+  (cd "$(dirname "$pyproject")" && uv lock)
+done
+for pkg in $(fd -t f -g package.json apps agents); do
+  yq -i ".version = \"$usage_version\"" "$pkg"
+done
 yq -i ".providers[].location |= sub(\":(.*)\$\"; \":\" + \"$usage_version\")" agent-registry.yaml
 
 git add .
