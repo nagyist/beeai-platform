@@ -16,13 +16,14 @@ import { recmaExportToc } from '@/modules/blog/recma';
 const nextConfig: NextConfig = {
   output: 'standalone',
   transpilePackages: ['@i-am-bee/agentstack-ui'],
+  reactCompiler: true,
   sassOptions: {
     additionalData: `@use 'styles/common' as *; @use 'sass:math';`,
     // silenceDeprecations: ['mixed-decls', 'global-builtin'],
     api: 'modern',
     implementation: 'sass-embedded',
     quietDeps: true,
-    includePaths: [path.join(__dirname, 'node_modules'), path.join(__dirname, 'src')],
+    loadPaths: [path.join(__dirname, 'node_modules'), path.join(__dirname, 'src')],
   },
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   webpack(config) {

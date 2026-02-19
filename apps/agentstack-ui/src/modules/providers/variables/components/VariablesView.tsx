@@ -22,15 +22,12 @@ export function VariablesView() {
 
   const { data, isPending } = useListAllProvidersVariables();
 
-  const headers = useMemo(
-    () => [
-      { key: 'agent', header: 'Agent', className: classes.agent },
-      { key: 'name', header: 'Name', className: classes.name },
-      { key: 'value', header: 'Value', className: classes.value },
-      { key: 'actions', header: '' },
-    ],
-    [],
-  );
+  const headers = [
+    { key: 'agent', header: 'Agent', className: classes.agent },
+    { key: 'name', header: 'Name', className: classes.name },
+    { key: 'value', header: 'Value', className: classes.value },
+    { key: 'actions', header: '' },
+  ];
 
   const entries = useMemo(() => {
     if (!data) {
@@ -57,8 +54,7 @@ export function VariablesView() {
   return (
     <TableViewWithSearch
       className={classes.root}
-      description="Your variables are sensitive information and should not be shared with anyone. Keep it secure to
-        prevent unauthorized access to your account."
+      description="Your variables are sensitive information and should not be shared with anyone. Keep it secure to prevent unauthorized access to your account."
       headers={headers}
       entries={entries}
       searchFields={['agent', 'name']}
