@@ -216,8 +216,29 @@ NAMESPACE=default
 VM_NAME="${usage_vm_name?}"
 eval "$( {{ mise_bin }} run agentstack:shell --vm-name="$VM_NAME" )"
 
+# MicroShift/OpenShift specific setup for Telepresence
+kubectl create namespace ambassador --dry-run=client -o yaml | kubectl apply -f -
+kubectl label namespace ambassador pod-security.kubernetes.io/enforce=privileged --overwrite
+kubectl label namespace ambassador pod-security.kubernetes.io/warn=privileged --overwrite
+kubectl label namespace ambassador pod-security.kubernetes.io/audit=privileged --overwrite
+
+# Create telepresence values file to handle MicroShift restricted SCC
+TP_VALUES=$(mktemp)
+cat > "$TP_VALUES" <<EOF
+podSecurityContext: {}
+securityContext:
+  runAsUser: null
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+EOF
+
 tele="telepresence --use .*${NAMESPACE}.*"
-$tele helm install || true
+$tele helm install --values "$TP_VALUES" || true
+rm "$TP_VALUES"
 $tele connect --namespace "$NAMESPACE"
 $tele replace agentstack-server --port 18333:8333
 """
@@ -259,6 +280,8 @@ flag "--only <only>"
 '''
 run = """
 #!/bin/bash
+set -euxo pipefail
+
 VM_NAME=e2e-test-run
 
 export AGENTSTACK__USERNAME=admin
@@ -268,7 +291,7 @@ export AGENTSTACK__CLIENT_ID=agentstack-cli
 NO_CLEAN="${usage_no_clean:-false}"
 if [ "$NO_CLEAN" != "true" ]; then
     {{ mise_bin }} run agentstack:stop-all
-    {{ mise_bin }} run agentstack:delete --vm-name=${VM_NAME}
+    {{ mise_bin }} run agentstack:delete --vm-name=${VM_NAME} || true
     curl http://localhost:8333 >/dev/null 2>&1 && echo "Another instance at localhost:8333 is already running" && exit 2
 fi
 
@@ -300,14 +323,12 @@ keycloak:
         roles: ["agentstack-admin"]
 ' > "$CONFIG_FILE"
 
-{{ mise_bin }} run agentstack:start --vm-name=${VM_NAME} --skip-login -f "$CONFIG_FILE" --set ui.enabled=false
-
+{{ mise_bin }} run agentstack:start -v --vm-name=${VM_NAME} --skip-login -f "$CONFIG_FILE" --set ui.enabled=false
 
 eval "$( {{ mise_bin }} run agentstack:shell --vm-name="$VM_NAME" )"
 
-if [ -z "${TEST_AGENT_IMAGE}" ]; then
+if [ -z "${TEST_AGENT_IMAGE:-}" ]; then
     echo "Building test agent..."
-    # Build chat agent and push to local registry
     TEST_AGENT_IMAGE=agentstack-registry-svc.default:5001/chat-test:latest
     {{ mise_bin }} run agentstack-cli:run -- client-side-build -v "${PWD}/../.." --vm-name=${VM_NAME} --dockerfile "${PWD}/../../agents/chat/Dockerfile" --tag ${TEST_AGENT_IMAGE}
 fi
@@ -434,6 +455,7 @@ exit $result
 dir = "{{config_root}}/apps/agentstack-server"
 run = """
 #!/bin/bash
+set -euxo pipefail
 VM_NAME=integration-test-run
 
 {{ mise_bin }} run agentstack:delete --vm-name="$VM_NAME"
@@ -449,6 +471,4 @@ eval "$( {{ mise_bin }} run agentstack:shell --vm-name="$VM_NAME" )"
 {{ mise_bin }} run agentstack-server:dev:connect --vm-name="$VM_NAME"
 
 uv run pytest -m integration
-result=$?
-exit $result
 """
