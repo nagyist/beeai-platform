@@ -438,14 +438,20 @@ class RateLimitConfiguration(BaseModel, arbitrary_types_allowed=True):
 class CORSConfiguration(BaseModel):
     enabled: bool = False
     allow_origins: list[str] = Field(default_factory=list, description="List of allowed origins for CORS")
+    allow_origin_regex: str | None = Field(default=None, description="Regex for allowed origins for CORS")
     allow_methods: list[str] = Field(default_factory=lambda: ["*"], description="List of allowed methods for CORS")
     allow_headers: list[str] = Field(default_factory=lambda: ["*"], description="List of allowed headers for CORS")
     allow_credentials: bool = Field(default=False, description="Whether to allow credentials for CORS")
 
+    @field_validator("allow_origin_regex", mode="before")
+    @classmethod
+    def validate_allow_origin_regex(cls, v: str | None) -> str | None:
+        return v or None
+
     @model_validator(mode="after")
     def validate_cors(self):
-        if self.enabled and not self.allow_origins:
-            logger.warning("CORS is enabled, but no origins are specified in 'allow_origins'")
+        if self.enabled and not self.allow_origins and not self.allow_origin_regex:
+            logger.warning("CORS is enabled, but no origins are specified in 'allow_origins' or 'allow_origin_regex'")
         if "*" in self.allow_origins and self.allow_credentials:
             raise ValueError("allow_origins cannot be '*' when allow_credentials is True")
         return self
