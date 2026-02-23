@@ -69,8 +69,11 @@ async def test_basic_approve_example(subtests, a2a_client_factory, test_configur
                 if isinstance(event, tuple):
                     task, _ = event
 
-            # If tool call needs approval, reject it
-            if task and task.status.state == TaskState.input_required:
+            # Keep rejecting tool calls until task reaches a terminal state
+            # (agent may request approval for multiple tools after a rejection)
+            max_rejections = 10
+            rejection_count = 0
+            while task and task.status.state == TaskState.input_required and rejection_count < max_rejections:
                 response = ApprovalResponse(decision="reject")
                 response_message = Message(
                     role=Role.user,
@@ -83,7 +86,11 @@ async def test_basic_approve_example(subtests, a2a_client_factory, test_configur
                 async for event in running_example.client.send_message(response_message):
                     if isinstance(event, tuple):
                         task, _ = event
+                rejection_count += 1
 
             assert task is not None
             # Task may fail or complete depending on how agent handles rejection
-            assert task.status.state in (TaskState.completed, TaskState.failed)
+            assert task.status.state in (TaskState.completed, TaskState.failed), (
+                f"Task still in {task.status.state} after {rejection_count} rejections. "
+                f"Agent may be stuck in a loop requesting tool approvals."
+            )
