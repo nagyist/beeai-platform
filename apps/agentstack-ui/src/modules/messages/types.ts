@@ -79,6 +79,7 @@ export type UISourcePart = {
   id: string;
   url: string;
   taskId: string;
+  artifactId?: string;
   number: number | null;
   startIndex?: number;
   endIndex?: number;
@@ -156,7 +157,8 @@ export type UIDataPart = {
 
 export type UIArtifactPart = {
   kind: UIMessagePartKind.Artifact;
-  parts: (UITextPart | UIFilePart)[];
+  parts: (UITextPart | UIFilePart | UISourcePart | UITransformPart)[];
+  taskId: TaskId;
 } & Pick<TaskArtifactUpdateEvent['artifact'], 'artifactId' | 'name' | 'description'>;
 
 export enum UIMessagePartKind {
