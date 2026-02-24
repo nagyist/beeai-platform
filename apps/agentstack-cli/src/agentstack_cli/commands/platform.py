@@ -258,7 +258,7 @@ async def start_cmd(
 ):
     import agentstack_cli.commands.server
 
-    if values_file and not pathlib.Path(values_file).is_file():
+    if values_file and not pathlib.Path(values_file).is_file():  # noqa: ASYNC240
         raise FileNotFoundError(f"Values file {values_file} not found.")
 
     with verbosity(verbose):
@@ -538,7 +538,7 @@ async def start_cmd(
                             "allowCredentials": True,
                         },
                     },
-                    yaml.safe_load(pathlib.Path(values_file).read_text()) if values_file else {},
+                    yaml.safe_load(pathlib.Path(values_file).read_text()) if values_file else {},  # noqa: ASYNC240
                 )
             ).encode("utf-8"),
         )
