@@ -7,4 +7,4 @@ You can install the chart using the following command:
 helm install agentstack -f config.yaml oci://ghcr.io/i-am-bee/agentstack/chart/agentstack:<release-version>
 ```
 
-Check out the [documentation](https://agentstack.beeai.dev/how-to/deployment-guide) for a detailed deployment guide.
+Check out the [documentation](https://agentstack.beeai.dev/stable/how-to/deployment-guide) for a detailed deployment guide.

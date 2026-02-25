@@ -96,4 +96,4 @@ outputs = { auto = true }
 dir = "{{config_root}}/docs"
 sources = ["**/*.mdx"]
 outputs = { auto = true }
-run = "lychee --base-url=http://localhost --exclude-all-private --exclude '^https://www\\.npmjs\\.com' ." # npmjs.com is behind CloudFlare
+run = "lychee --base-url=http://localhost --exclude-all-private --exclude '^https://www\\.npmjs\\.com' ." # npmjs.com is behind CloudFlare

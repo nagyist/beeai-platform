@@ -96,7 +96,7 @@ Getting started:
   agentstack ui
 {{- end }}
 
-📄 See the documentation for more details and troubleshooting steps: https://agentstack.beeai.dev/how-to/deployment-guide
+📄 See the documentation for more details and troubleshooting steps: https://agentstack.beeai.dev/stable/how-to/deployment-guide
 
 Resources:
 

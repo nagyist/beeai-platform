@@ -70,7 +70,7 @@ sh -c "$(curl -LsSf https://raw.githubusercontent.com/i-am-bee/agentstack/instal
 ```
 
 > [!TIP]
-> The one-line script works on Linux and macOS. For manual setup or experimental Windows support, see the [quickstart guide](https://agentstack.beeai.dev/introduction/quickstart).
+> The one-line script works on Linux and macOS. For manual setup or experimental Windows support, see the [quickstart guide](https://agentstack.beeai.dev/stable/introduction/quickstart).
 
 ### Usage
 
@@ -99,7 +99,7 @@ agentstack run example_agent "Alice"  # Test your agent
 You should see: "Ciao Alice!" 🎉
 
 > [!TIP]
-> Check out [Building Agents](https://agentstack.beeai.dev/guides/building-agents) for a complete step-by-step guide to creating your first agent.
+> Check out [Building Agents](https://agentstack.beeai.dev/stable/guides/building-agents) for a complete step-by-step guide to creating your first agent.
 
 ---
 
