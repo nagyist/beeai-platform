@@ -77,10 +77,20 @@ if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$ ]]; then echo "ERROR: $
 if [[ "${GITHUB_REF:-}" == refs/tags/* ]] && [[ $GITHUB_REF != "refs/tags/v$version" ]]; then echo "ERROR: GITHUB_REF '$GITHUB_REF' does not match 'refs/tags/v$version'" >&2; exit 1; fi
 '''
 
-["common:check:links"]
+["common:check:dependabot-coverage"]
 dir = "{{config_root}}"
-sources = ["*.md"]
-run = "lychee --base-url=http://localhost --exclude-all-private --exclude '^https://www\\.npmjs\\.com' *.md"
+run = """
+#!/bin/bash
+set -euo pipefail
+comm -23 \
+  <( { 
+       fd -g 'package.json' -x sh -c 'echo npm    "$(dirname $1 | sed s/^.//)"' sh {};
+       fd -g 'uv.lock'      -x sh -c 'echo uv     "$(dirname $1 | sed s/^.//)"' sh {};
+       fd -g 'Dockerfile'   -x sh -c 'echo docker "$(dirname $1 | sed s/^.//)"' sh {};
+     } | sort -u ) \
+  <( yq -r '.updates[] | .["package-ecosystem"] + " " + .directory' .github/dependabot.yml | sort -u ) \
+  | grep . && (echo "ERROR: Found project(s) not covered in .github/dependabot.yml";exit 1) || exit 0
+"""
 
 ## fix
 

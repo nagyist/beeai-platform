@@ -1,0 +1,305 @@
+version: 2
+updates:
+  # ==========================================
+  # AGENTS
+  # ==========================================
+
+  # Agent: Canvas
+  - package-ecosystem: "uv"
+    directory: "/agents/canvas"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/agents/canvas"
+    schedule:
+      interval: "weekly"
+
+  # Agent: Chat
+  - package-ecosystem: "uv"
+    directory: "/agents/chat"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/agents/chat"
+    schedule:
+      interval: "weekly"
+
+  # Agent: Content Builder
+  - package-ecosystem: "uv"
+    directory: "/agents/deepagents_content_builder"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/agents/deepagents_content_builder"
+    schedule:
+      interval: "weekly"
+
+  # Agent: Form
+  - package-ecosystem: "uv"
+    directory: "/agents/form"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/agents/form"
+    schedule:
+      interval: "weekly"
+
+  # Agent: Langgraph Reflection
+  - package-ecosystem: "uv"
+    directory: "/agents/langgraph-reflection"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/agents/langgraph-reflection"
+    schedule:
+      interval: "weekly"
+
+  # Agent: RAG
+  - package-ecosystem: "uv"
+    directory: "/agents/rag"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/agents/rag"
+    schedule:
+      interval: "weekly"
+
+  # ==========================================
+  # APPS
+  # ==========================================
+
+  # AgentStack CLI
+  - package-ecosystem: "uv"
+    directory: "/apps/agentstack-cli"
+    schedule:
+      interval: "weekly"
+
+  # AgentStack SDK (Python)
+  - package-ecosystem: "uv"
+    directory: "/apps/agentstack-sdk-py"
+    schedule:
+      interval: "weekly"
+
+  # AgentStack SDK (TypeScript)
+  - package-ecosystem: "npm"
+    directory: "/apps/agentstack-sdk-ts"
+    schedule:
+      interval: "weekly"
+
+  # AgentStack SDK Example (Chat UI)
+  - package-ecosystem: "npm"
+    directory: "/apps/agentstack-sdk-ts/examples/chat-ui"
+    schedule:
+      interval: "weekly"
+
+  # AgentStack Server
+  - package-ecosystem: "uv"
+    directory: "/apps/agentstack-server"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/apps/agentstack-server"
+    schedule:
+      interval: "weekly"
+
+  # AgentStack UI
+  - package-ecosystem: "npm"
+    directory: "/apps/agentstack-ui"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/apps/agentstack-ui"
+    schedule:
+      interval: "weekly"
+
+  # BeeAI Web
+  - package-ecosystem: "npm"
+    directory: "/apps/beeai-web"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/apps/beeai-web"
+    schedule:
+      interval: "weekly"
+
+  # Keycloak Theme
+  - package-ecosystem: "npm"
+    directory: "/apps/keycloak-theme"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/apps/keycloak-theme"
+    schedule:
+      interval: "weekly"
+
+  # Lint Config
+  - package-ecosystem: "npm"
+    directory: "/apps/lint-config"
+    schedule:
+      interval: "weekly"
+
+  # Supergateway
+  - package-ecosystem: "docker"
+    directory: "/apps/supergateway"
+    schedule:
+      interval: "weekly"
+
+  # ==========================================
+  # DOCUMENTATION
+  # ==========================================
+  
+  - package-ecosystem: "npm"
+    directory: "/docs"
+    schedule:
+      interval: "weekly"
+
+  # ==========================================
+  # EXAMPLES & INTEGRATIONS
+  # ==========================================
+
+  # Agent Integration: Agent Details
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/agent-details/basic-configuration"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Agent Settings
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/agent-settings/basic-settings"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Canvas
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/canvas/canvas-with-llm"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Citations
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/citations/citation-basic-usage"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Environment Variables
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/env-variables/basic-environment-variables"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Errors
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/error/adding-error-context"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/error/advanced-error-reporting"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/error/multiple-errors-handling"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/error/standard-error-reporting"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Files
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/files/file-processing"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Forms
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/forms/dynamic-form-requests"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/forms/initial-form-rendering"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: LLM Proxy
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/llm-proxy-service/llm-access"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: MCP
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/mcp/custom-mcp-client-with-oauth"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/mcp/github-mcp-agent"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Multi-turn
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/multi-turn/advanced-history"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/multi-turn/basic-history"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Overview
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/overview/advanced-server-wrapper"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/overview/dependency-injection"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/overview/server-wrapper"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: RAG
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/rag/conversation-rag-agent"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/rag/simple-rag-agent"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Secrets
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/secrets/basic-secrets"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Tool Calls
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/tool-calls/basic-approve"
+    schedule:
+      interval: "weekly"
+
+  # Agent Integration: Trajectory
+  - package-ecosystem: "uv"
+    directory: "/examples/agent-integration/trajectory/trajectory-basic-usage"
+    schedule:
+      interval: "weekly"
+
+  # Deploy Agents
+  - package-ecosystem: "uv"
+    directory: "/examples/deploy-agents/building-agents/implement-your-agent-logic"
+    schedule:
+      interval: "weekly"
+
+  # ==========================================
+  # GITHUB ACTIONS
+  # ==========================================
+  
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
