@@ -20,8 +20,8 @@ jobs:
               return;
             }
             
-            if (context.payload.pull_request.user.login === 'dependabot[bot]') {
-              core.info('🤖 Dependabot PR detected — skipping docs enforcement.');
+            if (context.payload.pull_request.user.login === 'renovate[bot]') {
+              core.info('🤖 Renovate PR detected — skipping docs enforcement.');
               return;
             }
             
