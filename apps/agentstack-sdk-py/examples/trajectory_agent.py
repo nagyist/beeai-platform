@@ -50,7 +50,7 @@ async def example_agent(
         )
         yield metadata
         await context.store(AgentMessage(metadata=metadata))
-        await asyncio.sleep(0.6)
+        await asyncio.sleep(0.3)
 
     for i in range(4, 7):
         metadata = trajectory.trajectory_metadata(
@@ -59,9 +59,9 @@ async def example_agent(
         )
         yield metadata
         await context.store(AgentMessage(metadata=metadata))
-        await asyncio.sleep(2)
+        await asyncio.sleep(0.8)
 
-    await asyncio.sleep(2)
+    await asyncio.sleep(1)
 
     metadata = trajectory.trajectory_metadata(
         title="Step with long content",
