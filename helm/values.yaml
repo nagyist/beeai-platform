@@ -180,7 +180,7 @@ keycloak:
       #   enabled: true
   image:
     repository: ghcr.io/i-am-bee/agentstack/keycloak-themed
-    tag: 26.5.2
+    tag: 26.5.4
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
