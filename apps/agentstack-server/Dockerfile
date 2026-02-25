@@ -3,6 +3,7 @@ ARG UV_VERSION=0.10.4@sha256:4cac394b6b72846f8a85a7a0e577c6d61d4e17fe2ccee65d945
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 FROM python:3.13-alpine3.23
 ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
     HOME="/tmp" \
     AGENT_REGISTRY__LOCATIONS__FILE="file:///app/registry.yaml"
 RUN --mount=type=cache,target=/tmp/.cache/uv \
