@@ -55,6 +55,7 @@ pyrefly check "$TMPDIR/snippets"
 """
 
 ["docs:check:links"]
+depends = ["common:setup:pnpm"]
 dir = "{{config_root}}/docs"
 sources = ["**/*.mdx"]
 outputs = { auto = true }
