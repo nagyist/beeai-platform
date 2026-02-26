@@ -667,15 +667,6 @@ set -euo pipefail
 limactl list | (head -n 1 | sed 's/NAME        /NAME/'; sed -n 's/^yolobox-//gp')
 """
 
-["yolobox:stop"]
-dir = "{{ config_root }}"
-usage = 'arg "[name]" default="default"'
-run = """
-#!/usr/bin/env bash
-set -euxo pipefail
-limactl stop "yolobox-$usage_name"
-"""
-
 ["yolobox:delete"]
 dir = "{{ config_root }}"
 usage = 'arg "[name]" default="default"'
