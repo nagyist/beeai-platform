@@ -15,7 +15,6 @@ maven = "latest"
 # Kubernetes
 helm = "latest"
 kubeconform = "latest"
-"github:telepresenceio/telepresence" = "latest"
 
 # misc
 yq = "latest"
@@ -23,7 +22,6 @@ yq = "latest"
 fd = "latest"
 "github:google/addlicense" = "latest"
 gum = "latest"
-lychee = "latest"
 hadolint = "latest"
 
 [settings]
