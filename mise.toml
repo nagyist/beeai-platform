@@ -3,18 +3,17 @@
 "lima" = "2.0.3"
 
 # Python
-uv = "0.10"
+uv = "latest"
 
 # Node.js
 nodejs = "24"
-pnpm = "10"
 
 # Java
 java = "21"
-maven = "3"
+maven = "latest"
 
 # Kubernetes
-helm = "4.1.1"
+helm = "latest"
 kubeconform = "latest"
 "github:telepresenceio/telepresence" = "latest"
 
@@ -28,7 +27,7 @@ lychee = "latest"
 hadolint = "latest"
 
 [settings]
-experimental = true
+experimental = true # for task_templates
 task.disable_spec_from_run_scripts = true # opt-in to new task behavior
 
 [hooks]
