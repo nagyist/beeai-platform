@@ -6,7 +6,7 @@ set -eu
 
 # These get updated by `mise release`:
 LATEST_STABLE_AGENTSTACK_VERSION=0.6.1
-LATEST_AGENTSTACK_VERSION=0.6.2-rc3
+LATEST_AGENTSTACK_VERSION=0.6.2-rc4
 
 # This gets updated by Renovate:
 # renovate: datasource=python-version depName=python
