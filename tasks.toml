@@ -602,3 +602,88 @@ brew upgrade mise || mise self-update || true
 {{mise_bin}} install
 {{mise_bin}} run --force setup ::: check
 """
+
+# yolobox [experimental: macOS >=15, CPU >=M3]
+
+["yolobox:start"]
+dir = "{{ config_root }}"
+usage = 'arg "[name]" default="default"'
+run = '''
+#!/usr/bin/env bash
+set -euxo pipefail
+export REPO=$(basename $(pwd))
+if limactl create template:ubuntu --yes --name "yolobox-$usage_name" --plain --vm-type=vz --rosetta --memory 36 --cpus 4 --set '.nestedVirtualization=true'; then
+    limactl start "yolobox-$usage_name"
+    mkdir -p "$HOME/.ssh" && touch "$HOME/.ssh/config" && printf "\nInclude ${LIMA_HOME:-$HOME/.lima}/yolobox-$usage_name/ssh.config" >> "$HOME/.ssh/config"
+    limactl shell "yolobox-$usage_name" bash -c "
+        set -euxo pipefail
+        export DEBIAN_FRONTEND=noninteractive
+        export GITHUB_TOKEN="${GITHUB_TOKEN-}"
+        
+        # Git
+        sudo mkdir -p /git/$REPO
+        sudo chown \$(id -u):\$(id -g) /git/$REPO
+        cd /git/$REPO
+        git init --initial-branch=main
+        git config receive.denyCurrentBranch updateInstead
+        git config user.name \"$(git config user.name)\"
+        git config user.email \"$(git config user.email)\"
+        
+        # Mise
+        curl https://mise.run | sh
+        eval \"\$(\$HOME/.local/bin/mise activate bash)\"
+        echo 'eval \"\$(\$HOME/.local/bin/mise activate bash)\"' >> \$HOME/.bashrc
+
+        # Docker
+        sudo mkdir -p /etc/systemd/system/docker.socket.d
+        printf '[Socket]\nSocketUser='\$USER | sudo tee /etc/systemd/system/docker.socket.d/override.conf
+        curl -fsSL https://get.docker.com | sh
+        
+        # Lima & Virtualization Support
+        sudo apt-get update -qq
+        sudo apt-get install -qqy --no-install-recommends ovmf qemu-system-aarch64 qemu-efi-aarch64 qemu-utils ipxe-qemu
+        sudo modprobe kvm
+        sudo chmod 666 /dev/kvm
+        mise use -g lima@2.0.3
+
+        # Extra tools
+        mise use -g kubectl@latest
+    "
+    git remote add "yolobox-$usage_name" "ssh://lima-yolobox-$usage_name:/git/$REPO"
+    git push "yolobox-$usage_name" main:main
+else
+    limactl start "yolobox-$usage_name"
+fi
+limactl shell "yolobox-$usage_name" bash -c "cd /git/$REPO && mise trust && mise install"
+code --new-window --wait --folder-uri "vscode-remote://ssh-remote+lima-yolobox-$usage_name/git/$REPO"
+limactl stop -f "yolobox-$usage_name"
+'''
+
+["yolobox:list"]
+dir = "{{ config_root }}"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+limactl list | (head -n 1 | sed 's/NAME        /NAME/'; sed -n 's/^yolobox-//gp')
+"""
+
+["yolobox:stop"]
+dir = "{{ config_root }}"
+usage = 'arg "[name]" default="default"'
+run = """
+#!/usr/bin/env bash
+set -euxo pipefail
+limactl stop "yolobox-$usage_name"
+"""
+
+["yolobox:delete"]
+dir = "{{ config_root }}"
+usage = 'arg "[name]" default="default"'
+run = """
+#!/usr/bin/env bash
+set -euxo pipefail
+grep -Fxv "Include ${LIMA_HOME:-$HOME/.lima}/yolobox-$usage_name/ssh.config" "$HOME/.ssh/config" > "$HOME/.ssh/config.tmp" || true
+mv "$HOME/.ssh/config.tmp" "$HOME/.ssh/config"
+git remote remove "yolobox-$usage_name" 2>/dev/null || true
+limactl delete -f "yolobox-$usage_name"
+"""
