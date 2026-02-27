@@ -1,28 +1,59 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "configMigration": true,
+  "semanticCommits": "enabled",
   "extends": [
-    "config:best-practices",
-    "mergeConfidence:all-badges",
-    "customManagers:dockerfileVersions"
+    "group:monorepos"
   ],
+  "prBodyColumns": [
+    "Package",
+    "Type",
+    "Update",
+    "Current value",
+    "New value",
+    "Change",
+    "Pending",
+    "References",
+    "Package file",
+    "Age",
+    "Adoption",
+    "Passing",
+    "Confidence"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
   "packageRules": [
     {
+      "matchDatasources": ["docker", "github-actions"],
+      "pinDigests": true
+    },
+    {
+      "matchDepTypes": ["devDependencies"],
+      "rangeStrategy": "pin",
+      "groupName": "devDependencies"
+    },
+    {
+      "matchUpdateTypes": ["patch", "minor", "major"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
       "matchPackageNames": ["python", "alpine", "astral-sh/uv"],
-      "groupSlug": "runtime",
-      "groupName": "Python, uv and Alpine",
+      "groupName": "runtime",
       "rangeStrategy": "widen"
+    },
+    {
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "groupName": "lockfile-{{packageFile}}"
     }
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": [
-        "**/[Dd]ockerfile*",
-        "**/[Cc]ontainerfile*",
-        "**/*.[Dd]ockerfile*",
-        "**/*.[Cc]ontainerfile*",
-        "install.sh"
-      ],
+      "fileMatch": ["(^|/)Dockerfile[^/]*$", "(^|/)install\\.sh$"],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>[a-zA-Z0-9-._]+?) depName=(?<depName>[^\\s]+?)(?: (lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?(?: registryUrl=(?<registryUrl>[^\\s]+?))?\\s(?:ENV|ARG|export|)\\s+[A-Za-z0-9_]+?_VERSION[ =][\"']?(?<currentValue>.+?)[\"']?\\s"
       ]

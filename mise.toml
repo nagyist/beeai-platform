@@ -26,7 +26,7 @@ gum = "latest"
 hadolint = "latest"
 
 [settings]
-experimental = true # for task_templates
+experimental = true # for task_templates
 task.disable_spec_from_run_scripts = true # opt-in to new task behavior
 
 [hooks]

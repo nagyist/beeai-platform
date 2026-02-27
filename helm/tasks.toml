@@ -17,7 +17,7 @@ run = "helm template . --set encryptionKey=dummy --set auth.enabled=false | kube
 sources = ["Chart.yaml", "Chart.lock", "values.yaml", ".helmignore", "charts/*", "templates/**/*"]
 outputs = { auto = true }
 
-# build
+# build
 
 ["helm:build"]
 depends = ["helm:build:dependencies"]

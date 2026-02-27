@@ -25,7 +25,7 @@ if [ -n "${WSL_DISTRO_NAME-}" ] || (uname -r | grep -q -i "microsoft"); then
     exit 1
 fi
 
-# Ensure that we have uv on PATH
+# Ensure that we have uv on PATH
 export PATH="${XDG_BIN_HOME:+${XDG_BIN_HOME}:}${XDG_DATA_HOME:+$(realpath -m ${XDG_DATA_HOME}/../bin):}${HOME:+${HOME}/.local/bin:}$PATH"
 
 # Always install uv to ensure we have the latest version for consistency
@@ -37,7 +37,7 @@ curl -LsSf https://astral.sh/uv/install.sh | UV_PRINT_QUIET=1 sh || error
 echo "Installing Python..."
 uv python install --quiet --python-preference=only-managed --no-bin $PYTHON_VERSION || error
 
-# Separately uninstall potential old version of agentstack-cli (old name beeai-cli) to remove envs created with wrong Python versions
+# Separately uninstall potential old version of agentstack-cli (old name beeai-cli) to remove envs created with wrong Python versions
 # Also remove obsolete version from Homebrew and any local executables potentially left behind by Homebrew or old uv versions
 echo "Removing old versions..."
 uv tool uninstall --quiet agentstack-cli >/dev/null 2>&1 || true

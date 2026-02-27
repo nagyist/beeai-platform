@@ -39,7 +39,7 @@ extends = "python:fix:ruff-format"
 depends = ["agentstack-cli:setup"]
 dir = "{{config_root}}/apps/agentstack-cli"
 
-# run
+# run
 
 ["agentstack-cli:run"]
 description = "NOTE: Use double dash to pass extra args, like `mise agentstack-cli:run -- provider list`"

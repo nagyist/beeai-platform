@@ -51,7 +51,7 @@ extends = "python:fix:ruff-format"
 depends = ["agentstack-server:setup"]
 dir = "{{config_root}}/apps/agentstack-server"
 
-# run
+# run
 
 ["agentstack-server:run"]
 depends = ["agentstack-server:setup", "supergateway:build"]
