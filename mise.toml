@@ -7,6 +7,7 @@ uv = "latest"
 
 # Node.js
 nodejs = "24"
+pnpm = "10"
 
 # Java
 java = "21"

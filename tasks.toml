@@ -45,17 +45,6 @@ sources = [
 ]
 outputs = { auto = true }
 
-["common:setup:corepack"]
-hide = true
-dir = "{{config_root}}"
-run = "corepack enable"
-sources = [
-  "apps/*/package.json",
-  "docs/package.json",
-  "agents/*/*/package.json",
-]
-outputs = { auto = true }
-
 ## check
 
 ["common:check"]

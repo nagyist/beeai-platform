@@ -40,6 +40,5 @@
     "sass-embedded": "catalog:",
     "stylelint": "catalog:",
     "typescript": "catalog:"
-  },
-  "packageManager": "pnpm@10.30.1"
+  }
 }
