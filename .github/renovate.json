@@ -35,13 +35,6 @@
       "pinDigests": true
     },
     {
-      "matchDepTypes": [
-        "devDependencies"
-      ],
-      "rangeStrategy": "pin",
-      "groupName": "devDependencies"
-    },
-    {
       "matchUpdateTypes": [
         "patch",
         "minor",
