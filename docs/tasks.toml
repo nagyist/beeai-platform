@@ -30,7 +30,7 @@ while IFS= read -r -d '' md; do
     }
   ' "$md" \
   | while IFS= read -r -d '' block; do
-      first_line="$(printf "%s\n" "$block" | sed '/./,$!d' | head -n1)"
+      first_line="$(set +o pipefail; printf "%s\n" "$block" | sed '/./,$!d' | head -n1)"
       case "$first_line" in
         (from\\ *|import\\ *)
           clean_md="${md//\\//__}"
