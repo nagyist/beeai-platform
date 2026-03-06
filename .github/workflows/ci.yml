@@ -24,6 +24,7 @@ jobs:
       examples: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.examples == 'true' }}
       microshift-vm: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.microshift-vm == 'true' }}
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c
         id: filter
         with:
