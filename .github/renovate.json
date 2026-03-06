@@ -20,8 +20,10 @@
     "Passing",
     "Confidence"
   ],
+  "rangeStrategy": "update-lockfile",
   "lockFileMaintenance": {
-    "enabled": true
+    "enabled": true,
+    "schedule": ["on monday"]
   },
   "vulnerabilityAlerts": {
     "enabled": true
