@@ -101,12 +101,36 @@ jobs:
       - run: mise run microshift-vm:build:qemu --arch ${{ matrix.arch }}
       - if: matrix.arch == 'x86_64'
         run: mise run microshift-vm:build:wsl
-      - name: Upload Release Asset
-        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6dc5a # v2
+      - uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6dc5a # v2
         with:
           files: |
             apps/microshift-vm/dist/${{ matrix.arch }}/microshift-vm-${{ matrix.arch }}.qcow2
             ${{ matrix.arch == 'x86_64' && format('apps/microshift-vm/dist/{0}/microshift-vm-{0}.wsl', matrix.arch) || '' }}
+      - if: matrix.arch == 'x86_64'
+        id: version
+        run: |
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "latestTag=$([[ ${GITHUB_REF#refs/tags/v} =~ [a-zA-Z] ]] && echo prerelease || echo latest)" >> $GITHUB_OUTPUT
+      - if: matrix.arch == 'x86_64'
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: quay.io
+          username: beeai+github
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+      - if: matrix.arch == 'x86_64'
+        run: mise run microshift-vm:build:container --arch x86_64
+      - if: matrix.arch == 'x86_64'
+        run: |
+          docker import \
+            --platform linux/amd64 \
+            -c 'CMD ["/sbin/init"]' \
+            ./apps/microshift-vm/dist/x86_64/microshift-vm-x86_64.tar.gz \
+            "quay.io/beeai/microshift-vm:${{ steps.version.outputs.version }}"
+          docker push "quay.io/beeai/microshift-vm:${{ steps.version.outputs.version }}"
+          docker tag \
+            "quay.io/beeai/microshift-vm:${{ steps.version.outputs.version }}" \
+            "quay.io/beeai/microshift-vm:${{ steps.version.outputs.latestTag }}"
+          docker push "quay.io/beeai/microshift-vm:${{ steps.version.outputs.latestTag }}"
 
   agentstack:
     needs: [agents, vm]
@@ -224,8 +248,7 @@ jobs:
         with:
           packages-dir: apps/agentstack-cli/dist
 
-      - name: Publish TS SDK
-        working-directory: apps/agentstack-sdk-ts
+      - working-directory: apps/agentstack-sdk-ts
         run: npm publish --tag ${{ steps.version.outputs.npmTag }}
 
       - run: |
