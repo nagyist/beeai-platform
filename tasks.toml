@@ -484,111 +484,6 @@ echo -e "✅ Published \x1b[36mstable\x1b[0m docs for \x1b[36mv$publish_version\
 echo "💡 Check the pipeline progress and result on: https://github.com/i-am-bee/agentstack/actions/workflows/release.yml"
 '''
 
-# misc tasks
-
-["sync-images-to-ghcr"]
-dir = "{{config_root}}"
-depends = ["helm:build:dependencies"]
-usage = "flag --dryrun"
-run = '''
-#!/bin/bash
-
-set -euo pipefail
-DRY_RUN="${usage_dryrun:-false}"
-
-{% raw %}
-echo "Extracting images from helm chart..."
-
-# Extract images from helm chart
-images=$(helm template \
-  --set phoenix.enabled=true \
-  --set encryptionKey=dummy \
-  --set auth.enabled=false \
-  --set providerBuilds.enabled=true \
-  --set localDockerRegistry.enabled=true \
-  --set redis.enabled=true \
-  ./helm 2>/dev/null | \
-    sed -n '/^[[:space:]]*image:/{ /{{/d; s/.*image:[[:space:]]*//p; }' | \
-    sed 's/"\([^"]*\)"/\1/' | grep -v 'agentstack')
-
-echo "Found images:"
-echo "$images"
-
-# Process each image
-echo "$images" | while IFS= read -r ghcr_image; do
-  if [[ -z "$ghcr_image" ]]; then
-    continue
-  fi
-
-  echo "Processing image: $ghcr_image"
-
-  # Check for tag+digest format (e.g. image:tag@digest)
-  ghcr_tag_image=""
-  if [[ "$ghcr_image" == *":"*"@"* ]]; then
-    # Extract the tag version (image:tag)
-    ghcr_tag_image=$(echo "$ghcr_image" | sed 's/@.*//')
-    
-    # Strip tag from main variable (image@digest)
-    ghcr_image=$(echo "$ghcr_image" | sed 's/:[^:/]*@/@/')
-  fi
-
-  # Remove ghcr.io/i-am-bee/ prefix to get Docker Hub image
-  if [[ $ghcr_image =~ ^ghcr\.io/i-am-bee/(.+)$ ]]; then
-    dockerhub_image="${BASH_REMATCH[1]}"
-
-    echo "GHCR image: $ghcr_image"
-    echo "Docker Hub image: $dockerhub_image"
-
-    # Check if image exists in GHCR
-    if docker manifest inspect "$ghcr_image" >/dev/null 2>&1; then
-      echo "✅ Image $ghcr_image already exists in GHCR"
-      continue
-    fi
-
-    echo "❌ Image $ghcr_image not found in GHCR"
-
-    if [[ "$DRY_RUN" == "true" ]]; then
-      echo "🔍 DRY RUN: Would sync $dockerhub_image -> $ghcr_image"
-      continue
-    fi
-
-    # Check if source image exists in Docker Hub
-    if ! docker manifest inspect "$dockerhub_image" >/dev/null 2>&1; then
-      echo "❌ Source image $dockerhub_image not found in Docker Hub"
-      continue
-    fi
-
-    echo "🔄 Syncing $dockerhub_image -> $ghcr_image"
-
-    # Copy image with all architectures using skopeo
-    skopeo copy --multi-arch all docker://"$dockerhub_image" docker://"$ghcr_image"
-
-    echo "✅ Successfully synced $ghcr_image"
-
-    # Sync the tag version if it exists
-    if [[ -n "$ghcr_tag_image" ]]; then
-      echo "🏷️  Also syncing tag: $ghcr_tag_image"
-      
-      if docker manifest inspect "$ghcr_tag_image" >/dev/null 2>&1; then
-        echo "✅ Tag $ghcr_tag_image already exists in GHCR"
-      else
-        if [[ "$DRY_RUN" == "true" ]]; then
-          echo "🔍 DRY RUN: Would sync $dockerhub_image -> $ghcr_tag_image"
-        else
-          skopeo copy --multi-arch all docker://"$dockerhub_image" docker://"$ghcr_tag_image"
-          echo "✅ Successfully synced tag $ghcr_tag_image"
-        fi
-      fi
-    fi
-  else
-    echo "⚠️  Skipping image with unexpected format: $ghcr_image"
-  fi
-done
-
-echo "Image sync completed!"
-{% endraw %}
-'''
-
 ["release:checkout"]
 description = "Checkout the latest release branch"
 dir = "{{config_root}}"
@@ -719,3 +614,175 @@ mv "$HOME/.ssh/config.tmp" "$HOME/.ssh/config"
 git remote remove "$VM_NAME" 2>/dev/null || true
 limactl delete -f "$VM_NAME"
 """
+
+# misc tasks
+
+["sync-images-to-ghcr"]
+dir = "{{config_root}}"
+depends = ["helm:build:dependencies"]
+usage = "flag --dryrun"
+run = '''
+#!/bin/bash
+
+set -euo pipefail
+DRY_RUN="${usage_dryrun:-false}"
+
+{% raw %}
+echo "Extracting images from helm chart..."
+
+# Extract images from helm chart
+images=$(helm template \
+  --set phoenix.enabled=true \
+  --set encryptionKey=dummy \
+  --set auth.enabled=false \
+  --set providerBuilds.enabled=true \
+  --set localDockerRegistry.enabled=true \
+  --set redis.enabled=true \
+  ./helm 2>/dev/null | \
+    sed -n '/^[[:space:]]*image:/{ /{{/d; s/.*image:[[:space:]]*//p; }' | \
+    sed 's/"\([^"]*\)"/\1/' | grep -v 'agentstack')
+
+echo "Found images:"
+echo "$images"
+
+# Process each image
+echo "$images" | while IFS= read -r ghcr_image; do
+  if [[ -z "$ghcr_image" ]]; then
+    continue
+  fi
+
+  echo "Processing image: $ghcr_image"
+
+  # Check for tag+digest format (e.g. image:tag@digest)
+  ghcr_tag_image=""
+  if [[ "$ghcr_image" == *":"*"@"* ]]; then
+    # Extract the tag version (image:tag)
+    ghcr_tag_image=$(echo "$ghcr_image" | sed 's/@.*//')
+    
+    # Strip tag from main variable (image@digest)
+    ghcr_image=$(echo "$ghcr_image" | sed 's/:[^:/]*@/@/')
+  fi
+
+  # Remove ghcr.io/i-am-bee/ prefix to get Docker Hub image
+  if [[ $ghcr_image =~ ^ghcr\.io/i-am-bee/(.+)$ ]]; then
+    dockerhub_image="${BASH_REMATCH[1]}"
+
+    echo "GHCR image: $ghcr_image"
+    echo "Docker Hub image: $dockerhub_image"
+
+    # Check if image exists in GHCR
+    if docker manifest inspect "$ghcr_image" >/dev/null 2>&1; then
+      echo "✅ Image $ghcr_image already exists in GHCR"
+      continue
+    fi
+
+    echo "❌ Image $ghcr_image not found in GHCR"
+
+    if [[ "$DRY_RUN" == "true" ]]; then
+      echo "🔍 DRY RUN: Would sync $dockerhub_image -> $ghcr_image"
+      continue
+    fi
+
+    # Check if source image exists in Docker Hub
+    if ! docker manifest inspect "$dockerhub_image" >/dev/null 2>&1; then
+      echo "❌ Source image $dockerhub_image not found in Docker Hub"
+      continue
+    fi
+
+    echo "🔄 Syncing $dockerhub_image -> $ghcr_image"
+
+    # Copy image with all architectures using skopeo
+    skopeo copy --multi-arch all docker://"$dockerhub_image" docker://"$ghcr_image"
+
+    echo "✅ Successfully synced $ghcr_image"
+
+    # Sync the tag version if it exists
+    if [[ -n "$ghcr_tag_image" ]]; then
+      echo "🏷️  Also syncing tag: $ghcr_tag_image"
+      
+      if docker manifest inspect "$ghcr_tag_image" >/dev/null 2>&1; then
+        echo "✅ Tag $ghcr_tag_image already exists in GHCR"
+      else
+        if [[ "$DRY_RUN" == "true" ]]; then
+          echo "🔍 DRY RUN: Would sync $dockerhub_image -> $ghcr_tag_image"
+        else
+          skopeo copy --multi-arch all docker://"$dockerhub_image" docker://"$ghcr_tag_image"
+          echo "✅ Successfully synced tag $ghcr_tag_image"
+        fi
+      fi
+    fi
+  else
+    echo "⚠️  Skipping image with unexpected format: $ghcr_image"
+  fi
+done
+
+echo "Image sync completed!"
+{% endraw %}
+'''
+
+["dependabot:alerts"]
+description = "List open Dependabot security alerts"
+dir = "{{config_root}}"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+gh api repos/i-am-bee/agentstack/dependabot/alerts --paginate 2>&1 | uv run python3 -c "
+import json, sys
+data = []
+for line in sys.stdin:
+    line = line.strip()
+    if line:
+        try:
+            parsed = json.loads(line)
+            if isinstance(parsed, list):
+                data.extend(parsed)
+            else:
+                data.append(parsed)
+        except Exception:
+            pass
+
+open_alerts = [a for a in data if a.get('state') == 'open']
+open_alerts.sort(key=lambda x: x.get('security_advisory', {}).get('cvss', {}).get('score', 0), reverse=True)
+
+print(f'Open Dependabot security alerts: {len(open_alerts)}')
+
+for a in open_alerts:
+    adv = a.get('security_advisory', {})
+    vuln = a.get('security_vulnerability', {})
+    dep = a.get('dependency', {})
+    score = adv.get('cvss', {}).get('score', 'N/A')
+    severity = adv.get('severity', 'N/A').upper()
+    pkg = dep.get('package', {}).get('name', 'N/A')
+    ecosystem = dep.get('package', {}).get('ecosystem', 'N/A')
+    relationship = dep.get('relationship', 'N/A')
+    manifest = dep.get('manifest_path', 'N/A')
+    fix = vuln.get('first_patched_version', {})
+    fix_ver = fix.get('identifier', 'none') if fix else 'none'
+    vuln_range = vuln.get('vulnerable_version_range', 'N/A')
+    cve = adv.get('cve_id', 'N/A')
+    ghsa = adv.get('ghsa_id', 'N/A')
+    cwes = adv.get('cwes', [])
+    cwe_str = ', '.join(c['cwe_id'] + ' \u2014 ' + c['name'] for c in cwes)
+    created = a.get('created_at', '')[:10]
+    summary = adv.get('summary', '')
+    description = adv.get('description', '').strip()
+
+    print()
+    print(f'---')
+    print(f'Alert #{a[\"number\"]}: {pkg} \u2014 {summary}')
+    print()
+    print(f'- URL: {a[\"html_url\"]}')
+    print(f'- Severity: {severity} (CVSS: {score})')
+    print(f'- Package: {pkg} ({ecosystem}) \u2014 {relationship}, {manifest}')
+    print(f'- Vulnerable Range: {vuln_range} \u2192 Fix: {fix_ver}')
+    print(f'- CVE: {cve} | GHSA: {ghsa}')
+    if cwe_str:
+        print(f'- CWE: {cwe_str}')
+    print(f'- Created: {created}')
+    print()
+    print('Description')
+    print()
+    print(description)
+"
+'''
