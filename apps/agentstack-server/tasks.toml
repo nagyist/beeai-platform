@@ -100,7 +100,6 @@ uv run alembic "${alembic_vars[@]}"
 """
 
 ["agentstack-server:migrations:alembic"]
-tools = { "github:telepresenceio/telepresence" = "latest" }
 dir = "{{config_root}}/apps/agentstack-server"
 usage = 'arg "[alembic_vars]..."'
 run = """
@@ -184,7 +183,6 @@ VM_NAME="${usage_vm_name?}"
 """
 
 ["agentstack-server:dev:connect"]
-tools = { "github:telepresenceio/telepresence" = "latest" }
 dir = "{{config_root}}/apps/agentstack-server"
 usage = 'flag "--vm-name <vm_name>" default="agentstack-local-dev"'
 run = """
@@ -221,7 +219,6 @@ $tele replace agentstack-server --port 18333:8333
 """
 
 ["agentstack-server:dev:disconnect"]
-tools = { "github:telepresenceio/telepresence" = "latest" }
 dir = "{{config_root}}/apps/agentstack-server"
 usage = 'flag "--vm-name <vm_name>" default="agentstack-local-dev"'
 run = """

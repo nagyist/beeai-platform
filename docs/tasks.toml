@@ -94,7 +94,6 @@ outputs = { auto = true }
 ## manual check
 
 ["docs:manual-check:external-links"]
-tools = { lychee = "latest" }
 dir = "{{config_root}}/docs"
 sources = ["**/*.mdx"]
 outputs = { auto = true }

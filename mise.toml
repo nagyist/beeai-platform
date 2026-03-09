@@ -25,6 +25,8 @@ fd = "latest"
 "github:google/addlicense" = "latest"
 gum = "latest"
 hadolint = "latest"
+lychee = "latest"
+"github:telepresenceio/telepresence" = "latest"
 
 [settings]
 experimental = true # for task_templates and python.uv_venv_auto
