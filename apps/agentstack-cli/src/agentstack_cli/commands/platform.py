@@ -445,7 +445,7 @@ async def start_cmd(
                 [
                     "bash",
                     "-c",
-                    "ln -sf /etc/rancher/k3s/k3s.yaml /kubeconfig && chmod 644 /kubeconfig",
+                    "ln -sf /etc/rancher/k3s/k3s.yaml /kubeconfig && chmod 644 /etc/rancher/k3s/k3s.yaml /kubeconfig",
                 ],
                 "Setting up kubeconfig symlink",
             )

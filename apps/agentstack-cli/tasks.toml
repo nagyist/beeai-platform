@@ -109,7 +109,7 @@ insert_line=$(awk '/^Requires-Dist:/ {print FNR-1; exit}' "$tmpdir/agentstack_cl
 ) > "$tmpdir/agentstack_cli-${version}.dist-info/METADATA.new"
 mv "$tmpdir/agentstack_cli-${version}.dist-info/METADATA.new" "$tmpdir/agentstack_cli-${version}.dist-info/METADATA"
 rm "$universal_wheel"
-uv run wheel pack "$tmpdir" --dest-dir ./dist >/dev/null
+uv run -m wheel pack "$tmpdir" --dest-dir ./dist >/dev/null
 rm -rf "$tmpdir"
 
 # Verify that the wheel works
@@ -137,7 +137,7 @@ build_wheel() {
   perl -pi -e "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" "$tmpdir/agentstack_cli-$version.dist-info/WHEEL"
   perl -pi -e "s/Tag: .*/Tag: py3-none-$wheel_tag/" "$tmpdir/agentstack_cli-$version.dist-info/WHEEL"
 
-  uv run wheel pack "$tmpdir" --dest-dir ./dist >/dev/null
+  uv run -m wheel pack "$tmpdir" --dest-dir ./dist >/dev/null
   rm -rf "$tmpdir"
 }
 build_wheel manylinux_2_34_x86_64  x86_64  &
