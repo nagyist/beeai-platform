@@ -80,6 +80,9 @@ class AsyncTyper(typer.Typer):
         def decorator(f):
             @functools.wraps(f)
             def wrapped_f(*args, **kwargs):
+                if sys.stdout.isatty():
+                    sys.stdout.write("\x1b[>0u")  # disable Kitty Keyboard Protocol (VSCode bug workaround)
+                    sys.stdout.flush()
                 try:
                     if inspect.iscoroutinefunction(f):
                         return asyncio.run(f(*args, **kwargs))
@@ -110,6 +113,10 @@ class AsyncTyper(typer.Typer):
                     if DEBUG:
                         raise
                     sys.exit(1)
+                finally:
+                    if sys.stdout.isatty():
+                        sys.stdout.write("\x1b[<u")
+                        sys.stdout.flush()
 
             parent_decorator(wrapped_f)
             return f
