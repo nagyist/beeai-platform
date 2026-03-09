@@ -14,6 +14,7 @@ Clone this project, then run these setup steps:
 brew install mise # more ways to install: https://mise.jdx.dev/installing-mise.html
 mise trust
 mise install
+brew install qemu # if not using Brew: install QEMU through some other package manager
 ```
 
 After setup, you can use:
