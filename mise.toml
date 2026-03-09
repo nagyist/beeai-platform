@@ -32,7 +32,6 @@ lychee = "latest"
 experimental = true # for task_templates and python.uv_venv_auto
 python.uv_venv_auto = true
 task.disable_spec_from_run_scripts = true # opt-in to new task behavior
-raw = true
 
 [hooks]
 postinstall = ["{{ mise_bin }} setup"]
