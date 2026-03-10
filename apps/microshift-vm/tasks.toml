@@ -90,29 +90,3 @@ tar -c --numeric-owner --exclude=./proc --exclude=./sys --exclude=./dev --exclud
 '''
 sources = ["microshift.pkr.hcl", "cloud-init/*", "rootfs/**/*", "install.sh", "wsl/*"]
 outputs = ["dist/**/*.wsl"]
-
-["microshift-vm:build:container"]
-depends = ["microshift-vm:build:qemu"]
-dir = "{{config_root}}/apps/microshift-vm"
-usage = '''
-flag "--arch <arch>" {
-  choices "x86_64" "aarch64"
-}
-'''
-run = '''
-#!/bin/bash
-set -euxo pipefail
-
-ARCH=${usage_arch:-$(uname -m | sed -e 's/arm64/aarch64/;s/amd64/x86_64/')}
-DIST_DIR="./dist/$ARCH"
-
-MOUNTPOINT=$(mktemp -d)
-trap 'guestunmount "$MOUNTPOINT" 2>/dev/null; rmdir "$MOUNTPOINT" 2>/dev/null' EXIT
-guestmount -a "$DIST_DIR/microshift-vm-$ARCH.qcow2" -i --ro "$MOUNTPOINT"
-rm -f "$MOUNTPOINT/etc/resolv.conf"
-tar -c --numeric-owner \
-  --exclude=./proc --exclude=./sys --exclude=./dev --exclude=./run --exclude=./mnt \
-  -C "$MOUNTPOINT" . | gzip --best > "$DIST_DIR/microshift-vm-$ARCH.tar.gz"
-'''
-sources = ["microshift.pkr.hcl", "cloud-init/*", "rootfs/**/*", "install.sh"]
-outputs = ["dist/**/*.tar.gz"]

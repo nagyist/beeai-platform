@@ -118,18 +118,15 @@ jobs:
           username: beeai+github
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
       - if: matrix.arch == 'x86_64'
-        run: mise run microshift-vm:build:container --arch x86_64
-      - if: matrix.arch == 'x86_64'
         run: |
-          docker import \
+          cat ./apps/microshift-vm/dist/x86_64/microshift-vm-x86_64.wsl | docker import \
             --platform linux/amd64 \
-            -c 'CMD ["/sbin/init"]' \
-            ./apps/microshift-vm/dist/x86_64/microshift-vm-x86_64.tar.gz \
+            - \
             "quay.io/beeai/microshift-vm:${{ steps.version.outputs.version }}"
-          docker push "quay.io/beeai/microshift-vm:${{ steps.version.outputs.version }}"
           docker tag \
             "quay.io/beeai/microshift-vm:${{ steps.version.outputs.version }}" \
             "quay.io/beeai/microshift-vm:${{ steps.version.outputs.latestTag }}"
+          docker push "quay.io/beeai/microshift-vm:${{ steps.version.outputs.version }}"
           docker push "quay.io/beeai/microshift-vm:${{ steps.version.outputs.latestTag }}"
 
   agentstack:
