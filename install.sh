@@ -5,8 +5,8 @@ set -eu
 # AGENTSTACK_VERSION = latest (default, latest stable version) | pre (latest version including prereleases) | <version> (specific version)
 
 # These get updated by `mise release`:
-LATEST_STABLE_AGENTSTACK_VERSION=0.6.1
-LATEST_AGENTSTACK_VERSION=0.6.2-rc6
+LATEST_STABLE_AGENTSTACK_VERSION=0.6.2
+LATEST_AGENTSTACK_VERSION=0.6.2
 
 # This gets updated by Renovate:
 # renovate: datasource=python-version depName=python
