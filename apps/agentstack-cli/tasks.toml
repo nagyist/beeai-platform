@@ -129,9 +129,9 @@ build_wheel() {
   find "$tmpdir" -type f -exec chmod +r {} \;
 
   # Add Lima binaries
-  mkdir -p "$tmpdir/agentstack_cli/data"
-  cp "./vendor/lima-$lima_version/$wheel_tag/bin/limactl" "$tmpdir/agentstack_cli/data/"
-  cp "./vendor/lima-$lima_version/$wheel_tag/share/lima/lima-guestagent.Linux-$hostagent_arch"* "$tmpdir/agentstack_cli/data/"
+  mkdir -p "$tmpdir/agentstack_cli/data/bin" "$tmpdir/agentstack_cli/data/share/lima"
+  cp "./vendor/lima-$lima_version/$wheel_tag/bin/limactl" "$tmpdir/agentstack_cli/data/bin/"
+  cp "./vendor/lima-$lima_version/$wheel_tag/share/lima/lima-guestagent.Linux-$hostagent_arch.gz" "$tmpdir/agentstack_cli/data/share/lima/"
   
   # Update WHEEL file
   perl -pi -e "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" "$tmpdir/agentstack_cli-$version.dist-info/WHEEL"

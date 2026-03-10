@@ -464,9 +464,6 @@ async def _select_default_model(
                             {"role": "user", "content": "Hello!"},
                         ],
                     )
-                    console.print(f"DEBUG response: choices={test_response.choices!r}")
-                    if test_response.choices:
-                        console.print(f"DEBUG content: {test_response.choices[0].message.content!r}")
                     if not test_response.choices or "hello" not in (test_response.choices[0].message.content or "").lower():
                         raise ModelProviderError("Model did not provide a proper response.")
                 else:

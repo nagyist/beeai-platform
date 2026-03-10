@@ -46,7 +46,7 @@ configuration = Configuration()
 
 @functools.cache
 def detect_driver() -> typing.Literal["lima", "wsl"]:
-    has_lima = (importlib.resources.files("agentstack_cli") / "data" / "limactl").is_file() or shutil.which("limactl")
+    has_lima = (importlib.resources.files("agentstack_cli") / "data" / "bin" / "limactl").is_file() or shutil.which("limactl")
     arch = "aarch64" if platform_module.machine().lower() == "arm64" else platform_module.machine().lower()
 
     if platform_module.system() == "Windows" or shutil.which("wsl.exe"):
@@ -89,7 +89,7 @@ def detect_export_import_paths() -> tuple[str, str]:
 
 @functools.cache
 def detect_limactl() -> str:
-    bundled = importlib.resources.files("agentstack_cli") / "data" / "limactl"
+    bundled = importlib.resources.files("agentstack_cli") / "data" / "bin" / "limactl"
     return str(bundled) if bundled.is_file() else str(shutil.which("limactl"))
 
 
@@ -254,7 +254,7 @@ async def start_cmd(
         raise FileNotFoundError(f"Values file {values_file} not found.")
 
     with verbosity(verbose):
-        version = importlib.metadata.version("agentstack-cli")
+        version = importlib.metadata.version("agentstack-cli").replace("rc", "-rc")
         arch = "x86_64" if platform_module.machine().lower() in ["x86_64", "amd64"] else "aarch64"
         Configuration().home.mkdir(exist_ok=True)
         match detect_driver():
@@ -395,21 +395,24 @@ async def start_cmd(
                     )
                     install_dir = Configuration().home / "wsl" / vm_name
                     install_dir.mkdir(parents=True, exist_ok=True)
-                    await run_command(
-                        ["wsl.exe", "--import", vm_name, str(install_dir), current_wsl_image],
-                        "Importing a WSL distribution",
-                    )
-
-                    await run_in_vm(
-                        vm_name,
-                        [
-                            "bash",
-                            "-c",
-                            "rm /etc/resolv.conf && mv /etc/resolv.conf-override /etc/resolv.conf && chattr +i /etc/resolv.conf",
-                        ],
-                        "Setting up DNS configuration",
-                        check=False,
-                    )
+                    if current_wsl_image.startswith("http://") or current_wsl_image.startswith("https://"):
+                        with tempfile.NamedTemporaryFile(suffix=".wsl", delete=True, delete_on_close=False) as tmp:
+                            with console.status("Downloading WSL distribution...", spinner="dots"):
+                                async with httpx.AsyncClient(follow_redirects=True) as client:
+                                    async with client.stream("GET", current_wsl_image) as response:
+                                        response.raise_for_status()
+                                        async for chunk in response.aiter_bytes():
+                                            tmp.write(chunk)
+                            tmp.close()
+                            await run_command(
+                                ["wsl.exe", "--import", vm_name, str(install_dir), tmp.name],
+                                "Importing WSL distribution",
+                            )
+                    else:
+                        await run_command(
+                            ["wsl.exe", "--import", vm_name, str(install_dir), current_wsl_image],
+                            "Importing WSL distribution",
+                        )
                     await run_command(["wsl.exe", "--terminate", vm_name], "Restarting Agent Stack VM")
                 await run_in_vm(vm_name, ["/usr/bin/setsid", "-f", "/usr/bin/sleep", "infinity"], "Ensuring persistence of Agent Stack VM")
                 await run_in_vm(

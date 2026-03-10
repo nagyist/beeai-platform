@@ -77,6 +77,8 @@ source "qemu" "microshift" {
   output_directory = "${var.output_dir}/${var.arch}"
   vm_name          = "microshift-vm-${var.arch}.qcow2"
 
+  net_device = "virtio-net-pci,romfile="
+
   format           = "qcow2"
   disk_compression = true
 }

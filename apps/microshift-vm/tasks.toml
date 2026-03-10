@@ -53,8 +53,8 @@ if [ ! -f "$EFI_CODE" ]; then
   exit 1
 fi
 
-packer init .
-packer build \
+PACKER_LOG=1 packer init .
+PACKER_LOG=1 packer build \
   -var "arch=$ARCH" \
   -var "output_dir=./dist" \
   -var "efi_code=$EFI_CODE" \
@@ -76,7 +76,7 @@ set -euxo pipefail
 MOUNTPOINT=$(mktemp -d)
 WSL_ROOTFS=$(mktemp -d)
 trap 'guestunmount "$MOUNTPOINT" 2>/dev/null; rmdir "$MOUNTPOINT" 2>/dev/null; rm -rf "$WSL_ROOTFS" 2>/dev/null' EXIT
-guestmount -a "./dist/x86_64/microshift-vm-x86_64.qcow2" -i --ro "$MOUNTPOINT"
+LIBGUESTFS_DEBUG=1 LIBGUESTFS_TRACE=1 guestmount -a "./dist/x86_64/microshift-vm-x86_64.qcow2" -i --ro "$MOUNTPOINT"
 mkdir -p "$WSL_ROOTFS"
 cp -a "$MOUNTPOINT/." "$WSL_ROOTFS/"
 cp wsl/wsl.conf "$WSL_ROOTFS/etc/wsl.conf"

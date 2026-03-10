@@ -98,19 +98,20 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           install_vm_deps: 'build'
+          save_cache: 'true'
+      - id: version
+        run: |
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          echo "latestTag=$([[ ${GITHUB_REF#refs/tags/v} =~ [a-zA-Z] ]] && echo prerelease || echo latest)" >> $GITHUB_OUTPUT
       - run: mise run microshift-vm:build:qemu --arch ${{ matrix.arch }}
       - if: matrix.arch == 'x86_64'
         run: mise run microshift-vm:build:wsl
       - uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2
         with:
+          prerelease: ${{ steps.version.outputs.latestTag == 'prerelease' }}
           files: |
             apps/microshift-vm/dist/${{ matrix.arch }}/microshift-vm-${{ matrix.arch }}.qcow2
             ${{ matrix.arch == 'x86_64' && format('apps/microshift-vm/dist/{0}/microshift-vm-{0}.wsl', matrix.arch) || '' }}
-      - if: matrix.arch == 'x86_64'
-        id: version
-        run: |
-          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-          echo "latestTag=$([[ ${GITHUB_REF#refs/tags/v} =~ [a-zA-Z] ]] && echo prerelease || echo latest)" >> $GITHUB_OUTPUT
       - if: matrix.arch == 'x86_64'
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:

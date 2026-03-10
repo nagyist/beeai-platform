@@ -32,20 +32,25 @@ runs:
     - if: inputs.install_vm_deps != 'none'
       shell: bash
       run: |
-        sudo apt-get update -qq
-        PACKAGES="qemu-utils"
-        ARCH=$(uname -m)
-        if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "amd64" ]; then
-          PACKAGES="$PACKAGES qemu-system-x86 ovmf"
+        if [ "$(uname -s)" = "Darwin" ]; then
+          brew install qemu
         else
-          PACKAGES="$PACKAGES qemu-system-arm qemu-efi-aarch64"
+          sudo apt-get update -qq
+          PACKAGES="qemu-utils"
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "amd64" ]; then
+            PACKAGES="$PACKAGES qemu-system-x86 ovmf"
+          else
+            PACKAGES="$PACKAGES qemu-system-arm qemu-efi-aarch64"
+          fi
+          if [ "${{ inputs.install_vm_deps }}" = "build" ]; then
+            PACKAGES="$PACKAGES xorriso libguestfs-tools"
+          fi
+          sudo apt-get install -qqy --no-install-recommends $PACKAGES
+          sudo modprobe kvm || true
+          [ -e /dev/kvm ] && sudo chown $(whoami) /dev/kvm || true
+          sudo chmod +r /boot/vmlinuz-*
         fi
-        if [ "${{ inputs.install_vm_deps }}" = "build" ]; then
-          PACKAGES="$PACKAGES xorriso"
-        fi
-        sudo apt-get install -qqy --no-install-recommends $PACKAGES
-        sudo modprobe kvm || true
-        [ -e /dev/kvm ] && sudo chown $(whoami) /dev/kvm || true
 
     - shell: bash
       run: |
@@ -57,57 +62,57 @@ runs:
       uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: ~/.local/share/mise/installs
-        key: mise-installs-v1-${{ runner.os }}-${{ hashFiles('mise.lock') }}
-        restore-keys: mise-installs-v1-${{ runner.os }}-
+        key: mise-installs-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('mise.lock') }}
+        restore-keys: mise-installs-v1-${{ runner.os }}-{{ runner.arch }}-
     - if: inputs.save_cache != 'true'
       uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: ~/.local/share/mise/installs
-        key: mise-installs-v1-${{ runner.os }}-${{ hashFiles('mise.lock') }}
-        restore-keys: mise-installs-v1-${{ runner.os }}-
+        key: mise-installs-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('mise.lock') }}
+        restore-keys: mise-installs-v1-${{ runner.os }}-{{ runner.arch }}-
 
     - if: inputs.save_cache == 'true'
       uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: /tmp/.uv-cache
-        key: uv-cache-v1-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
-        restore-keys: uv-cache-v1-${{ runner.os }}-
+        key: uv-cache-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('**/uv.lock') }}
+        restore-keys: uv-cache-v1-${{ runner.os }}-{{ runner.arch }}-
     - if: inputs.save_cache != 'true'
       uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: /tmp/.uv-cache
-        key: uv-cache-v1-${{ runner.os }}-${{ hashFiles('**/uv.lock') }}
-        restore-keys: uv-cache-v1-${{ runner.os }}-
+        key: uv-cache-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('**/uv.lock') }}
+        restore-keys: uv-cache-v1-${{ runner.os }}-{{ runner.arch }}-
 
     - if: inputs.save_cache == 'true'
       uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: ~/.local/share/pnpm/store
-        key: pnpm-store-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-        restore-keys: pnpm-store-v1-${{ runner.os }}-
+        key: pnpm-store-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-v1-${{ runner.os }}-{{ runner.arch }}-
     - if: inputs.save_cache != 'true'
       uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: ~/.local/share/pnpm/store
-        key: pnpm-store-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-        restore-keys: pnpm-store-v1-${{ runner.os }}-
+        key: pnpm-store-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-store-v1-${{ runner.os }}-{{ runner.arch }}-
 
     - if: inputs.save_cache == 'true'
       uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: "./apps/*/.next/cache"
-        key: nextjs-cache-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('./apps/*/*.js', './apps/*/src/**/*.js', './apps/*/src/**/*.jsx', './apps/*/src/**/*.ts', './apps/*/src/**/*.tsx') }}
+        key: nextjs-cache-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('./apps/*/*.js', './apps/*/src/**/*.js', './apps/*/src/**/*.jsx', './apps/*/src/**/*.ts', './apps/*/src/**/*.tsx') }}
         restore-keys: |
-          nextjs-cache-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
-          nextjs-cache-v1-${{ runner.os }}-
+          nextjs-cache-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          nextjs-cache-v1-${{ runner.os }}-{{ runner.arch }}-
     - if: inputs.save_cache != 'true'
       uses: actions/cache/restore@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
       with:
         path: "./apps/*/.next/cache"
-        key: nextjs-cache-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('./apps/*/*.js', './apps/*/src/**/*.js', './apps/*/src/**/*.jsx', './apps/*/src/**/*.ts', './apps/*/src/**/*.tsx') }}
+        key: nextjs-cache-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('./apps/*/*.js', './apps/*/src/**/*.js', './apps/*/src/**/*.jsx', './apps/*/src/**/*.ts', './apps/*/src/**/*.tsx') }}
         restore-keys: |
-          nextjs-cache-v1-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
-          nextjs-cache-v1-${{ runner.os }}-
+          nextjs-cache-v1-${{ runner.os }}-{{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}-
+          nextjs-cache-v1-${{ runner.os }}-{{ runner.arch }}-
 
     - if: inputs.save_cache == 'true'
       uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5
