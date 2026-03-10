@@ -8,9 +8,12 @@ set -eu
 LATEST_STABLE_AGENTSTACK_VERSION=0.6.2
 LATEST_AGENTSTACK_VERSION=0.7.0-rc11
 
+case "${AGENTSTACK_VERSION:-latest}" in "latest") AGENTSTACK_VERSION=$LATEST_STABLE_AGENTSTACK_VERSION ;; "pre") AGENTSTACK_VERSION=$LATEST_AGENTSTACK_VERSION ;; esac
+
 # This gets updated by Renovate:
 # renovate: datasource=python-version depName=python
 PYTHON_VERSION=3.13
+case "$AGENTSTACK_VERSION" in 0.7.*) PYTHON_VERSION=3.14 ;; esac
 
 error() {
     printf "\n💥 \033[31mERROR:\033[0m: Agent Stack installation has failed. Please report the above error: https://github.com/i-am-bee/agentstack/issues\n" >&2
@@ -49,7 +52,6 @@ while command -v beeai >/dev/null && rm $(command -v beeai); do true; done
 # We set the versions of agentstack-cli and agentstack-sdk to error out on platforms incompatible with the latest version
 # It also avoids accidentally installing prereleases of dependencies by only allowing explicitly set ones
 echo "Installing Agent Stack CLI..."
-case "${AGENTSTACK_VERSION:-latest}" in "latest") AGENTSTACK_VERSION=$LATEST_STABLE_AGENTSTACK_VERSION ;; "pre") AGENTSTACK_VERSION=$LATEST_AGENTSTACK_VERSION ;; esac
 uv tool install --quiet --python-preference=only-managed --python=$PYTHON_VERSION --refresh --prerelease if-necessary-or-explicit --with "agentstack-sdk==$AGENTSTACK_VERSION" "agentstack-cli==$AGENTSTACK_VERSION" --force || error
 
 # Finish set up using CLI (install QEMU on Linux, start platform, set up API keys, run UI, ...)
