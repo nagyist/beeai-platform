@@ -1,6 +1,6 @@
 {
   "name": "@i-am-bee/agentstack-keycloak-theme",
-  "version": "0.0.0",
+  "version": "0.7.0",
   "description": "Keycloak theme for AgentStack UI",
   "type": "module",
   "scripts": {

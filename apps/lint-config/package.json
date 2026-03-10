@@ -2,7 +2,7 @@
   "name": "@i-am-bee/lint-config",
   "author": "IBM Corp.",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.7.0",
   "type": "module",
   "exports": {
     "./eslint": "./eslint.config.js",
