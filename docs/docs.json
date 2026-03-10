@@ -8,7 +8,13 @@
     "dark": "#000000"
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude", "perplexity"]
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity"
+    ]
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -57,7 +63,9 @@
           },
           {
             "group": "Reference",
-            "pages": ["stable/reference/cli-reference"]
+            "pages": [
+              "stable/reference/cli-reference"
+            ]
           },
           {
             "group": "Deploy Agent Stack",
@@ -81,11 +89,15 @@
           },
           {
             "group": "Experimental",
-            "pages": ["stable/experimental/connectors"]
+            "pages": [
+              "stable/experimental/connectors"
+            ]
           },
           {
             "group": "Community",
-            "pages": ["stable/community/contribute"]
+            "pages": [
+              "stable/community/contribute"
+            ]
           }
         ]
       },
@@ -164,11 +176,15 @@
           },
           {
             "group": "Experimental",
-            "pages": ["development/experimental/connectors"]
+            "pages": [
+              "development/experimental/connectors"
+            ]
           },
           {
             "group": "Community",
-            "pages": ["development/community/contribute"]
+            "pages": [
+              "development/community/contribute"
+            ]
           }
         ]
       }

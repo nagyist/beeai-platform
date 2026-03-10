@@ -140,8 +140,6 @@ auth:
 A straightforward method requiring an admin password for certain endpoints.
 
 ```yaml
-trustProxyHeaders: true # This is important if validate_audience is enabled
-
 auth:
   enabled: true
   basic:
@@ -155,17 +153,21 @@ Use an internal Keycloak instance to handle OIDC and bridge to GitHub, Google, o
 Keycloak is deployed automatically when `auth.enabled` is `true`.
 
 ```yaml
+trustProxyHeaders: true # This is important if validate_audience is enabled
+
 auth:
   enabled: true
 
   # Next.js settings
   nextauthUrl: "https://example.com" # Public URL of the UI
   apiUrl: "https://api.example.com" # Public URL of the API
-  
+
 keycloak:
   enabled: true
-  publicIssuerUrl: "https://keycloak.example.com/realms/agentstack" # Public URL of keycloak
-
+  # Internal URL used by the server for token validation (default shown)
+  internalIssuerUrl: "http://keycloak:8336/realms/agentstack"
+  # Public URL used by the browser
+  publicIssuerUrl: "https://keycloak.example.com/realms/agentstack"
 ```
 
 #### External OIDC Provider
@@ -187,18 +189,18 @@ externalOidcProvider:
   name: "My IDP" # Optional display name used in the UI
   id: "my-idp" # Optional ID used internally
   rolesPath: "realm_access.roles" # JSON path to roles in JWT claims (can be an array or a semicolon separated string)
-  
+
   uiClientId: "agentstack-ui"
   serverClientId: "agentstack-server"
-  
+
   # Secrets can be provided directly or via existing secrets
-  uiClientSecret: "..." 
+  uiClientSecret: "..."
   serverClientSecret: "..."
   # existingSecret: "my-oidc-secret"
   # uiClientSecretKey: "ui-secret-key"         # Key in my-oidc-secret
   # serverClientSecretKey: "server-secret-key" # Key in my-oidc-secret
 ```
-  
+
 <Warning>
 **Critical: Endpoint Exposure**
 
@@ -207,7 +209,6 @@ If using OIDC (Bundled or External), you must expose the following endpoints pub
 - UI: `https://example.com`
 - API: `https://api.example.com` used by the CLI to authenticate
 - Keycloak: `https://keycloak.example.com` used by the UI and CLI to authenticate
-
 
 ⚠️ Failure to configure these endpoints with proper https may leave your application vulnerable.
 
@@ -228,6 +229,7 @@ Agent Stack requires the `email_verified` claim to be `true` in JWT tokens. Ensu
 - External providers pass the email verification status correctly
 
 Without verified emails, authentication will fail with "Verified email not found" error.
+
 </Warning>
 
 <Accordion title="Keycloak Architecture & Roles">
