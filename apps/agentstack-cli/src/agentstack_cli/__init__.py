@@ -53,7 +53,6 @@ Usage: agentstack [OPTIONS] COMMAND [ARGS]...
 │ model           Configure 15+ LLM providers [Admin only]                   │
 │ platform        Start, stop, or delete local platform [Local only]         │
 │ server          Connect to remote Agent Stack servers                      │
-│ user            Manage users and roles [Admin only]                        │
 │ self version    Show Agent Stack CLI and Platform version                  │
 │ self upgrade    Upgrade Agent Stack CLI and Platform [Local only]          │
 │ self uninstall  Uninstall Agent Stack CLI and Platform [Local only]        │
