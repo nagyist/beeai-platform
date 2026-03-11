@@ -101,10 +101,10 @@ importers:
     dependencies:
       '@a2a-js/sdk':
         specifier: ^0.3.10
-        version: 0.3.10(@bufbuild/protobuf@2.11.0)(express@5.2.1)
+        version: 0.3.10(@bufbuild/protobuf@2.11.0)(express@4.21.2)
       express:
         specifier: 4.21.2
-        version: 5.2.1
+        version: 4.21.2
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -9198,6 +9198,13 @@ packages:
 
 snapshots:
 
+  '@a2a-js/sdk@0.3.10(@bufbuild/protobuf@2.11.0)(express@4.21.2)':
+    dependencies:
+      uuid: 11.1.0
+    optionalDependencies:
+      '@bufbuild/protobuf': 2.11.0
+      express: 4.21.2
+
   '@a2a-js/sdk@0.3.10(@bufbuild/protobuf@2.11.0)(express@5.2.1)':
     dependencies:
       uuid: 11.1.0
@@ -13758,6 +13765,7 @@ snapshots:
     dependencies:
       mime-types: 3.0.2
       negotiator: 1.0.0
+    optional: true
 
   acorn-jsx@5.3.2(acorn@8.11.2):
     dependencies:
@@ -14118,6 +14126,7 @@ snapshots:
       type-is: 2.0.1
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   boolbase@1.0.0: {}
 
@@ -14396,7 +14405,8 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  content-disposition@1.0.1: {}
+  content-disposition@1.0.1:
+    optional: true
 
   content-type@1.0.5: {}
 
@@ -14406,13 +14416,15 @@ snapshots:
 
   cookie-signature@1.0.6: {}
 
-  cookie-signature@1.2.2: {}
+  cookie-signature@1.2.2:
+    optional: true
 
   cookie@0.7.0: {}
 
   cookie@0.7.1: {}
 
-  cookie@0.7.2: {}
+  cookie@0.7.2:
+    optional: true
 
   copy-to-clipboard@3.3.3:
     dependencies:
@@ -15491,6 +15503,7 @@ snapshots:
       vary: 1.1.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   extend@3.0.2: {}
 
@@ -15598,6 +15611,7 @@ snapshots:
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   find-up@5.0.0:
     dependencies:
@@ -15658,7 +15672,8 @@ snapshots:
 
   fresh@0.5.2: {}
 
-  fresh@2.0.0: {}
+  fresh@2.0.0:
+    optional: true
 
   front-matter@4.0.2:
     dependencies:
@@ -16107,6 +16122,7 @@ snapshots:
       setprototypeof: 1.2.0
       statuses: 2.0.2
       toidentifier: 1.0.1
+    optional: true
 
   http-proxy-agent@7.0.2:
     dependencies:
@@ -16384,7 +16400,8 @@ snapshots:
 
   is-plain-object@5.0.0: {}
 
-  is-promise@4.0.0: {}
+  is-promise@4.0.0:
+    optional: true
 
   is-regex@1.2.1:
     dependencies:
@@ -16880,13 +16897,15 @@ snapshots:
 
   media-typer@0.3.0: {}
 
-  media-typer@1.1.0: {}
+  media-typer@1.1.0:
+    optional: true
 
   meow@14.1.0: {}
 
   merge-descriptors@1.0.3: {}
 
-  merge-descriptors@2.0.0: {}
+  merge-descriptors@2.0.0:
+    optional: true
 
   merge2@1.4.1: {}
 
@@ -17204,7 +17223,8 @@ snapshots:
 
   mime-db@1.52.0: {}
 
-  mime-db@1.54.0: {}
+  mime-db@1.54.0:
+    optional: true
 
   mime-types@2.1.35:
     dependencies:
@@ -17213,6 +17233,7 @@ snapshots:
   mime-types@3.0.2:
     dependencies:
       mime-db: 1.54.0
+    optional: true
 
   mime@1.6.0: {}
 
@@ -17310,7 +17331,8 @@ snapshots:
 
   negotiator@0.6.3: {}
 
-  negotiator@1.0.0: {}
+  negotiator@1.0.0:
+    optional: true
 
   neotraverse@0.6.18: {}
 
@@ -17633,7 +17655,8 @@ snapshots:
 
   path-to-regexp@0.1.12: {}
 
-  path-to-regexp@8.3.0: {}
+  path-to-regexp@8.3.0:
+    optional: true
 
   path-type@4.0.0: {}
 
@@ -17869,6 +17892,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       unpipe: 1.0.0
+    optional: true
 
   react-aria@3.47.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
@@ -18470,6 +18494,7 @@ snapshots:
       path-to-regexp: 8.3.0
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   run-applescript@7.1.0: {}
 
@@ -18654,6 +18679,7 @@ snapshots:
       statuses: 2.0.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   serialize-error@13.0.1:
     dependencies:
@@ -18677,6 +18703,7 @@ snapshots:
       send: 1.2.1
     transitivePeerDependencies:
       - supports-color
+    optional: true
 
   server-only@0.0.1: {}
 
@@ -18927,7 +18954,8 @@ snapshots:
 
   statuses@2.0.1: {}
 
-  statuses@2.0.2: {}
+  statuses@2.0.2:
+    optional: true
 
   std-env@3.10.0: {}
 
@@ -19439,6 +19467,7 @@ snapshots:
       content-type: 1.0.5
       media-typer: 1.1.0
       mime-types: 3.0.2
+    optional: true
 
   typed-array-buffer@1.0.3:
     dependencies:
