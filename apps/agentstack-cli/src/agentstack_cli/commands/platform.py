@@ -62,14 +62,17 @@ def detect_driver() -> typing.Literal["lima", "wsl"]:
         elif platform_module.system() == "Linux":
             if not has_lima:
                 console.hint(
-                    "This Linux distribution is not suppored by Lima VM binary releases (required: glibc>=2.34). Manually install Lima VM v2.0.3 through either:\n"
+                    "This Linux distribution is not suppored by Lima VM binary releases (required: glibc>=2.34). Manually install Lima VM by either:\n"
                     + "  - Your distribution's package manager, if available (https://repology.org/project/lima/versions)\n"
-                    + "  - Homebrew, which uses its own separate glibc on Linux (https://brew.sh)\n"
-                    + "  - Building it yourself, and ensuring that limactl is in PATH (https://lima-vm.io/docs/installation/source/)"
+                    + "  - Homebrew for Linux, which uses its own separate glibc (https://brew.sh)\n"
+                    + "  - Building it yourself, and ensuring that [green]limactl[/green] is in PATH (https://lima-vm.io/docs/installation/source/)"
                 )
             if not shutil.which(f"qemu-system-{arch}"):
                 console.hint(
-                    f"QEMU is needed on Linux, please install it and ensure that qemu-system-{arch} is in PATH. Refer to https://www.qemu.org/download/ for instructions."
+                    f"QEMU is needed on Linux, please install it and ensure that [green]qemu-system-{arch}[/green] is in PATH. Refer to https://www.qemu.org/download/ for instructions."
+                )
+                console.hint(
+                    f"On some distributions (e.g. RHEL) you might need to manually create the symlink: [green]sudo ln -s /usr/libexec/qemu-kvm /usr/bin/qemu-system-{arch}[/green]"
                 )
         sys.exit(1)
 
