@@ -81,7 +81,7 @@ dev = [
 
 [[package]]
 name = "agentstack-sdk"
-version = "0.7.0"
+version = "0.7.1"
 source = { editable = "../agentstack-sdk-py" }
 dependencies = [
     { name = "a2a-sdk" },
