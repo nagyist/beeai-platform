@@ -22,6 +22,12 @@ error() {
 
 echo "Starting the Agent Stack installer..."
 
+# Check if running as root (not supported)
+if [ "$(id -u)" = "0" ]; then
+    printf "\n💥 \033[31mERROR:\033[0m: Agent Stack should not be installed as root. Please run as a regular user.\n" >&2
+    exit 1
+fi
+
 # Check if this is WSL (not supported)
 if [ -n "${WSL_DISTRO_NAME-}" ] || (uname -r | grep -q -i "microsoft"); then
     printf "\n💥 \033[31mERROR:\033[0m: Agent Stack CLI is not supported on WSL. Please follow the Windows installation instructions to install in PowerShell instead.\n" >&2
