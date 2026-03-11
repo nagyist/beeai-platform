@@ -23,7 +23,6 @@ jobs:
       agentstack-sdk-py: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.agentstack-sdk-py == 'true' }}
       helm: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.helm == 'true' }}
       examples: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.examples == 'true' }}
-      microshift-vm: ${{ github.event_name == 'workflow_dispatch' || steps.filter.outputs.microshift-vm == 'true' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/setup
@@ -62,10 +61,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mise run test
 
-  microshift-vm-build:
+  microshift-vm-build-qemu:
     name: mise microshift-vm:build:qemu
     needs: setup
-    if: needs.setup.outputs.microshift-vm == 'true'
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
@@ -82,15 +80,16 @@ jobs:
         uses: ./.github/actions/setup
         with:
           install_vm_deps: 'build'
+          save_cache: 'true'
       - if: steps.cache-check.outputs.cache-hit != 'true'
         run: mise run microshift-vm:build:qemu
 
   agentstack-server-test-integration:
     name: mise agentstack-server:test:integration
-    needs: [setup, microshift-vm-build]
+    needs: [setup, microshift-vm-build-qemu]
     if: >-
       always() &&
-      needs.microshift-vm-build.result != 'failure' &&
+      needs.microshift-vm-build-qemu.result != 'failure' &&
       (needs.setup.outputs.agentstack-server == 'true' ||
       needs.setup.outputs.agentstack-cli == 'true')
     timeout-minutes: 25
@@ -112,10 +111,10 @@ jobs:
 
   agentstack-server-test-e2e:
     name: mise agentstack-server:test:e2e
-    needs: [setup, microshift-vm-build]
+    needs: [setup, microshift-vm-build-qemu]
     if: >-
       always() &&
-      needs.microshift-vm-build.result != 'failure' &&
+      needs.microshift-vm-build-qemu.result != 'failure' &&
       (needs.setup.outputs.agentstack-server == 'true' ||
       needs.setup.outputs.agentstack-cli == 'true' ||
       needs.setup.outputs.agentstack-sdk-py == 'true' ||
@@ -142,10 +141,10 @@ jobs:
 
   agentstack-server-test-e2e-examples:
     name: mise agentstack-server:test:e2e-examples
-    needs: [setup, microshift-vm-build]
+    needs: [setup, microshift-vm-build-qemu]
     if: >-
       always() &&
-      needs.microshift-vm-build.result != 'failure' &&
+      needs.microshift-vm-build-qemu.result != 'failure' &&
       (needs.setup.outputs.agentstack-server == 'true' ||
       needs.setup.outputs.agentstack-sdk-py == 'true' ||
       needs.setup.outputs.examples == 'true' ||
