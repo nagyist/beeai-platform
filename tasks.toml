@@ -729,8 +729,9 @@ echo "Image sync completed!"
 {% endraw %}
 '''
 
-["dependabot:alerts"]
-description = "List open Dependabot security alerts"
+# security
+
+["security:dependabot:alerts"]
 dir = "{{config_root}}"
 run = '''
 #!/usr/bin/env bash

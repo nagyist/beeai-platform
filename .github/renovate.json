@@ -22,12 +22,12 @@
   ],
   "rangeStrategy": "update-lockfile",
   "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": ["on monday"]
+    "enabled": false
   },
   "vulnerabilityAlerts": {
     "enabled": true
   },
+  "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
       "matchDatasources": [
@@ -37,27 +37,8 @@
       "pinDigests": true
     },
     {
-      "matchUpdateTypes": [
-        "patch",
-        "minor",
-        "major"
-      ],
-      "minimumReleaseAge": "3 days"
-    },
-    {
-      "matchPackageNames": [
-        "python",
-        "alpine",
-        "astral-sh/uv"
-      ],
-      "groupName": "runtime",
-      "rangeStrategy": "widen"
-    },
-    {
-      "matchUpdateTypes": [
-        "lockFileMaintenance"
-      ],
-      "groupName": "lockfile-{{packageFile}}"
+      "matchPackageNames": ["*"],
+      "enabled": false
     }
   ],
   "customManagers": [
