@@ -345,6 +345,7 @@ backend = "core:node"
 [tools.node."platforms.linux-arm64"]
 checksum = "sha256:4873459d7c9b28feaa1f0fade9bb9c81cb702670991ff80a51d805325c5e3456"
 url = "https://nodejs.org/dist/v24.13.1/node-v24.13.1-linux-arm64.tar.gz"
+provenance = "github-attestations"
 
 [tools.node."platforms.linux-arm64-musl"]
 checksum = "sha256:4873459d7c9b28feaa1f0fade9bb9c81cb702670991ff80a51d805325c5e3456"
