@@ -66,7 +66,7 @@ If you’re building agent-powered features or want your agents to run outside a
 ### Installation
 
 ```sh
-sh -c "$(curl -LsSf https://raw.githubusercontent.com/i-am-bee/agentstack/install/install.sh)"
+sh -c "$(curl -LsSf https://agentstack.beeai.dev/install.sh)"
 ```
 
 > [!TIP]

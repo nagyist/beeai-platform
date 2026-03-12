@@ -214,6 +214,10 @@
     {
       "source": "/introduction/installation",
       "destination": "/introduction/quickstart"
+    },
+    {
+      "source": "/install.sh",
+      "destination": "https://raw.githubusercontent.com/i-am-bee/agentstack/install/install.sh"
     }
   ]
 }
