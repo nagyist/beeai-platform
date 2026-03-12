@@ -576,8 +576,6 @@ trap cleanup EXIT
 
 if limactl create template:ubuntu --yes --name "$VM_NAME" --plain --vm-type=vz --rosetta --memory 36 --cpus 4 --set '.nestedVirtualization=true'; then
   limactl start "$VM_NAME"
-  mkdir -p "$HOME/.ssh"
-  printf "\nInclude ${LIMA_HOME:-$HOME/.lima}/$VM_NAME/ssh.config" >> "$HOME/.ssh/config"
   limactl shell "$VM_NAME" bash -c "
     set -euxo pipefail
     export DEBIAN_FRONTEND=noninteractive
@@ -618,6 +616,8 @@ else
   limactl start "$VM_NAME"
 fi
 limactl shell "$VM_NAME" bash -c "cd /git/$REPO && mise trust && mise install"
+mkdir -p "$HOME/.ssh"
+printf "\nInclude ${LIMA_HOME:-$HOME/.lima}/$VM_NAME/ssh.config" >> "$HOME/.ssh/config"
 code --new-window --wait --folder-uri "vscode-remote://ssh-remote+lima-$VM_NAME/git/$REPO"
 '''
 
