@@ -21,6 +21,7 @@ from agentstack_server.domain.models.vector_store import (
 )
 from agentstack_server.exceptions import InvalidVectorDimensionError, StorageCapacityExceededError
 from agentstack_server.service_layer.unit_of_work import IUnitOfWorkFactory
+from agentstack_server.service_layer.webhook import dispatch_webhook_event
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,13 @@ class VectorStoreService:
             await uow.vector_stores.create(vector_store=vector_store)
             await uow.vector_database.create_collection(collection_id=vector_store.id, dimension=dimension)
             await uow.commit()
+        dispatch_webhook_event(
+            event_type="vector_store.created",
+            resource_type="vector_store",
+            resource_id=vector_store.id,
+            resource_url=f"/api/v1/vector_stores/{vector_store.id}",
+            user_id=user.id,
+        )
         return vector_store
 
     async def get(self, *, vector_store_id: UUID, user: User, context_id: UUID | None = None) -> VectorStore:
@@ -66,6 +74,13 @@ class VectorStoreService:
             await uow.vector_stores.delete(vector_store_id=vector_store_id, user_id=user.id, context_id=context_id)
             # Records in vector_database are deleted automatically by CASCADE operations in postgres
             await uow.commit()
+        dispatch_webhook_event(
+            event_type="vector_store.deleted",
+            resource_type="vector_store",
+            resource_id=vector_store_id,
+            resource_url=f"/api/v1/vector_stores/{vector_store_id}",
+            user_id=user.id,
+        )
 
     async def list_documents(
         self, *, vector_store_id: UUID, user: User, context_id: UUID | None = None
@@ -85,6 +100,13 @@ class VectorStoreService:
             await uow.vector_stores.remove_documents(vector_store_id=vector_store_id, document_ids=document_ids)
             # Records in vector_database are deleted automatically by CASCADE operations in postgres
             await uow.commit()
+        dispatch_webhook_event(
+            event_type="vector_store.updated",
+            resource_type="vector_store",
+            resource_id=vector_store_id,
+            resource_url=f"/api/v1/vector_stores/{vector_store_id}",
+            user_id=user.id,
+        )
 
     async def add_items(
         self,
@@ -131,6 +153,13 @@ class VectorStoreService:
             )
             await uow.vector_database.add_items(collection_id=vector_store_id, items=items)
             await uow.commit()
+        dispatch_webhook_event(
+            event_type="vector_store.updated",
+            resource_type="vector_store",
+            resource_id=vector_store_id,
+            resource_url=f"/api/v1/vector_stores/{vector_store_id}",
+            user_id=user.id,
+        )
 
     async def search(
         self,

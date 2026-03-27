@@ -455,6 +455,13 @@ rateLimit:
       openai_chat_completion_requests: []
       openai_embedding_inputs: []
 
+webhook:
+  endpoints: []
+  # - url: "https://example.com/webhook"
+  #   headers:
+  #     Authorization: "Bearer my-secret-token"
+  #   events: ["*"]
+
 connector:
   presets:
     - url: "https://mcp.stripe.com"
