@@ -64,13 +64,18 @@
           {
             "group": "Reference",
             "pages": [
-              "stable/reference/cli-reference"
+              "stable/reference/cli-reference",
+              {
+                "group": "API Reference",
+                "openapi": "stable/api-reference/openapi.json"
+              }
             ]
           },
           {
             "group": "Deploy Agent Stack",
             "pages": [
               "stable/deploy-agent-stack/deployment-guide",
+              "stable/deploy-agent-stack/webhooks",
               "stable/deploy-agent-stack/authenticate-cli-to-server"
             ]
           },
@@ -78,6 +83,7 @@
             "group": "Custom UI Integration",
             "pages": [
               "stable/custom-ui/getting-started",
+              "stable/custom-ui/architecture-guide",
               "stable/custom-ui/a2a-client",
               "stable/custom-ui/agent-requirements",
               "stable/custom-ui/platform-api-client",
