@@ -5,8 +5,8 @@ set -eu
 # AGENTSTACK_VERSION = latest (default, latest stable version) | pre (latest version including prereleases) | <version> (specific version)
 
 # These get updated by `mise release`:
-LATEST_STABLE_AGENTSTACK_VERSION=0.6.2
-LATEST_AGENTSTACK_VERSION=0.7.1-rc2
+LATEST_STABLE_AGENTSTACK_VERSION=0.7.1
+LATEST_AGENTSTACK_VERSION=0.7.1
 
 case "${AGENTSTACK_VERSION:-latest}" in "latest") AGENTSTACK_VERSION=$LATEST_STABLE_AGENTSTACK_VERSION ;; "pre") AGENTSTACK_VERSION=$LATEST_AGENTSTACK_VERSION ;; esac
 
